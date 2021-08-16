@@ -1,0 +1,5 @@
+﻿WepApi ripulita
+Entity framework Primpostato
+Modificati i file t4 (tt) di ApplicationDBModels
+Impostato il formattatore JSON come predefinito ed eliminato il formattatore XML
+Aggiunta di SignalR

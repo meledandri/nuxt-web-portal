@@ -1,0 +1,99 @@
+﻿### DESCRIZIONE:
+---------------------------------------
+Applicazione console con possibilità di installazione come servizio da riga di comando.
+Sono presenti funzionalità di WebApi, Server Web statico, e SignalR, log4net (Log manager)
+
+
+Note sull'installazione come servizio ---> NOTE INSTALLAZIONE
+Note sull'ind. base ---------------------> CONFIGURAZIONE INDIRIZZO DI BASE 
+Note sul certificato SSL ----------------> NOTE CERTIFICATO SSL
+
+
+
+
+
+
+----------------------------------------------------------------------------------------- CONFIGURAZIONE INDIRIZZO DI BASE 
+https://stackoverflow.com/questions/7007929/what-does-a-plus-sign-mean-in-a-http-url-http-80
+In ordine di importanza vengono valutate le seguenti definizioni
+Il segno jolly "+" è il più forte
+Il segno jolly "*" è più debole di tutte le altre definizioni
+
+Se si ottengono eccezioni di accesso, NON avviare Visual Studio come utente amministratore. Aggiungi invece una prenotazione URL. Il seguente esempio presuppone che si desideri aprire la porta 9000 come servizio HTTP su tutte le porte e nomi host ( http://+:9000/) senza alcuna restrizione utente.
+
+Avvia una finestra della console di comando come amministratore ed esegui:
+
+netsh
+netsh> http add urlacl url="http://+:9000/" sddl=D:(A;;GX;;;S-1-1-0)
+L'SDDL si traduce in "tutti gli utenti" dal tuo dominio / macchina corrente.
+
+Modifica il codice di conseguenza:
+
+var baseAddress = "http://+:9000/";
+using (WebApp.Start<Startup> (baseAddress)) 
+{
+  // your code here
+}
+Puoi eliminare la prenotazione eseguendo:
+
+netsh
+netsh> http delete urlacl url="http://+:9000/"
+
+
+----------------------------------------------------------------------------------------- NOTE CERTIFICATO SSL
+https://weblog.west-wind.com/posts/2016/Jun/23/Use-Powershell-to-bind-SSL-Certificates-to-an-IIS-Host-Header-Site
+
+comando: netsh.exe http add sslcert ipport=0.0.0.0:82 certstorename=Root certhash=... appid={12345678-db90-4b66-8b01-88f7af2e36bf}
+
+https://blog.boxofbolts.com/ssl/windows/owin/guide/2015/06/29/https-self-hosted-windows/
+
+
+
+
+----------------------------------------------------------------------------------------- NOTE INSTALLAZIONE
+http://docs.topshelf-project.com/en/latest/overview/commandline.html
+
+Help Text
+The help text from the command line is shown below for easy reference.
+
+service.exe [verb] [-option:value] [-switch]
+
+run Runs the service from the command line (default)
+
+help or –help Displays help
+
+install Installs the service
+
+-username	The username to run the service
+-password	The password for the specified username
+-instance	An instance name if registering the service multiple times
+--autostart	The service should start automatically (default)
+--disabled	The service should be set to disabled
+--manual	The service should be started manually
+--delayed	The service should start automatically (delayed)
+--localsystem	Run the service with the local system account
+--localservice	Run the service with the local service account
+--networkservice
+ 	Run the service with the network service permission
+--interactive	The service will prompt the user at installation for the service credentials
+--sudo	Prompts for UAC if running on Vista/W7/2008
+-servicename	The name that the service should use when installing
+-description	The service description the service should use when installing. Eg: -description: MyService Eg: -description “My Service”
+-displayname	The display name the the service should use when installing Eg: -displayname: MyService Eg: -displayname “My Service”
+start Starts the service if it is not already running
+
+-instance	The instance to start
+stop Stops the service if it is running
+
+-instance	The instance to stop
+uninstall Uninstalls the service
+
+-instance	An instance name if registering the service multiple times
+--sudo	Prompts for UAC if running on Vista/W7/2008
+Examples
+Basic Service Installation
+
+MyService.exe install -username:DOMAIN\ServiceAccount -password:itsASecret -servicename:AwesomeService –autostart
+Service Installation with Quoted Arguments
+
+MyService.exe install -username “DOMAIN\Service Account” -password “Its A Secret” -servicename “Awesome Service” –autostart
