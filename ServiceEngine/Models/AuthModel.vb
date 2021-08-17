@@ -11,9 +11,10 @@ End Class
 
 
 Public Class UsersTokens
+    <Key>
     Public Property userID As String = ""
-    Public Property token As String = (New Guid).ToString
-    Public Property insertDate As Date = New Date()
+    Public Property token As String = System.Guid.NewGuid.ToString()
+    Public Property insertDate As Date = Now
     Public Property deadline As Nullable(Of Date) = Nothing
 
 End Class

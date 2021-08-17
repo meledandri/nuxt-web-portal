@@ -10,7 +10,7 @@
             <v-card-text>
               <v-form>
                 <v-text-field
-                  prepend-icon="person"
+                  prepend-icon="fa-user"
                   name="login"
                   label="Login"
                   type="text"
@@ -18,7 +18,7 @@
                 ></v-text-field>
                 <v-text-field
                   id="password"
-                  prepend-icon="lock"
+                  prepend-icon="fa-lock"
                   name="password"
                   label="Password"
                   type="password"
@@ -86,9 +86,9 @@ export default {
     async login() {
       this.loginProgess = true;
       const params = {
-        OldPassword: this.user_password_old,
+        UserName: this.usr,
         NewPassword: this.user_password_new,
-        ConfirmPassword: this.user_password_new2
+        password: this.pwd
       };
       await this.$axios
         .post("login", params)
@@ -99,6 +99,7 @@ export default {
             // Errore login
           } else {
             this.userInfo = r.userInfo;
+            this.$router.push('/inspire');
           }
         })
         .catch(e => {

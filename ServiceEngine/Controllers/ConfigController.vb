@@ -19,6 +19,7 @@ Namespace Controllers
         <Route("appConfig")>
         Public Function GetConfig() As List(Of AppConfig)
             log.Info("[GET]" & vbTab & "api/appConfig")
+            init()
             Return (From c In db.AppConfig Select c Where c.App = "common" Or c.App = "webapi" Order By c.Parameter).ToList
 
         End Function
@@ -64,8 +65,44 @@ Namespace Controllers
 
         <Route("activeCompanies")>
         Public Function GetActiveCompanies() As List(Of Companies)
+            'Dim li As Integer = (From ci In db.Companies).Count
+            'If li = 0 Then
+            '    Dim cn As New Companies
+            '    cn.BusinessName = "Gruppo SASI"
+            '    cn.isHidden = False
+            '    cn.insertDate = Now
+            '    db.Companies.Add(cn)
+            '    db.SaveChanges()
+
+            '    Dim ui As Integer = (From u In db.Users Select u).Count
+            '    If ui = 0 Then
+            '        Dim un As New Users
+            '        With un
+            '            .DisplayName = "Administrator"
+            '            .email = "sergio.meledandri@pro360web.com"
+            '            .insertDate = Now
+            '            .password = cripta("Password123!")
+            '            .PasswordMustChange = False
+            '            .LockoutEnabled = False
+            '            .UserName = "admin"
+            '            .companyID = cn.companyID
+            '        End With
+            '        db.Users.Add(un)
+            '        db.SaveChanges()
+            '    End If
+
+            'End If
+
+            Dim l As List(Of Companies) = (From c In db.Companies Select c Where c.isHidden = False Order By c.BusinessName).ToList
+            Return l
+
+        End Function
+
+
+        Private Sub init()
             Dim li As Integer = (From ci In db.Companies).Count
             If li = 0 Then
+                log.Info("[INIT]" & vbTab & "ConfigController\Init")
                 Dim cn As New Companies
                 cn.BusinessName = "Gruppo SASI"
                 cn.isHidden = False
@@ -92,12 +129,6 @@ Namespace Controllers
 
             End If
 
-            Dim l As List(Of Companies) = (From c In db.Companies Select c Where c.isHidden = False Order By c.BusinessName).ToList
-            Return l
-
-        End Function
-
-
-
+        End Sub
     End Class
 End Namespace

@@ -54,7 +54,7 @@ Public Class Users
 
 
     <Key>
-    Public Property userID As String = (New Guid).ToString
+    Public Property userID As String = System.Guid.NewGuid.ToString()
     Public Property UserName As String = ""
     Public Property DisplayName As String = ""
 

@@ -17,3 +17,15 @@
     </v-col>
   </v-row>
 </template>
+
+
+<script>
+export default {
+  layout: 'on',
+  data() {
+    return {
+      content: 'something...'
+    }
+  }
+}
+</script>

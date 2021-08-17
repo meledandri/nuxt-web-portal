@@ -44,8 +44,8 @@ Namespace Controllers
                 r.messaggio = "Errore nei dati trasmessi"
                 Return r
             End If
-
-            Dim usr As Users = (From u In db.Users Where u.UserName = model.UserName And u.password = cripta(model.password) Select u).FirstOrDefault
+            Dim pwd = cripta(model.password)
+            Dim usr As Users = (From u In db.Users Where u.UserName = model.UserName And u.password = pwd And u.Disabled = False And u.isHidden = False Select u).FirstOrDefault
 
             If IsNothing(usr) Then
                 r.stato = JRisposta.Stati.Errato
@@ -59,12 +59,29 @@ Namespace Controllers
                 ut.add("lastAccess", usr.lastAccess)
                 ut.add("PasswordMustChange", usr.PasswordMustChange)
                 ut.add("TwoFactorEnabled", usr.TwoFactorEnabled)
+                Dim cmp As Companies = (From c In db.Companies Where c.companyID = usr.companyID And c.isHidden = False Select c).FirstOrDefault
+                If Not IsNothing(cmp) Then
+                    ut.add("BusinessName", cmp.BusinessName)
+                End If
 
                 usr.lastAccess = Now
                 usr.AccessFailedCount = 0
                 db.Users.Attach(usr)
                 db.Entry(usr).State = EntityState.Modified
                 db.SaveChanges()
+
+                db.Database.ExecuteSqlCommand("DELETE FROM UsersTokens where userID = '" & usr.userID & "'")
+                Dim tk As New UsersTokens
+                tk.userID = usr.userID
+                Dim dl = New DateTime(Now.Year, Now.Month, Now.Day).AddDays(1)
+                tk.deadline = dl
+
+                db.UsersTokens.Add(tk)
+                db.SaveChanges()
+
+                db.UsersTokens.Add(tk)
+
+                ut.add("Token", tk.token)
                 r.add("userInfo", ut)
             End If
 

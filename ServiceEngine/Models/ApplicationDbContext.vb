@@ -10,6 +10,7 @@ Partial Public Class ApplicationDbContext
     Public Property AppConfig As System.Data.Entity.DbSet(Of AppConfig)
     Public Property Companies As System.Data.Entity.DbSet(Of Companies)
     Public Property Users As System.Data.Entity.DbSet(Of Users)
+    Public Property UsersTokens As System.Data.Entity.DbSet(Of UsersTokens)
     'Public Property Contacts As System.Data.Entity.DbSet(Of Contacts)
 
 End Class
