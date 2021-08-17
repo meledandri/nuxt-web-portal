@@ -26,7 +26,8 @@ Namespace SelfHostedServiceSignalR
 
             Try
                 WebApp.Start(options)
-                browser = Process.Start(AlternariveUrl)
+                'browser = Process.Start(AlternariveUrl)
+                browser = Process.Start("http://localhost:3000/")
 
 
             Catch ex As Exception

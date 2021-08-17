@@ -297,7 +297,7 @@ End Module
 
 Module GeneralFunctions
 
-    Function cripta(strTesto, Optional intKey = 5)
+    Function cripta(strTesto, Optional intKey = 5) As String
         Dim ctInd
         Dim chrAnalisi
         Dim strTesto2 As String = ""

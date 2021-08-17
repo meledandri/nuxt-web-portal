@@ -8,8 +8,8 @@ Partial Public Class ApplicationDbContext
     End Sub
 
     Public Property AppConfig As System.Data.Entity.DbSet(Of AppConfig)
-    'Public Property Companies As System.Data.Entity.DbSet(Of Companies)
+    Public Property Companies As System.Data.Entity.DbSet(Of Companies)
+    Public Property Users As System.Data.Entity.DbSet(Of Users)
     'Public Property Contacts As System.Data.Entity.DbSet(Of Contacts)
-
 
 End Class

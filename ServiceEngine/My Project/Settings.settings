@@ -17,7 +17,10 @@
       <Value Profile="(Default)">Data Source=.\SQL2012;Initial Catalog=TFOnlineDB;Persist Security Info=True;User ID=sa;Password=Master.1</Value>
     </Setting>
     <Setting Name="www_dir" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">../../../frontend/dist</Value>
+      <Value Profile="(Default)">../../../nuxt-frontend/dist</Value>
+    </Setting>
+    <Setting Name="MigrateDatabaseToLatestVersion" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
 </SettingsFile>

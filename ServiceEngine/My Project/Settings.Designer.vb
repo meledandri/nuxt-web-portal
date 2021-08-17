@@ -85,10 +85,19 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("../../../frontend/dist")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("../../../nuxt-frontend/dist")>  _
         Public ReadOnly Property www_dir() As String
             Get
                 Return CType(Me("www_dir"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("True")>  _
+        Public ReadOnly Property MigrateDatabaseToLatestVersion() As Boolean
+            Get
+                Return CType(Me("MigrateDatabaseToLatestVersion"),Boolean)
             End Get
         End Property
     End Class

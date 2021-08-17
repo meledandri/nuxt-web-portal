@@ -149,10 +149,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Communications.vb" />
+    <Compile Include="Controllers\AuthController.vb" />
     <Compile Include="Controllers\ConfigController.vb" />
     <Compile Include="Custom.vb" />
+    <Compile Include="Migrations\Configuration.vb" />
     <Compile Include="Models\ApplicationDbContext.vb" />
     <Compile Include="Models\AppConfigModel.vb" />
+    <Compile Include="Models\AuthModel.vb" />
     <Compile Include="Module1.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
@@ -198,6 +201,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="www\" />
+    <Folder Include="_Migrations\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
 </Project>

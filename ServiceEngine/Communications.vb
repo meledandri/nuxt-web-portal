@@ -10,6 +10,7 @@ Imports Microsoft.Owin
 Imports Microsoft.Owin.Hosting
 Imports Microsoft.Owin.Security.OAuth
 Imports Microsoft.Owin.Extensions
+Imports System.IO
 
 Namespace SelfHostedServiceSignalR
     Class Startup
@@ -34,10 +35,15 @@ Namespace SelfHostedServiceSignalR
                     Console.WriteLine("Parametro -www_dir- non trovato")
                 End If
             End Try
-            Dim physicalFileSystem = New PhysicalFileSystem(www)
+            Dim physicalFileSystem
+            Try
+                physicalFileSystem = New PhysicalFileSystem(www)
+            Catch ex As Exception
+                physicalFileSystem = New PhysicalFileSystem("./www")
+            End Try
             Dim options = New FileServerOptions With {
                 .EnableDefaultFiles = True,
-                .FileSystem = physicalFileSystem
+                .FileSystem = PhysicalFileSystem
             }
             options.StaticFileOptions.FileSystem = physicalFileSystem
             options.StaticFileOptions.ServeUnknownFileTypes = True
