@@ -24,7 +24,8 @@ export default {
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
-    '@fortawesome/fontawesome-free/css/all.css'
+    '@fortawesome/fontawesome-free/css/all.css',
+    '~/assets/css/snotify.css',
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
@@ -46,7 +47,39 @@ export default {
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
+    ['@nuxtjs/i18n', {
+      // ...
+      detectBrowserLanguage: {
+        useCookie: true,
+        cookieKey: 'i18n_redirected',
+        redirectOn: 'root',  // recommended
+      }
+    }],
   ],
+  i18n: {
+    locales: [
+      {
+        code: 'en',
+        name: 'English'
+      },
+      {
+        code: 'it',
+        name: 'Italiano'
+      },
+    ],
+    defaultLocale: 'it',
+    vueI18n: {
+      fallbackLocale: 'it',
+      messages: {
+        en: {
+          welcome: 'Welcome'
+        },
+        it: {
+          welcome: 'Benvenuto'
+        }
+      }
+    }
+  },
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {

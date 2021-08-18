@@ -17,7 +17,7 @@ export default {
     },
     async login() {
       this.loginProgess = true;
-      this.msg_err_login = ""
+      this.msg_err_login = "";
       const params = {
         UserName: this.usr,
         NewPassword: this.user_password_new,
@@ -30,12 +30,12 @@ export default {
           var r = response.data;
           if (r.stato < 0) {
             // Errore login
-            this.msg_err_login = r.messaggio
+            this.msg_err_login = r.messaggio;
           } else {
             this.appMenu = r.appMenu;
             this.userInfo = r.userInfo;
-            var pg = "/" + this.userInfo.area + "/dashboard" 
-            console.log(pg)
+            var pg = "/" + this.userInfo.area + "/dashboard";
+            console.log(pg);
             this.$router.push(pg);
           }
         })
@@ -43,7 +43,7 @@ export default {
           this.loginProgess = false;
           this.viewMessage("error", e.response.data.Message);
         });
-    },
+    }
 
     // viewMessageError(error, title) {
     //     var msg = "Errore generico";
@@ -78,7 +78,7 @@ export default {
     //     } else {
     //       msg = "Errore non gestito";
     //     }
-  
+
     //     this.$snotify.error(msg, title, {
     //       timeout: timeout,
     //       showProgressBar: true,
@@ -109,10 +109,10 @@ export default {
     appConfig: {
       // getter
       get: function() {
-        console.log("global\\computed\\appConfig\\get..")
-        console.log(this.$store.getters)
+        console.log("global\\computed\\appConfig\\get..");
+        console.log(this.$store.getters);
         //return this.$store.getters.appConfig;
-        return this.$store.state.config.appConfig
+        return this.$store.state.config.appConfig;
       },
       // setter
       set: function(newValue) {
@@ -121,42 +121,48 @@ export default {
       }
     },
     configLoading: {
-        // getter
-        get: function() {
-          console.log("mixins\\global\\computed\\configLoading\\get");
-          return this.$store.state.config.appLoading;
-        },
-        // setter
-        set: function(newValue) {
-          console.log("mixins\\global\\computed\\configLoading\\set");
-          this.$store.commit("config/updateAppLoading", { val: newValue });
-        }
+      // getter
+      get: function() {
+        console.log("mixins\\global\\computed\\configLoading\\get");
+        return this.$store.state.config.appLoading;
       },
-      userInfo: {
-        // getter
-        get: function() {
-          console.log("mixins\\global\\computed\\userInfo\\get");
-          return this.$store.state.config.userInfo;
-        },
-        // setter
-        set: function(newValues) {
-          console.log("mixins\\global\\computed\\userInfo\\set");
-          this.$store.commit("config/updateUserInfo", { data: newValues });
-        }
+      // setter
+      set: function(newValue) {
+        console.log("mixins\\global\\computed\\configLoading\\set");
+        this.$store.commit("config/updateAppLoading", { val: newValue });
+      }
+    },
+    userInfo: {
+      // getter
+      get: function() {
+        console.log("mixins\\global\\computed\\userInfo\\get");
+        return this.$store.state.config.userInfo;
       },
-      appMenu: {
-        // getter
-        get: function() {
-          console.log("mixins\\global\\computed\\appMenu\\get");
-          return this.$store.state.config.appMenu;
-        },
-        // setter
-        set: function(newValues) {
-          console.log("mixins\\global\\computed\\appMenu\\set");
-          this.$store.commit("config/updatAppMenu", { data: newValues });
-        }
+      // setter
+      set: function(newValues) {
+        console.log("mixins\\global\\computed\\userInfo\\set");
+        this.$store.commit("config/updateUserInfo", { data: newValues });
+      }
+    },
+    appMenu: {
+      // getter
+      get: function() {
+        console.log("mixins\\global\\computed\\appMenu\\get");
+        return this.$store.state.config.appMenu;
       },
-      }, // contiene un oggetto che definisce le funzioni getter e setter per le proprietà calcolate del componente Vue. Le proprietà calcolate influenzano un aggiornamento reattivo sul DOM ogni volta che il loro valore cambia.
+      // setter
+      set: function(newValues) {
+        console.log("mixins\\global\\computed\\appMenu\\set");
+        this.$store.commit("config/updatAppMenu", { data: newValues });
+      }
+    },
+    availableLocales() {
+      return this.$i18n.locales.filter(i => i.code !== this.$i18n.locale);
+    },
+    language(){
+      return this.$i18n.locales.filter(i => i.code == this.$i18n.locale)[0].name;
+    },
+  }, // contiene un oggetto che definisce le funzioni getter e setter per le proprietà calcolate del componente Vue. Le proprietà calcolate influenzano un aggiornamento reattivo sul DOM ogni volta che il loro valore cambia.
   props: {}, //contiene un array o un oggetto di proprietà specifiche del componente Vue.js, impostato al momento dell'invocazione.
   watch: {}, // questo oggetto tiene traccia dei cambiamenti nel valore di una qualsiasi delle proprietà definite come parte dei "dati" impostando le funzioni per controllarli.
   //Eventi------------------------

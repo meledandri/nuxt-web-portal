@@ -1,5 +1,6 @@
 <template>
   <v-app dark>
+    <vue-snotify></vue-snotify>
     <v-main>
       <v-container>
         <Nuxt />
@@ -16,6 +17,18 @@
 
 <script>
 import Vue from "vue"
+
+import Snotify, { SnotifyPosition } from "vue-snotify";
+const options = {
+  toast: {
+    position: SnotifyPosition.rightTop,
+    timeout: 0,
+    closeOnClick: true,
+    pauseOnHover: true,
+  },
+};
+
+Vue.use(Snotify, options);
 
 import global from "~/mixins/global.js"
 Vue.mixin(global)

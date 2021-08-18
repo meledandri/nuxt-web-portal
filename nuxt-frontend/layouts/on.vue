@@ -1,5 +1,7 @@
 <template>
   <v-app dark>
+        <vue-snotify></vue-snotify>
+
     <v-navigation-drawer
       v-model="drawer"
       :mini-variant="miniVariant"

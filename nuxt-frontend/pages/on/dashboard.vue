@@ -10,7 +10,7 @@
         &#8220;ACCESSO ORGANISMO NOTIFICATO&#8221;
         <footer>
           <small>
-            <em>&mdash; {{userInfo.DisplayName}}</em>
+            <em>&mdash; {{userInfo.DisplayName}} ({{ $t('welcome') }})</em>
           </small>
         </footer>
       </blockquote>
