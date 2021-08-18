@@ -1,4 +1,5 @@
 ﻿Imports System.Data.Entity
+Imports System.Data.Entity.ModelConfiguration.Conventions
 
 Partial Public Class ApplicationDbContext
     Inherits DbContext
@@ -7,10 +8,33 @@ Partial Public Class ApplicationDbContext
         MyBase.New("name=DefaultConnection")
     End Sub
 
+    'Tabelle applicative
     Public Property AppConfig As System.Data.Entity.DbSet(Of AppConfig)
+    Public Property AppMenu As System.Data.Entity.DbSet(Of AppMenu)
+
+    'Tabelle per la gestione accessi
     Public Property Companies As System.Data.Entity.DbSet(Of Companies)
     Public Property Users As System.Data.Entity.DbSet(Of Users)
     Public Property UsersTokens As System.Data.Entity.DbSet(Of UsersTokens)
-    'Public Property Contacts As System.Data.Entity.DbSet(Of Contacts)
 
+
+    'TechFile Online - Tabelle
+    Public Property Products As System.Data.Entity.DbSet(Of Products)
+    Public Property Editions As System.Data.Entity.DbSet(Of Editions)
+    Public Property Structures As System.Data.Entity.DbSet(Of Structures)
+    Public Property StructureDetails As System.Data.Entity.DbSet(Of StructureDetails)
+    Public Property Details As System.Data.Entity.DbSet(Of Details)
+    Public Property ActivityLog As System.Data.Entity.DbSet(Of ActivityLog)
+
+
+
+
+
+
+
+
+
+    Protected Overrides Sub OnModelCreating(modelBuilder As DbModelBuilder)
+        modelBuilder.Conventions.Remove(Of PluralizingTableNameConvention)()
+    End Sub
 End Class

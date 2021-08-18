@@ -7,10 +7,10 @@
         class="mb-5"
       >
       <blockquote class="blockquote">
-        &#8220;First, solve the problem. Then, write the code.&#8221;
+        &#8220;ACCESSO FABBRICANTE&#8221;
         <footer>
           <small>
-            <em>&mdash;John Johnson</em>
+            <em>&mdash; {{userInfo.DisplayName}}</em>
           </small>
         </footer>
       </blockquote>
@@ -21,7 +21,7 @@
 
 <script>
 export default {
-  layout: 'on',
+  layout: 'fab',
   data() {
     return {
       content: 'something...'

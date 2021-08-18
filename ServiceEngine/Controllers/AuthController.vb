@@ -45,7 +45,10 @@ Namespace Controllers
                 Return r
             End If
             Dim pwd = cripta(model.password)
-            Dim usr As Users = (From u In db.Users Where u.UserName = model.UserName And u.password = pwd And u.Disabled = False And u.isHidden = False Select u).FirstOrDefault
+            Dim usr As Users = (From u In db.Users
+                                Join c In db.Companies On u.companyID Equals c.companyID
+                                Where u.UserName = model.UserName And u.password = pwd And u.Disabled = False And u.isHidden = False And c.isHidden = False
+                                Select u).FirstOrDefault
 
             If IsNothing(usr) Then
                 r.stato = JRisposta.Stati.Errato
@@ -62,6 +65,7 @@ Namespace Controllers
                 Dim cmp As Companies = (From c In db.Companies Where c.companyID = usr.companyID And c.isHidden = False Select c).FirstOrDefault
                 If Not IsNothing(cmp) Then
                     ut.add("BusinessName", cmp.BusinessName)
+                    ut.add("area", IIf(cmp.companyID = 1, "on", "fab"))
                 End If
 
                 usr.lastAccess = Now
@@ -82,6 +86,10 @@ Namespace Controllers
                 db.UsersTokens.Add(tk)
 
                 ut.add("Token", tk.token)
+
+                Dim mn As List(Of AppMenu) = (From m In db.AppMenu Where m.destination = "on" And m.flagVisible = True Select m Order By m.order, m.Name).ToList
+                r.add("appMenu", mn)
+
                 r.add("userInfo", ut)
             End If
 

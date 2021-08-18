@@ -2,6 +2,7 @@ export const state = () => ({
   appConfig: {},
   appLoading : true,
   userInfo: null,
+  appMenu : null,
   //Items: localStorage.getItem("Items")? JSON.parse(localStorage.getItem("Items")) : [] || [],
   })
   
@@ -38,6 +39,10 @@ export const state = () => ({
     updateUserInfo(state, {data}){
       console.log("store\\config\\mutations\\updateUserInfo")
       state.userInfo =  data;
+    },
+    updatAppMenu(state, {data}){
+      console.log("store\\config\\mutations\\updatAppMenu")
+      state.appMenu =  data;
     },
    
   }  

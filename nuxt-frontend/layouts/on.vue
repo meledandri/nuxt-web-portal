@@ -7,19 +7,20 @@
       fixed
       app
     >
-      <v-list>
+      <v-list dense>
         <v-list-item
-          v-for="(item, i) in items"
+          v-for="(item, i) in appMenu"
           :key="i"
-          :to="item.to"
+          :to="item.Link"
           router
           exact
+          dense
         >
           <v-list-item-action>
             <v-icon>{{ item.icon }}</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title v-text="item.title" />
+            <v-list-item-title v-text="item.Name" />
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -27,6 +28,7 @@
     <v-app-bar
       :clipped-left="clipped"
       fixed
+      dense
       app
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
@@ -34,27 +36,38 @@
         icon
         @click.stop="miniVariant = !miniVariant"
       >
-        <v-icon>mdi-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
+        <v-icon>fas fa-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
       </v-btn>
       <v-btn
         icon
         @click.stop="clipped = !clipped"
       >
-        <v-icon>mdi-application</v-icon>
+        <v-icon>fas fa-th-large</v-icon>
       </v-btn>
       <v-btn
         icon
         @click.stop="fixed = !fixed"
       >
-        <v-icon>mdi-minus</v-icon>
+        <v-icon>mdi mdi-minus</v-icon>
       </v-btn>
       <v-toolbar-title v-text="title" />
       <v-spacer />
+
+      <v-btn
+        icon
+      >
+        <v-icon>far fa-bell</v-icon>
+      </v-btn>
+
+
+      <v-avatar>
+          <v-icon color="primary">fa-user</v-icon>
+      </v-avatar>
       <v-btn
         icon
         @click.stop="rightDrawer = !rightDrawer"
       >
-        <v-icon>mdi-menu</v-icon>
+        <v-icon>fa-menu</v-icon>
       </v-btn>
     </v-app-bar>
     <v-main>
@@ -72,7 +85,7 @@
         <v-list-item @click.native="right = !right">
           <v-list-item-action>
             <v-icon light>
-              mdi-repeat
+              fas fa-redo-alt
             </v-icon>
           </v-list-item-action>
           <v-list-item-title>Switch drawer (click me)</v-list-item-title>
@@ -97,20 +110,20 @@ export default {
       fixed: false,
       items: [
         {
-          icon: 'mdi-apps',
-          title: 'Welcome',
+          icon: 'fas fa-th',
+          title: 'Login',
           to: '/'
         },
         {
-          icon: 'mdi-chart-bubble',
-          title: 'Inspire',
-          to: '/inspire'
+          icon: 'fas fa-tachometer-alt',
+          title: 'Dashboard',
+          to: '/dashboard_on'
         }
       ],
       miniVariant: false,
       right: true,
       rightDrawer: false,
-      title: 'Vuetify.js'
+      title: 'ON - Dashboard'
     }
   }
 }

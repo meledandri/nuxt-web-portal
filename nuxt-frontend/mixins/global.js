@@ -15,6 +15,36 @@ export default {
       this.$store.commit("config/updateAppConfig", { Items: config });
       this.configLoading = false;
     },
+    async login() {
+      this.loginProgess = true;
+      this.msg_err_login = ""
+      const params = {
+        UserName: this.usr,
+        NewPassword: this.user_password_new,
+        password: this.pwd
+      };
+      await this.$axios
+        .post("login", params)
+        .then(response => {
+          this.loginProgess = false;
+          var r = response.data;
+          if (r.stato < 0) {
+            // Errore login
+            this.msg_err_login = r.messaggio
+          } else {
+            this.appMenu = r.appMenu;
+            this.userInfo = r.userInfo;
+            var pg = "/" + this.userInfo.area + "/dashboard" 
+            console.log(pg)
+            this.$router.push(pg);
+          }
+        })
+        .catch(e => {
+          this.loginProgess = false;
+          this.viewMessage("error", e.response.data.Message);
+        });
+    },
+
     // viewMessageError(error, title) {
     //     var msg = "Errore generico";
     //     var timeout = 2000;
@@ -112,6 +142,18 @@ export default {
         set: function(newValues) {
           console.log("mixins\\global\\computed\\userInfo\\set");
           this.$store.commit("config/updateUserInfo", { data: newValues });
+        }
+      },
+      appMenu: {
+        // getter
+        get: function() {
+          console.log("mixins\\global\\computed\\appMenu\\get");
+          return this.$store.state.config.appMenu;
+        },
+        // setter
+        set: function(newValues) {
+          console.log("mixins\\global\\computed\\appMenu\\set");
+          this.$store.commit("config/updatAppMenu", { data: newValues });
         }
       },
       }, // contiene un oggetto che definisce le funzioni getter e setter per le proprietà calcolate del componente Vue. Le proprietà calcolate influenzano un aggiornamento reattivo sul DOM ogni volta che il loro valore cambia.

@@ -153,6 +153,7 @@
     <Compile Include="Controllers\ConfigController.vb" />
     <Compile Include="Custom.vb" />
     <Compile Include="Migrations\Configuration.vb" />
+    <Compile Include="Models\TFOnlineModel.vb" />
     <Compile Include="Models\ApplicationDbContext.vb" />
     <Compile Include="Models\AppConfigModel.vb" />
     <Compile Include="Models\AuthModel.vb" />

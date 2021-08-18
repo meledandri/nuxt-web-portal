@@ -127,8 +127,76 @@ Namespace Controllers
                     db.SaveChanges()
                 End If
 
+
+                insMenu()
+
+
+
             End If
 
         End Sub
+
+        Private Sub insMenu()
+
+
+
+            '################### VOCE MENU On
+            Dim m0 As New AppMenu
+            With m0
+                .Name = "Login"
+                .Link = "/"
+                .parentID = 0
+                .icon = "fas fa-sign-in-alt"
+                .Permissions = "on_admin"
+                .flagVisible = True
+                .order = 0
+                .destination = "on"
+            End With
+            db.AppMenu.Add(m0)
+
+
+            '################### VOCE MENU On
+            Dim m1 As New AppMenu
+            With m1
+                .Name = "Gest Fabbricante"
+                .Link = "/on/fab_edit"
+                .parentID = 0
+                .icon = "fa-users"
+                .Permissions = "on_admin"
+                .flagVisible = True
+                .order = 1
+                .destination = "on"
+            End With
+            db.AppMenu.Add(m1)
+
+
+
+            '################### VOCE MENU On
+            Dim m2 As New AppMenu
+            With m2
+                .Name = "Caricamenti"
+                .Link = "/on/upload_manager"
+                .parentID = 0
+                .icon = "fa-upload"
+                .Permissions = "on_admin"
+                .flagVisible = True
+                .order = 2
+                .destination = "on"
+            End With
+            db.AppMenu.Add(m2)
+
+
+
+
+
+
+
+
+
+
+
+            db.SaveChanges()
+        End Sub
+
     End Class
 End Namespace

@@ -83,3 +83,20 @@ Public Class Users
 
 
 End Class
+
+
+Public Class AppMenu
+    <Key>
+    Public Property menuID As Integer
+    <Required>
+    Public Property Name As String = ""
+    <Required>
+    Public Property Link As String = ""
+    Public Property parentID As Integer
+    Public Property icon As String = ""
+    Public Property Permissions As String = ""
+    Public Property flagVisible As Boolean = True
+    Public Property order As Integer = 0
+    Public Property destination As String = "on"
+
+End Class

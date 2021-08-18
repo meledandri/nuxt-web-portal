@@ -15,16 +15,23 @@
                   label="Login"
                   type="text"
                   v-model="usr"
+                  autofocus
+                  @keyup.enter="focusOnPassword()"
                 ></v-text-field>
                 <v-text-field
+                  ref="pwd"
                   id="password"
                   prepend-icon="fa-lock"
                   name="password"
                   label="Password"
                   type="password"
                   v-model="pwd"
+                  @keyup.enter="login()"
                 ></v-text-field>
               </v-form>
+              <v-alert type="error" v-if="msg_err_login">
+      {{msg_err_login}}
+    </v-alert>
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -66,9 +73,10 @@ export default {
   // }),
   data() {
     return {
-      usr: "",
-      pwd: "",
-      loginProgess: false
+      usr: "admin",
+      pwd: "Password123!",
+      loginProgess: false,
+      msg_err_login: "",
     };
   },
   methods: {
@@ -83,29 +91,9 @@ export default {
     //var config = await fetch(`${baseURL}/appconfig`).then((res) => res.json())
     // }
 
-    async login() {
-      this.loginProgess = true;
-      const params = {
-        UserName: this.usr,
-        NewPassword: this.user_password_new,
-        password: this.pwd
-      };
-      await this.$axios
-        .post("login", params)
-        .then(response => {
-          this.loginProgess = false;
-          var r = response.data;
-          if (r.stato < 0) {
-            // Errore login
-          } else {
-            this.userInfo = r.userInfo;
-            this.$router.push('/inspire');
-          }
-        })
-        .catch(e => {
-          this.loginProgess = false;
-          this.viewMessage("error", e.response.data.Message);
-        });
+    focusOnPassword() {
+      const PasswordRef = this.$refs.pwd;
+      PasswordRef.focus();
     }
   }
 };
