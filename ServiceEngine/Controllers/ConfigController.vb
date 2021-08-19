@@ -128,6 +128,63 @@ Namespace Controllers
                 End If
 
 
+
+                Dim cp As New Companies
+                cp.BusinessName = "MD Pharma Demo"
+                cp.isHidden = False
+                cp.insertDate = Now
+                db.Companies.Add(cp)
+                db.SaveChanges()
+
+
+                Dim cr As New CompanyRoles
+                cr.companyRoleName = "Manufacturer"
+                db.CompanyRoles.Add(cr)
+                db.SaveChanges()
+
+                Dim cd As New CompanyDetail
+                With cd
+                    .companyID = cp.companyID
+                    .companyRoleID = cr.companyRoleID
+                    .country = "Italy"
+                    .SRN = "IT-MF-000001234"
+                End With
+                db.CompanyDetail.Add(cd)
+                db.SaveChanges()
+
+                Dim uc As New Users
+                With uc
+                    .DisplayName = "MD User 1"
+                    .email = "user1.md-pharma.srl"
+                    .insertDate = Now
+                    .password = cripta("Password123!")
+                    .PasswordMustChange = True
+                    .LockoutEnabled = True
+                    .UserName = "user1"
+                    .companyID = cp.companyID
+                End With
+                db.Users.Add(uc)
+                db.SaveChanges()
+
+
+                Dim uc2 As New Users
+                With uc2
+                    .DisplayName = "MD User 2"
+                    .email = "user2.md-pharma.srl"
+                    .insertDate = Now
+                    .password = cripta("Password123!")
+                    .PasswordMustChange = True
+                    .LockoutEnabled = True
+                    .UserName = "user2"
+                    .companyID = cp.companyID
+                End With
+                db.Users.Add(uc2)
+                db.SaveChanges()
+
+
+
+
+
                 insMenu()
 
 
@@ -187,10 +244,19 @@ Namespace Controllers
 
 
 
-
-
-
-
+            '################### VOCE MENU FAB
+            Dim m10 As New AppMenu
+            With m10
+                .Name = "Login"
+                .Link = "/"
+                .parentID = 0
+                .icon = "fas fa-sign-in-alt"
+                .Permissions = "on_fab"
+                .flagVisible = True
+                .order = 0
+                .destination = "fab"
+            End With
+            db.AppMenu.Add(m10)
 
 
 

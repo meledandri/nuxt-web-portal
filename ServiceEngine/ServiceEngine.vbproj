@@ -149,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Communications.vb" />
+    <Compile Include="Controllers\FabController.vb" />
     <Compile Include="Controllers\AuthController.vb" />
     <Compile Include="Controllers\ConfigController.vb" />
     <Compile Include="Custom.vb" />
@@ -199,6 +200,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="NoteInstallazione.txt" />
+    <Content Include="www\placeholder.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="www\" />

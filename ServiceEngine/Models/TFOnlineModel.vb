@@ -258,10 +258,102 @@ End Class
 
 
 
+''' <summary>
+''' Tabella contenente i dettagli sull'Azienda Cliente
+''' </summary>
+Public Class CompanyDetail
+    <Key>
+    <Required>
+    <Column(Order:=0)>
+    Public Property CompanyDetailID As Integer = 0
+
+    <Required>
+    <Column(Order:=1)>
+    Public Property companyID As Integer = 0
+
+    <Required>
+    <Column(Order:=2)>
+    Public Property companyRoleID As Integer = 0
+    <StringLength(20)>
+    <Required>
+    <Column(Order:=3)>
+    Public Property SRN As String = ""
+
+    <StringLength(20)>
+    <Required>
+    <Column(Order:=4)>
+    Public Property country As String = ""
+
+End Class
+
+
+''' <summary>
+''' Tabella che raccoglie tutte le tipologie di Clienti
+''' </summary>
+Public Class CompanyRoles
+    <Required>
+    <Key>
+    <Column(Order:=0)>
+    Public Property companyRoleID As Integer
+    <StringLength(20)>
+    <Required>
+    <Column(Order:=1)>
+    Public Property companyRoleName As String = ""
+End Class
 
 
 
 
 
+Public Class FabListDataBinding
+    <Required>
+    Public Property companyID As Integer = 0
+    <Required>
+    Public Property BusinessName As String = ""
+
+    Public Property companyRoleID As Nullable(Of Integer)
+
+    <StringLength(20)>
+    <Required>
+    Public Property companyRoleName As String = ""
+
+    <StringLength(20)>
+    <Required>
+    <Column(Order:=1)>
+    Public Property SRN As String = ""
+
+    <StringLength(20)>
+    <Required>
+    <Column(Order:=1)>
+    Public Property country As String = ""
+
+    Public Property details As New FabListDetailDataBinding
+
+End Class
+
+Public Class FabListDetailDataBinding
+    Public Property users As List(Of UserInfo) = New List(Of UserInfo)
+
+End Class
+
+Public Class UserInfo
+    <Required>
+    Public Property userID As String = ""
+
+    <Required>
+    <StringLength(50)>
+    Public Property UserName As String = ""
+
+    <Required>
+    <StringLength(20)>
+    Public Property password As String = ""
+
+    <Required>
+    Public Property DisplayName As String = ""
+
+    <StringLength(50)>
+    Public Property email As String = ""
+
+End Class
 
 

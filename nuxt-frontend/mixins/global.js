@@ -6,13 +6,17 @@ export default {
     async loadConfig() {
       console.log("loadConfig");
       this.configLoading = true;
-      const vm = this;
-      var config = (await vm.$axios.get("appconfig")).data;
+      try {
+      var config = (await this.$axios.get("appconfig")).data;
       // for (var p in config) {
       //   this.appConfig[config[p].Parameter] = config[p].Value;
       //   console.log("Parametro acquisito: " + config[p].Parameter)
       // }
       this.$store.commit("config/updateAppConfig", { Items: config });
+        
+      } catch (error) {
+        viewMessageError(error, "APP Configuration")
+      }
       this.configLoading = false;
     },
     async login() {
@@ -43,67 +47,67 @@ export default {
           this.loginProgess = false;
           this.viewMessage("error", e.response.data.Message);
         });
-    }
+    },
 
-    // viewMessageError(error, title) {
-    //     var msg = "Errore generico";
-    //     var timeout = 2000;
-    //     console.log("log errore");
-    //     if (error) {
-    //       if (error.response) {
-    //         if (error.response.data) {
-    //           if (error.response.data.Message) {
-    //             //error.response.data.Message
-    //             msg = error.response.data.Message;
-    //           }
-    //           if (error.response.data.ModelState) {
-    //             var m = [];
-    //             var t = 0;
-    //             for (var n in error.response.data.ModelState[""]) {
-    //               //error.response.data.ModelState
-    //               m.push(error.response.data.ModelState[""][n]);
-    //               t++;
-    //             }
-    //             msg = m.join("\n\n");
-    //             timeout = timeout * t;
-    //           }
-    //         }
-    //       } else if (error.Message) {
-    //         //error.Message
-    //         msg = error.Message;
-    //       } else if (error.message) {
-    //         //error.message
-    //         msg = error.message;
-    //       }
-    //     } else {
-    //       msg = "Errore non gestito";
-    //     }
+    viewMessageError(error, title) {
+        var msg = "Errore generico";
+        var timeout = 2000;
+        console.log("log errore");
+        if (error) {
+          if (error.response) {
+            if (error.response.data) {
+              if (error.response.data.Message) {
+                //error.response.data.Message
+                msg = error.response.data.Message;
+              }
+              if (error.response.data.ModelState) {
+                var m = [];
+                var t = 0;
+                for (var n in error.response.data.ModelState[""]) {
+                  //error.response.data.ModelState
+                  m.push(error.response.data.ModelState[""][n]);
+                  t++;
+                }
+                msg = m.join("\n\n");
+                timeout = timeout * t;
+              }
+            }
+          } else if (error.Message) {
+            //error.Message
+            msg = error.Message;
+          } else if (error.message) {
+            //error.message
+            msg = error.message;
+          }
+        } else {
+          msg = "Errore non gestito";
+        }
 
-    //     this.$snotify.error(msg, title, {
-    //       timeout: timeout,
-    //       showProgressBar: true,
-    //       closeOnClick: true,
-    //     });
-    //   },
-    //   viewMessage(type, message, title) {
-    //     switch (type) {
-    //       case "success":
-    //         this.$snotify.success(message, title, {
-    //           timeout: 2000,
-    //           showProgressBar: true,
-    //           closeOnClick: true,
-    //         });
-    //         break;
-    //       case "error":
-    //         this.$snotify.error(message, title, {
-    //           timeout: 5000,
-    //           showProgressBar: true,
-    //           closeOnClick: false,
-    //           pauseOnHover: true,
-    //         });
-    //         break;
-    //     }
-    //   },
+        this.$snotify.error(msg, title, {
+          timeout: timeout,
+          showProgressBar: true,
+          closeOnClick: true,
+        });
+      },
+      viewMessage(type, message, title) {
+        switch (type) {
+          case "success":
+            this.$snotify.success(message, title, {
+              timeout: 2000,
+              showProgressBar: true,
+              closeOnClick: true,
+            });
+            break;
+          case "error":
+            this.$snotify.error(message, title, {
+              timeout: 5000,
+              showProgressBar: true,
+              closeOnClick: false,
+              pauseOnHover: true,
+            });
+            break;
+        }
+      },
   }, //l'oggetto metodi contiene una coppia chiave-valore di nomi di metodo e la relativa definizione di funzione. Questi fanno parte del comportamento del componente Vue che l'altro componente può attivare.
   computed: {
     appConfig: {

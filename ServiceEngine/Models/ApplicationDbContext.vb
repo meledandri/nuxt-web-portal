@@ -25,7 +25,8 @@ Partial Public Class ApplicationDbContext
     Public Property StructureDetails As System.Data.Entity.DbSet(Of StructureDetails)
     Public Property Details As System.Data.Entity.DbSet(Of Details)
     Public Property ActivityLog As System.Data.Entity.DbSet(Of ActivityLog)
-
+    Public Property CompanyDetail As System.Data.Entity.DbSet(Of CompanyDetail)
+    Public Property CompanyRoles As System.Data.Entity.DbSet(Of CompanyRoles)
 
 
 

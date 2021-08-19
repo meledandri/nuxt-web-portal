@@ -8,10 +8,8 @@ Imports System.Data.Entity.Migrations
 Imports log4net
 
 Namespace Controllers
-    '<RoutePrefix("api/liste")>
-
     <RoutePrefix("api")>
-    Public Class AuthController
+    Public Class FabController
         Inherits System.Web.Http.ApiController
         Private db As New ApplicationDbContext
         Private ReadOnly log As ILog = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType)
@@ -34,9 +32,42 @@ Namespace Controllers
         'End Function
 
 
+        <Route("fabList")>
+        Public Function GetFabList() As JRisposta
+            Dim r As New JRisposta
+            Dim hidden As Boolean = False
+            Dim list As List(Of FabListDataBinding) = (From c In db.Companies
+                                                       Join cd In db.CompanyDetail On c.companyID Equals cd.companyID
+                                                       Join cr In db.CompanyRoles On cd.companyRoleID Equals cr.companyRoleID
+                                                       Where c.isHidden = hidden
+                                                       Select New FabListDataBinding With {.BusinessName = c.BusinessName, .companyID = c.companyID, .country = cd.country, .SRN = cd.SRN, .companyRoleID = cr.companyRoleID, .companyRoleName = cr.companyRoleName}).ToList
 
-        <Route("login")>
-        Public Function PostLogin(model As LoginBindingModel) As JRisposta
+            For Each c As FabListDataBinding In list
+                Dim d As New FabListDetailDataBinding
+
+                Dim u As List(Of UserInfo) = (From ut In db.Users Where ut.companyID = c.companyID
+                                              Select New UserInfo With {.UserName = ut.UserName, .DisplayName = ut.DisplayName, .email = ut.email, .userID = ut.userID, .password = ""}).ToList
+                d.users = u
+                c.details = d
+            Next
+
+
+            Dim isHidden As Integer = 0
+            If Not hidden Then
+                isHidden = (From c In db.Companies Where c.isHidden = True).Count
+            End If
+
+
+            Dim companyRoles As List(Of CompanyRoles) = (From cr In db.CompanyRoles Select cr Order By cr.companyRoleName).ToList
+            r.add("roles", companyRoles)
+            r.add("list", list)
+            r.add("nHidden", isHidden)
+            Return r
+        End Function
+
+
+        <Route("fabdata")>
+        Public Function PostFabData(model As LoginBindingModel) As JRisposta
             Dim r As New JRisposta
             If Not ModelState.IsValid Then
                 r.stato = JRisposta.Stati.Errato
@@ -63,10 +94,9 @@ Namespace Controllers
                 ut.add("PasswordMustChange", usr.PasswordMustChange)
                 ut.add("TwoFactorEnabled", usr.TwoFactorEnabled)
                 Dim cmp As Companies = (From c In db.Companies Where c.companyID = usr.companyID And c.isHidden = False Select c).FirstOrDefault
-                Dim area As String = IIf(cmp.companyID = 1, "on", "fab")
                 If Not IsNothing(cmp) Then
                     ut.add("BusinessName", cmp.BusinessName)
-                    ut.add("area", area)
+                    ut.add("area", IIf(cmp.companyID = 1, "on", "fab"))
                 End If
 
                 usr.lastAccess = Now
@@ -88,7 +118,7 @@ Namespace Controllers
 
                 ut.add("Token", tk.token)
 
-                Dim mn As List(Of AppMenu) = (From m In db.AppMenu Where m.destination = area And m.flagVisible = True Select m Order By m.order, m.Name).ToList
+                Dim mn As List(Of AppMenu) = (From m In db.AppMenu Where m.destination = "on" And m.flagVisible = True Select m Order By m.order, m.Name).ToList
                 r.add("appMenu", mn)
 
                 r.add("userInfo", ut)
