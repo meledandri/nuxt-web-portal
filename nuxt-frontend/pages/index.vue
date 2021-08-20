@@ -5,7 +5,7 @@
         <v-flex xs12 sm8 md4>
           <v-card class="elevation-12">
             <v-toolbar dark color="primary">
-              <v-toolbar-title> {{ $t('welcome') }} Login form</v-toolbar-title>
+              <v-toolbar-title> {{ $t("welcome") }} Login form</v-toolbar-title>
             </v-toolbar>
             <v-card-text>
               <v-form>
@@ -30,15 +30,17 @@
                 ></v-text-field>
               </v-form>
               <v-alert type="error" v-if="msg_err_login">
-      {{msg_err_login}}
-    </v-alert>
+                {{ msg_err_login }}
+              </v-alert>
             </v-card-text>
             <v-card-actions>
               <nuxt-link
-              class="mr-2"
-  v-for="locale in availableLocales"
-  :key="locale.code"
-  :to="switchLocalePath(locale.code)">{{ locale.name }}</nuxt-link>
+                class="mr-2"
+                v-for="locale in availableLocales"
+                :key="locale.code"
+                :to="switchLocalePath(locale.code)"
+                >{{ locale.name }}</nuxt-link
+              >
               <v-spacer></v-spacer>
               <v-btn color="primary" @click="loadConfig()">Config</v-btn>
               <v-btn color="primary" @click="login()" :loading="loginProgess"
@@ -81,15 +83,10 @@ export default {
       usr: "admin",
       pwd: "Password123!",
       loginProgess: false,
-      msg_err_login: "",
+      msg_err_login: ""
     };
   },
-  mounted () {
-     this.$snotify.success("message", "title", {
-            timeout: 2000,
-            showProgressBar: true,
-            closeOnClick: true,
-          });},
+  mounted() {},
   methods: {
     // async loadConfig() {
     //   console.log("loadConfig");

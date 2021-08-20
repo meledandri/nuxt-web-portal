@@ -127,6 +127,21 @@ Namespace Controllers
                     db.SaveChanges()
                 End If
 
+                Dim mdc As New mdClass
+                mdc.mdClassName = "MD Classe 1"
+                db.mdClass.Add(mdc)
+                db.SaveChanges()
+
+                Try
+                    Dim mda As New mdActivity
+                    mda.mdActivityName = "Registrazione Prodotto"
+                    db.mdActivity.Add(mda)
+                    db.SaveChanges()
+
+                Catch ex As Exception
+                    log.Error("Errore nell'inserimento di un record in mdActivity", ex)
+                End Try
+
 
 
                 Dim cp As New Companies

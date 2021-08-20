@@ -6,6 +6,7 @@ Imports System.Web.Http
 Imports Newtonsoft.Json
 Imports System.Data.Entity.Migrations
 Imports log4net
+Imports System.Web.Http.ModelBinding
 
 Namespace Controllers
     <RoutePrefix("api")>
@@ -46,7 +47,7 @@ Namespace Controllers
                 Dim d As New FabListDetailDataBinding
 
                 Dim u As List(Of UserInfo) = (From ut In db.Users Where ut.companyID = c.companyID
-                                              Select New UserInfo With {.UserName = ut.UserName, .DisplayName = ut.DisplayName, .email = ut.email, .userID = ut.userID, .password = ""}).ToList
+                                              Select New UserInfo With {.UserName = ut.UserName, .DisplayName = ut.DisplayName, .email = ut.email, .userID = ut.userID, .password = "", .companyID = ut.companyID}).ToList
                 d.users = u
                 c.details = d
             Next
@@ -66,64 +67,138 @@ Namespace Controllers
         End Function
 
 
-        <Route("fabdata")>
-        Public Function PostFabData(model As LoginBindingModel) As JRisposta
+
+
+        ''' <summary>
+        ''' Controller per la registrazione dei dati utente (nuovi o presenti) 
+        ''' </summary>
+        ''' <param name="model"></param>
+        ''' <returns></returns>
+        <Route("saveUser")>
+        Public Function PostSaveUser(model As UserInfo) As JRisposta
+            Dim ut As New Users
             Dim r As New JRisposta
             If Not ModelState.IsValid Then
                 r.stato = JRisposta.Stati.Errato
-                r.add("ModelState", ModelState.Values)
+                r.add("ModelState", getModelStateMessages(ModelState))
                 r.messaggio = "Errore nei dati trasmessi"
                 Return r
             End If
-            Dim pwd = cripta(model.password)
-            Dim usr As Users = (From u In db.Users
-                                Join c In db.Companies On u.companyID Equals c.companyID
-                                Where u.UserName = model.UserName And u.password = pwd And u.Disabled = False And u.isHidden = False And c.isHidden = False
-                                Select u).FirstOrDefault
 
-            If IsNothing(usr) Then
-                r.stato = JRisposta.Stati.Errato
-                r.messaggio = "Le credenziali fornite non sono corrette."
+            If model.userID = "0" Then
+                '#### Inserire tutte le verifiche del caso
+                With ut
+                    .userID = System.Guid.NewGuid.ToString()
+                    .UserName = model.UserName
+                    .DisplayName = model.DisplayName
+                    .email = model.email
+                    .password = cripta(model.password)
+                    .companyID = model.companyID
+                    .PasswordMustChange = True
+                    '.insertDate = Now
+                End With
+
+                Try
+                    db.Users.Add(ut)
+                    db.SaveChanges()
+                    r.stato = JRisposta.Stati.Corretto
+                    r.messaggio = "Utente registrato correttamete"
+                Catch ex As Exception
+                    r.stato = JRisposta.Stati.Errato
+                    r.messaggio = ex.Message
+                End Try
+
             Else
-                Dim ut As New JRisposta(True)
-                ut.add("UserName", usr.UserName)
-                ut.add("DisplayName", usr.DisplayName)
-                ut.add("companyID", usr.companyID)
-                ut.add("email", usr.email)
-                ut.add("lastAccess", usr.lastAccess)
-                ut.add("PasswordMustChange", usr.PasswordMustChange)
-                ut.add("TwoFactorEnabled", usr.TwoFactorEnabled)
-                Dim cmp As Companies = (From c In db.Companies Where c.companyID = usr.companyID And c.isHidden = False Select c).FirstOrDefault
-                If Not IsNothing(cmp) Then
-                    ut.add("BusinessName", cmp.BusinessName)
-                    ut.add("area", IIf(cmp.companyID = 1, "on", "fab"))
-                End If
-
-                usr.lastAccess = Now
-                usr.AccessFailedCount = 0
-                db.Users.Attach(usr)
-                db.Entry(usr).State = EntityState.Modified
-                db.SaveChanges()
-
-                db.Database.ExecuteSqlCommand("DELETE FROM UsersTokens where userID = '" & usr.userID & "'")
-                Dim tk As New UsersTokens
-                tk.userID = usr.userID
-                Dim dl = New DateTime(Now.Year, Now.Month, Now.Day).AddDays(1)
-                tk.deadline = dl
-
-                db.UsersTokens.Add(tk)
-                db.SaveChanges()
-
-                db.UsersTokens.Add(tk)
-
-                ut.add("Token", tk.token)
-
-                Dim mn As List(Of AppMenu) = (From m In db.AppMenu Where m.destination = "on" And m.flagVisible = True Select m Order By m.order, m.Name).ToList
-                r.add("appMenu", mn)
-
-                r.add("userInfo", ut)
+                r.stato = JRisposta.Stati.Errato
+                r.messaggio = "Errore nei dati trasmessi"
             End If
 
+            Dim ui As New UserInfo
+            With ui
+                .companyID = ut.companyID
+                .DisplayName = ut.DisplayName
+                .email = ut.email
+                .password = ""
+                .userID = ut.userID
+                .UserName = ut.UserName
+            End With
+
+            r.add("userInfo", ui)
+            Return r
+        End Function
+
+
+        <Route("saveCompany")>
+        Public Function PostSaveCompany(model As FabListDataBinding) As JRisposta
+            Dim r As New JRisposta
+            If Not ModelState.IsValid Then
+                r.stato = JRisposta.Stati.Errato
+                r.add("ModelState", getModelStateMessages(ModelState))
+                r.messaggio = "Errore nei dati trasmessi"
+                Return r
+            End If
+            Dim cr As CompanyRoles = (From nr In db.CompanyRoles Where nr.companyRoleID = model.companyRoleID Or nr.companyRoleName = model.companyRoleName).FirstOrDefault
+            If IsNothing(cr) Then cr = New CompanyRoles
+            cr.companyRoleName = model.companyRoleName
+            db.CompanyRoles.AddOrUpdate(cr)
+            db.SaveChanges()
+            If model.companyID = "0" Then   'Nuova Azienda
+                Dim nc As New Companies
+                With nc
+                    .BusinessName = model.BusinessName
+                End With
+                Try
+                    db.Companies.Add(nc)
+                    db.SaveChanges()
+                    model.companyID = nc.companyID
+
+
+
+
+                    Dim ncd As New CompanyDetail
+                    With ncd
+                        .companyID = model.companyID
+                        .companyRoleID = cr.companyRoleID
+                        .country = model.country
+                        .SRN = model.SRN
+                    End With
+                    db.CompanyDetail.Add(ncd)
+                    db.SaveChanges()
+
+                Catch ex As Exception
+                    r.stato = JRisposta.Stati.Errato
+                    r.messaggio = ex.Message
+                End Try
+
+
+            Else    ' Modifica Azienda
+                Dim c As Companies = (From cp In db.Companies Where cp.companyID = model.companyID Select cp).FirstOrDefault
+                If Not IsNothing(c) Then
+                    c.BusinessName = model.BusinessName
+                    Try
+                        db.Companies.AddOrUpdate(c)
+                        db.SaveChanges()
+
+                        Dim cd As CompanyDetail = (From d In db.CompanyDetail Where d.companyID = model.companyID Select d).FirstOrDefault
+                        If Not IsNothing(cd) Then
+                            With cd
+                                .companyRoleID = cr.companyRoleID
+                                .country = model.country
+                                .SRN = model.SRN
+                            End With
+                            db.Companies.AddOrUpdate(c)
+                            db.SaveChanges()
+
+                        End If
+                    Catch ex As Exception
+                        r.stato = JRisposta.Stati.Errato
+                        r.messaggio = ex.Message
+                    End Try
+                End If
+            End If
+
+
+            r.add("companyInfo", model)
             Return r
 
         End Function

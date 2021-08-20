@@ -7,15 +7,15 @@ export default {
       console.log("loadConfig");
       this.configLoading = true;
       try {
-      var config = (await this.$axios.get("appconfig")).data;
-      // for (var p in config) {
-      //   this.appConfig[config[p].Parameter] = config[p].Value;
-      //   console.log("Parametro acquisito: " + config[p].Parameter)
-      // }
-      this.$store.commit("config/updateAppConfig", { Items: config });
-        
+        var config = (await this.$axios.get("appconfig")).data;
+        // for (var p in config) {
+        //   this.appConfig[config[p].Parameter] = config[p].Value;
+        //   console.log("Parametro acquisito: " + config[p].Parameter)
+        // }
+        this.$store.commit("config/updateAppConfig", { Items: config });
       } catch (error) {
-        viewMessageError(error, "APP Configuration")
+        this.configLoading = false;
+        this.viewMessageError(error, "APP Configuration");
       }
       this.configLoading = false;
     },
@@ -48,66 +48,141 @@ export default {
           this.viewMessage("error", e.response.data.Message);
         });
     },
-
-    viewMessageError(error, title) {
-        var msg = "Errore generico";
-        var timeout = 2000;
-        console.log("log errore");
-        if (error) {
-          if (error.response) {
-            if (error.response.data) {
-              if (error.response.data.Message) {
-                //error.response.data.Message
-                msg = error.response.data.Message;
-              }
-              if (error.response.data.ModelState) {
-                var m = [];
-                var t = 0;
-                for (var n in error.response.data.ModelState[""]) {
-                  //error.response.data.ModelState
-                  m.push(error.response.data.ModelState[""][n]);
-                  t++;
-                }
-                msg = m.join("\n\n");
-                timeout = timeout * t;
-              }
-            }
-          } else if (error.Message) {
-            //error.Message
-            msg = error.Message;
-          } else if (error.message) {
-            //error.message
-            msg = error.message;
+    async saveUser() {
+      this.user.progress = true;
+      const params = {
+        userID: this.user.userInfo.userID,
+        UserName: this.user.userInfo.UserName,
+        password: this.user.userInfo.password,
+        DisplayName: this.user.userInfo.DisplayName,
+        email: this.user.userInfo.email,
+        companyID: this.company.companyInfo.companyID,
+      };
+      console.log("saveUser");
+      await this.$axios
+        .post("saveUser", params)
+        .then(response => {
+          this.user.progress = false;
+          var r = response.data;
+          if (r.stato < 0) {
+            // Errore login
+            this.viewMessageError(response);
+          } else {
+            //var Info = r.userInfo;
+            this.viewMessage("success", r.messaggio, "SAVE USER");
+            this.user.dialog = false;
+            this.loadDataList();
           }
-        } else {
-          msg = "Errore non gestito";
-        }
-
-        this.$snotify.error(msg, title, {
-          timeout: timeout,
-          showProgressBar: true,
-          closeOnClick: true,
+        })
+        .catch(e => {
+          this.user.progress = false;
+          this.viewMessageError(e);
         });
-      },
-      viewMessage(type, message, title) {
-        switch (type) {
-          case "success":
-            this.$snotify.success(message, title, {
-              timeout: 2000,
-              showProgressBar: true,
-              closeOnClick: true,
-            });
-            break;
-          case "error":
-            this.$snotify.error(message, title, {
-              timeout: 5000,
-              showProgressBar: true,
-              closeOnClick: false,
-              pauseOnHover: true,
-            });
-            break;
+    },
+    async saveCompany() {
+      this.user.progress = true;
+      const params = {
+        companyID: this.company.companyInfo.companyID,
+        BusinessName: this.company.companyInfo.BusinessName,
+        companyRoleID: this.company.companyInfo.companyRoleID,
+        companyRoleName: this.company.companyInfo.companyRoleName,
+        SRN: this.company.companyInfo.SRN,
+        country: this.company.companyInfo.country,
+        details: {users:[]}
+      };
+      console.log("saveCompany");
+      await this.$axios
+        .post("saveCompany", params)
+        .then(response => {
+          this.user.progress = false;
+          var r = response.data;
+          if (r.stato < 0) {
+            // Errore login
+            this.viewMessageError(response);
+          } else {
+            //var Info = r.userInfo;
+            this.viewMessage("success", r.messaggio, "SAVE COMPANY");
+            this.company.dialog = false;
+            this.loadDataList();
+          }
+        })
+        .catch(e => {
+          this.user.progress = false;
+          this.viewMessageError(e);
+        });
+    },
+    viewMessageError(error, title) {
+      var msg = "Errore generico";
+      var timeout = 2000;
+      console.log("log errore");
+      if (error) {
+        if (error.response) {
+          if (error.response.data) {
+            if (error.response.data.Message) {
+              //error.response.data.Message
+              msg = error.response.data.Message;
+            }
+            if (error.response.data.ModelState) {
+              // var m = [];
+              // var t = 0;
+              // for (var n in error.response.data.ModelState[""]) {
+              //   //error.response.data.ModelState
+              //   m.push(error.response.data.ModelState[""][n]);
+              //   t++;
+              // }
+              var msgs = this.ModelStateMessage(error.response.data.ModelState);
+              msg = msgs.join("\n\n");
+              timeout = timeout * msgs.length;
+            }
+          }
+        } else if (error.data && error.data.ModelState) {
+          var msgs = this.ModelStateMessage(error.data.ModelState);
+          msg = msgs.join("\n\n");
+          timeout = timeout * msgs.length;
+        } else if (error.Message) {
+          //error.Message
+          msg = error.Message;
+        } else if (error.message) {
+          //error.message
+          msg = error.message;
         }
-      },
+      } else {
+        msg = "Errore non gestito";
+      }
+
+      this.$snotify.error(msg, title, {
+        timeout: timeout,
+        showProgressBar: true,
+        closeOnClick: true
+      });
+    },
+    ModelStateMessage(ms) {
+      var m = [];
+      for (var n in ms) {
+        //error.response.data.ModelState
+        m.push(ms[n]);
+      }
+      return m;
+    },
+    viewMessage(type, message, title) {
+      switch (type) {
+        case "success":
+          this.$snotify.success(message, title, {
+            timeout: 2000,
+            showProgressBar: true,
+            closeOnClick: true
+          });
+          break;
+        case "error":
+          this.$snotify.error(message, title, {
+            timeout: 5000,
+            showProgressBar: true,
+            closeOnClick: false,
+            pauseOnHover: true
+          });
+          break;
+      }
+    }
   }, //l'oggetto metodi contiene una coppia chiave-valore di nomi di metodo e la relativa definizione di funzione. Questi fanno parte del comportamento del componente Vue che l'altro componente può attivare.
   computed: {
     appConfig: {
@@ -163,9 +238,10 @@ export default {
     availableLocales() {
       return this.$i18n.locales.filter(i => i.code !== this.$i18n.locale);
     },
-    language(){
-      return this.$i18n.locales.filter(i => i.code == this.$i18n.locale)[0].name;
-    },
+    language() {
+      return this.$i18n.locales.filter(i => i.code == this.$i18n.locale)[0]
+        .name;
+    }
   }, // contiene un oggetto che definisce le funzioni getter e setter per le proprietà calcolate del componente Vue. Le proprietà calcolate influenzano un aggiornamento reattivo sul DOM ogni volta che il loro valore cambia.
   props: {}, //contiene un array o un oggetto di proprietà specifiche del componente Vue.js, impostato al momento dell'invocazione.
   watch: {}, // questo oggetto tiene traccia dei cambiamenti nel valore di una qualsiasi delle proprietà definite come parte dei "dati" impostando le funzioni per controllarli.

@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card height="100%">
     <v-card-title>
       <v-text-field
         v-model="search"
@@ -28,7 +28,7 @@
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
           <!-- Dialog per i dati dell'Azienda -->
-          <v-dialog v-model="dialog" max-width="800px">
+          <v-dialog v-model="company.dialog" max-width="800px">
             <template v-slot:activator="{ on, attrs }">
               <v-btn color="primary" class="mb-2" v-bind="attrs" v-on="on" small
                 ><v-icon color="success" class="mr-2" small>fa-plus</v-icon>
@@ -45,7 +45,7 @@
                   <v-row>
                     <v-col cols="12">
                       <v-text-field
-                        v-model="editedItem.BusinessName"
+                        v-model="company.companyInfo.BusinessName"
                         label="BusinessName"
                         dense
                         outlined
@@ -53,26 +53,43 @@
                     </v-col>
                     <v-col cols="12">
                       <v-text-field
-                        v-model="editedItem.SRN"
+                        v-model="company.companyInfo.SRN"
                         label="SRN"
                         dense
                         outlined
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12">
-                      <v-select
-                        v-model="editedItem.companyRoleID"
+                      <v-combobox
+                        v-model="companyRole"
                         :items="Roles"
                         item-value="companyRoleID"
                         item-text="companyRoleName"
+                        :search-input.sync="company.search"
+                        hint="Maximum of 5 tags"
                         label="Company Role"
-                        dense
+                        return-object
+                        auto-select-first
                         outlined
-                      ></v-select>
+                        clearable
+                      >
+                        <template v-slot:no-data>
+                          <v-list-item>
+                            <v-list-item-content>
+                              <v-list-item-title>
+                                No results matching "<strong>{{
+                                  search
+                                }}</strong
+                                >". Press <kbd>enter</kbd> to create a new one
+                              </v-list-item-title>
+                            </v-list-item-content>
+                          </v-list-item>
+                        </template>
+                      </v-combobox>
                     </v-col>
                     <v-col cols="12">
                       <v-text-field
-                        v-model="editedItem.country"
+                        v-model="company.companyInfo.country"
                         label="Country"
                         dense
                         outlined
@@ -84,10 +101,10 @@
 
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="close">
+                <v-btn color="blue darken-1" text @click="closeDCompany()">
                   Cancel
                 </v-btn>
-                <v-btn color="blue darken-1" text @click="save">
+                <v-btn color="blue darken-1" text @click="saveCompany">
                   Save
                 </v-btn>
               </v-card-actions>
@@ -114,7 +131,7 @@
           </v-dialog>
 
           <!-- Dialog per la gestione degli utenti -->
-          <v-dialog v-model="dialogUsers" max-width="800px">
+          <v-dialog v-model="user.dialog" max-width="800px">
             <v-card>
               <v-toolbar color="indigo" dark>
                 <v-app-bar-nav-icon></v-app-bar-nav-icon>
@@ -132,16 +149,16 @@
 
               <v-card-text>
                 <v-container>
-                  <v-tabs v-model="userTab" id="dUsers">
+                  <v-tabs v-model="user.tab" id="dUsers">
                     <v-tabs-slider></v-tabs-slider>
 
-                    <v-tabs-items v-model="userTab">
+                    <v-tabs-items v-model="user.tab">
                       <v-tab-item>
                         <v-row>
                           <v-col cols="12" class="my-2">
-                            <v-list dense v-if="editedIndex > -1">
+                            <v-list two-line dense v-if="editedIndex > -1">
                               <v-list-item
-                                v-for="user in editedItem.details.users"
+                                v-for="user in company.companyInfo.details.users"
                                 :key="user.userID"
                                 dense
                               >
@@ -150,12 +167,18 @@
                                 </v-list-item-avatar>
                                 <v-list-item-content>
                                   <v-list-item-title>
-                                    {{ user.DisplayName }} ({{ user.email }})
+                                    {{ user.DisplayName }}
                                   </v-list-item-title>
+                                  <v-list-item-subtitle>
+                                    <b style="color: #4183a9;">{{
+                                      user.UserName
+                                    }}</b>
+                                    ({{ user.email }})
+                                  </v-list-item-subtitle>
                                 </v-list-item-content>
                                 <v-icon
                                   small
-                                  class="mr-2 d-inline-block"
+                                  class="mx-2 d-inline-block"
                                   @click="userReset(item)"
                                 >
                                   fas fa-user-check
@@ -163,7 +186,7 @@
                                 <v-icon
                                   small
                                   color="red"
-                                  class="mr-2 d-inline-block"
+                                  class="mx-2 d-inline-block"
                                   @click="userDisable(item)"
                                 >
                                   fas fa-user-slash
@@ -178,7 +201,7 @@
                         <v-row class="ma-3">
                           <v-col cols="12">
                             <v-text-field
-                              v-model="editedItem.country"
+                              v-model="user.userInfo.UserName"
                               label="User Name"
                               dense
                               outlined
@@ -187,7 +210,7 @@
 
                           <v-col cols="12">
                             <v-text-field
-                              v-model="editedItem.country"
+                              v-model="user.userInfo.DisplayName"
                               label="Display name"
                               dense
                               outlined
@@ -196,7 +219,7 @@
 
                           <v-col cols="12">
                             <v-text-field
-                              v-model="editedItem.country"
+                              v-model="user.userInfo.email"
                               label="email"
                               dense
                               outlined
@@ -204,8 +227,17 @@
                           </v-col>
 
                           <v-col cols="12">
-                            <v-btn @click="userTab = 0">Cancel</v-btn>
-                            <v-btn>Save</v-btn>
+                            <v-text-field
+                              v-model="user.userInfo.password"
+                              label="Temporary password"
+                              dense
+                              outlined
+                            ></v-text-field>
+                          </v-col>
+
+                          <v-col cols="12">
+                            <v-btn @click="user.tab = 0">Cancel</v-btn>
+                            <v-btn @click="saveUser()">Save</v-btn>
                           </v-col>
                         </v-row>
                       </v-tab-item>
@@ -270,7 +302,6 @@ export default {
       ],
       Items: [],
       Roles: [],
-      dialog: false,
       dialogDelete: false,
       dialogUsers: false,
       dialogTasks: false,
@@ -291,19 +322,77 @@ export default {
         SRN: "",
         country: ""
       },
-      newUser: {
-        userID: "",
-        UserName: "",
-        password: "",
-        DisplayName: "",
-        email: ""
+      user: {
+        progress: false,
+        tab: 0,
+        dialog: false,
+        userInfo: {
+          userID: "",
+          UserName: "",
+          password: "",
+          DisplayName: "",
+          email: "",
+          companyID: 0
+        }
       },
-      userTab: 0
+      company: {
+        progress: false,
+        tab: 0,
+        search: "",
+        dialog: false,
+        companyInfo: {
+          companyID: "0",
+          BusinessName: "",
+          companyRoleID: "",
+          companyRoleName: "",
+          SRN: "",
+          country: "",
+          details: {}
+        }
+      }
     };
   },
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New Item" : "Edit Item";
+    },
+    companyRole: {
+      get() {
+        var r = {
+          companyRoleID:
+            this.company.companyInfo.companyRoleID == undefined
+              ? 0
+              : this.company.companyInfo.companyRoleID,
+          companyRoleName:
+            this.company.companyInfo.companyRoleName == undefined
+              ? ""
+              : this.company.companyInfo.companyRoleName
+        };
+        return r;
+      },
+      set(v) {
+        console.log("computed\\companyRole\\set");
+
+        if (typeof v === "object" && v !== null) {
+          this.company.companyInfo.companyRoleID = v.companyRoleID;
+          this.company.companyInfo.companyRoleName = v.companyRoleName;
+        } else {
+          this.company.companyInfo.companyRoleID = 0;
+          this.company.companyInfo.companyRoleName = v;
+        }
+
+        var r = {
+          companyRoleID:
+            this.company.companyInfo.companyRoleID == undefined
+              ? 0
+              : this.company.companyInfo.companyRoleID,
+          companyRoleName:
+            this.company.companyInfo.companyRoleName == undefined
+              ? ""
+              : this.company.companyInfo.companyRoleName
+        };
+        return r;
+      }
     }
   },
 
@@ -329,23 +418,27 @@ export default {
       this.loadData = false;
     },
     fnNewUser() {
-      this.userID = "";
-      this.UserName = "";
-      this.password = "";
-      this.DisplayName = "";
-      this.email = "";
-      this.userTab = 1;
+      console.log("fnNewUser");
+      this.user.userInfo.userID = "0";
+      this.user.userInfo.UserName = "";
+      this.user.userInfo.password = "";
+      this.user.userInfo.DisplayName = "";
+      this.user.userInfo.email = "";
+      this.user.userInfo.companyID = this.editedItem.companyID;
+      this.user.tab = 1;
     },
     editItem(item) {
+      console.log("editItem");
       this.editedIndex = this.Items.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
+      this.company.companyInfo = Object.assign({}, item);
+      this.company.dialog = true;
     },
 
     usersItem(item) {
+      this.user.tab = 0;
       this.editedIndex = this.Items.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialogUsers = true;
+      this.company.companyInfo = Object.assign({}, item);
+      this.user.dialog = true;
     },
 
     deleteItem(item) {
@@ -359,10 +452,10 @@ export default {
       this.closeDelete();
     },
 
-    close() {
-      this.dialog = false;
+    closeDCompany() {
+      this.company.dialog = false;
       this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
+        //this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
       });
     },
@@ -376,7 +469,7 @@ export default {
     },
 
     closeUsers() {
-      this.dialogUsers = false;
+      this.user.dialog = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
@@ -390,13 +483,18 @@ export default {
         this.Items.push(this.editedItem);
       }
       this.close();
-    }
+    },
+    saveNewUser() {}
   }
 };
 </script>
 
-<style >
+<style>
 #dUsers .v-tabs-bar {
   display: none;
+}
+
+#dUsers .v-list-item {
+  border-bottom: 1px dashed #95a2b1;
 }
 </style>

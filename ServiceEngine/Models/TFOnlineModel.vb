@@ -295,10 +295,41 @@ Public Class CompanyRoles
     <Key>
     <Column(Order:=0)>
     Public Property companyRoleID As Integer
-    <StringLength(20)>
+    <StringLength(50)>
     <Required>
     <Column(Order:=1)>
     Public Property companyRoleName As String = ""
+End Class
+
+''' <summary>
+''' Tabella che raccoglie tutte le tipologie di Classi dei MD
+''' </summary>
+Public Class mdClass
+    <Required>
+    <Key>
+    <Column(Order:=0)>
+    Public Property mdClassID As Integer
+    <StringLength(50)>
+    <Required>
+    <Column(Order:=1)>
+    Public Property mdClassName As String = ""
+End Class
+
+
+
+
+''' <summary>
+''' Tabella che raccoglie tutte le tipologie di attività che possono essere eseguite sui TF
+''' </summary>
+Public Class mdActivity
+    <Required>
+    <Key>
+    <Column(Order:=0)>
+    Public Property mdActivityID As Integer
+    <StringLength(50)>
+    <Required>
+    <Column(Order:=1)>
+    Public Property mdActivityName As String = ""
 End Class
 
 
@@ -339,6 +370,9 @@ End Class
 Public Class UserInfo
     <Required>
     Public Property userID As String = ""
+
+    <Required>
+    Public Property companyID As Integer = 0
 
     <Required>
     <StringLength(50)>

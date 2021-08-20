@@ -1,4 +1,5 @@
 ﻿Imports System.Reflection
+Imports System.Web.Http.ModelBinding
 
 Public Class ClassiJSON
     Public Function toJDate(ByVal Data As Date) As String
@@ -51,7 +52,7 @@ End Class
 
 
 
-<Serializable()> _
+<Serializable()>
 Public Class classeErrore
     Private _Numero As Integer
     Private _Messaggio As String = ""
@@ -97,7 +98,7 @@ Public Class classeErrore
 End Class
 
 
-<Serializable()> _
+<Serializable()>
 Public Class classeUtente
     Private _Utente As String
     Private _NomeCompleto As String
@@ -143,7 +144,7 @@ Public Class classeUtente
 End Class
 
 
-<Serializable()> _
+<Serializable()>
 Public Class classeOraServer
     Private _data As Date = Now()
 
@@ -160,7 +161,7 @@ Public Class classeOraServer
 End Class
 
 
-<Serializable()> _
+<Serializable()>
 Public Class classeGenerica
     Private xdata As New Collection
     Public ReadOnly Property Data() As Collection
@@ -188,7 +189,7 @@ Public Class classeGenerica
 End Class
 
 
-<Serializable()> _
+<Serializable()>
 Public Class classeCampo
     Private _Campo As String = ""
     Private _Valore As Object
@@ -296,6 +297,18 @@ End Module
 
 
 Module GeneralFunctions
+    Function getModelStateMessages(msd As ModelStateDictionary) As List(Of String)
+        Dim le As List(Of String) = New List(Of String)
+        For Each ms As ModelState In msd.Values
+            For Each err As ModelError In ms.Errors
+                le.Add(err.ErrorMessage)
+            Next
+        Next
+        Return le
+    End Function
+
+
+
 
     Function cripta(strTesto, Optional intKey = 5) As String
         Dim ctInd

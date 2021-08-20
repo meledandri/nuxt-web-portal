@@ -34,7 +34,7 @@ Public Class Companies
     Public Property isHidden As Boolean = False
 
     <Column(Order:=3)>
-    Public Property insertDate As Date = New Date()
+    Public Property insertDate As Date = Now
 
 
 
@@ -96,7 +96,7 @@ Public Class Users
     Public Property isHidden As Boolean = False
 
     <Column(Order:=11)>
-    Public Property insertDate As Date = New Date()
+    Public Property insertDate As Date = Now
     <Column(Order:=12)>
     Public Property lastAccess As Nullable(Of Date) = Nothing
 
