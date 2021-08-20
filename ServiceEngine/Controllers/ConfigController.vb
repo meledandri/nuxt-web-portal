@@ -103,6 +103,21 @@ Namespace Controllers
             Dim li As Integer = (From ci In db.Companies).Count
             If li = 0 Then
                 log.Info("[INIT]" & vbTab & "ConfigController\Init")
+
+                Dim ac As New AppConfig
+                With ac
+                    .App = "common"
+                    .Parameter = "primary-color"
+                    .Value = "#3333FF"
+                End With
+                db.AppConfig.Add(ac)
+                db.SaveChanges()
+
+
+
+
+
+
                 Dim cn As New Companies
                 cn.BusinessName = "Gruppo SASI"
                 cn.isHidden = False
@@ -132,8 +147,8 @@ Namespace Controllers
                 db.mdClass.Add(mdc)
                 db.SaveChanges()
 
+                Dim mda As New mdActivity
                 Try
-                    Dim mda As New mdActivity
                     mda.mdActivityName = "Registrazione Prodotto"
                     db.mdActivity.Add(mda)
                     db.SaveChanges()
@@ -182,22 +197,65 @@ Namespace Controllers
                 db.SaveChanges()
 
 
-                Dim uc2 As New Users
-                With uc2
-                    .DisplayName = "MD User 2"
-                    .email = "user2.md-pharma.srl"
-                    .insertDate = Now
-                    .password = cripta("Password123!")
-                    .PasswordMustChange = True
-                    .LockoutEnabled = True
-                    .UserName = "user2"
+                'Dim uc2 As New Users
+                'With uc2
+                '    .DisplayName = "MD User 2"
+                '    .email = "user2.md-pharma.srl"
+                '    .insertDate = Now
+                '    .password = cripta("Password123!")
+                '    .PasswordMustChange = True
+                '    .LockoutEnabled = True
+                '    .UserName = "user2"
+                '    .companyID = cp.companyID
+                'End With
+                'db.Users.Add(uc2)
+                'db.SaveChanges()
+
+
+                'Prodotto
+                Dim p As New Products
+                With p
+                    .productName = "Prodotto demo Cerotto"
+                    .mdClassID = mdc.mdClassID
                     .companyID = cp.companyID
                 End With
-                db.Users.Add(uc2)
+                db.Products.Add(p)
                 db.SaveChanges()
 
+                Dim s As New Structures
+                With s
+                    .structureName = "File ZIP"
+                    .isMaster = False
+                End With
+                db.Structures.Add(s)
+                db.SaveChanges()
 
+                Dim ed As New Editions
+                With ed
+                    .editionName = "Prima Edizione"
+                    .productID = p.productID
+                    .certificationPlan = "IT-MD-000001234"
+                    .mdActivityID = mda.mdActivityID
+                    .editionNotes = "Note automatiche prima edizione."
+                    .deadline = Now.AddDays(20)
+                    .StructureID = s.structureID
+                End With
+                db.Editions.Add(ed)
+                db.SaveChanges()
 
+                Dim ts As New mdTasksStates
+                ts.mdTasksStatesName = "Creato"
+                db.mdTasksStates.Add(ts)
+                db.SaveChanges()
+
+                Dim t As New mdTasks
+                With t
+                    .editionID = ed.editionID
+                    .mdTasksStatesID = ts.mdTasksStatesID
+                    .ownerID = uc.userID
+                End With
+                db.mdTasks.Add(t)
+                db.SaveChanges()
 
 
                 insMenu()

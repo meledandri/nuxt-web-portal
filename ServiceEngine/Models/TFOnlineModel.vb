@@ -50,7 +50,7 @@ Public Class Editions
 
     <Required>
     <Column(Order:=4)>
-    Public Property activityID As Integer
+    Public Property mdActivityID As Integer
 
     <MaxLength>
     <Column(Order:=5)>
@@ -333,6 +333,54 @@ Public Class mdActivity
 End Class
 
 
+''' <summary>
+''' Tabella che contiene gli stati del processo di acquisizione e valutazione
+''' </summary>
+Public Class mdTasksStates
+    <Key>
+    <Column(Order:=0)>
+    Public Property mdTasksStatesID As Integer
+    <Required>
+    <StringLength(20)>
+    <Column(Order:=1)>
+    Public Property mdTasksStatesName As String = ""
+
+End Class
+
+
+
+''' <summary>
+''' Tabella che elenca le attività di caricamento e valutazione svolte su una specifica Edizione
+''' </summary>
+Public Class mdTasks
+    <Key>
+    <Column(Order:=0)>
+    Public Property mdTaskID As Integer
+
+    <Required>
+    <Column(Order:=1)>
+    Public Property editionID As Integer
+
+    <Required>
+    <Column(Order:=2)>
+    Public Property mdTasksStatesID As Integer
+
+    <Required>
+    <Column(Order:=3)>
+    Public Property insertDate As Date = Now
+
+
+    <Required>
+    <Column(Order:=4)>
+    Public Property ownerID As String
+
+    <Required>
+    <Column(Order:=5)>
+    Public Property ModDate As Date = Now
+
+
+End Class
+
 
 
 
@@ -391,3 +439,122 @@ Public Class UserInfo
 End Class
 
 
+Public Class ProductInfoDataBinding
+    <Required>
+    Public Property companyID As Integer = 0
+    <Required>
+    <StringLength(50)>
+    Public Property BusinessName As String = ""
+    <Required>
+    Public Property productID As Integer
+    <Required>
+    <MaxLength>
+    Public Property productName As String = ""
+
+    <Required>
+    Public Property mdClassID As Integer
+    <Required>
+    <StringLength(50)>
+    Public Property mdClassName As String = ""
+
+    <Required>
+    Public Property editionID As Integer
+    <Required>
+    <MaxLength>
+    Public Property editionName As String = ""
+
+    <StringLength(20)>
+    Public Property certificationPlan As String = ""
+
+    <Required>
+    Public Property mdActivityID As Integer
+    <Required>
+    <StringLength(50)>
+    Public Property mdActivityName As String = ""
+
+    <MaxLength>
+    Public Property editionNotes As String = ""
+
+    Public Property deadline As Nullable(Of Date)
+
+    <Required>
+    Public Property StructureID As Integer
+    <Required>
+    <MaxLength>
+    Public Property structureName As String = ""
+
+    <Required>
+    Public Property insertDate As Date = Now
+
+End Class
+
+
+Public Class TaskInfoDataBindig
+    <Required>
+    Public Property companyID As Integer = 0
+    <Required>
+    <StringLength(50)>
+    Public Property BusinessName As String = ""
+    <Required>
+    Public Property productID As Integer
+    <Required>
+    <MaxLength>
+    Public Property productName As String = ""
+
+    <Required>
+    Public Property mdClassID As Integer
+    <Required>
+    <StringLength(50)>
+    Public Property mdClassName As String = ""
+
+    <Required>
+    Public Property editionID As Integer
+    <Required>
+    <MaxLength>
+    Public Property editionName As String = ""
+
+    <StringLength(20)>
+    Public Property certificationPlan As String = ""
+
+    <Required>
+    Public Property mdActivityID As Integer
+    <Required>
+    <StringLength(50)>
+    Public Property mdActivityName As String = ""
+
+    <MaxLength>
+    Public Property editionNotes As String = ""
+
+    Public Property deadline As Nullable(Of Date)
+
+    <Required>
+    Public Property StructureID As Integer
+    <Required>
+    <MaxLength>
+    Public Property structureName As String = ""
+
+    <Required>
+    Public Property mdTaskID As Integer
+    <Required>
+    Public Property mdTaskStatesID As Integer
+    <Required>
+    <MaxLength>
+    Public Property mdTaskStatesName As String = ""
+
+    <Required>
+    Public Property insertDate As Date = Now
+
+    <Required>
+    Public Property modDate As Date = Now
+
+    Public Property ownerID As String = ""
+    <StringLength(50)>
+    Public Property UserName As String = ""
+
+    <StringLength(20)>
+    Public Property DisplayName As String = ""
+
+    <StringLength(50)>
+    Public Property email As String = ""
+
+End Class
