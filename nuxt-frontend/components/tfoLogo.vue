@@ -1,14 +1,14 @@
 <template>
   <img
-    class="VuetifyLogo"
-    alt="Vuetify Logo"
+    class="AppLogo"
+    alt="TechFile Online Logo"
     src="/tfo-logo.png"
   >
 </template>
 
 <style>
-.VuetifyLogo {
-  height: 180px;
+.AppLogo {
+  height: 30px;
   width: 180px;
   transform: rotateY(560deg);
   animation: turn 3.5s ease-out forwards 1s;

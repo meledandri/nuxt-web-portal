@@ -278,10 +278,160 @@
               </v-toolbar>
 
               <v-card-text>
-                <task-activity
-                  :selectedCompany.sync="selectedCompany"
-                  ref="Activities"
-                />
+                <v-container>
+                  <v-tabs v-model="task.tab" id="dTasks">
+                    <v-tabs-slider></v-tabs-slider>
+
+                    <v-tabs-items v-model="task.tab">
+                      <v-tab-item>
+                        <v-row>
+                          <v-col cols="12" class="my-2">
+                            <v-list two-line dense v-if="editedIndex > -1">
+                              <v-list-item
+                                v-for="task in company.companyInfo.details
+                                  .tasks"
+                                :key="task.taskID"
+                                dense
+                              >
+                                <v-list-item-avatar>
+                                  <v-icon small>fas fa-thumbtack</v-icon>
+                                </v-list-item-avatar>
+                                <v-list-item-content>
+                                  <v-list-item-title>
+                                    {{ task.productName }} [{{
+                                      task.mdClassName
+                                    }}]
+                                  </v-list-item-title>
+                                  <v-list-item-subtitle>
+                                    <b style="color: #4183a9;">{{
+                                      task.mdActivityName
+                                    }}</b>
+                                    ({{ task.mdTaskStatesName }})
+                                  </v-list-item-subtitle>
+                                </v-list-item-content>
+
+                                <v-icon small class="mx-2 d-inline-block">
+                                  fas fa-user-check
+                                </v-icon>
+                                <v-icon
+                                  small
+                                  color="red"
+                                  class="mx-2 d-inline-block"
+                                >
+                                  fas fa-user-slash
+                                </v-icon>
+                              </v-list-item>
+                            </v-list>
+                          </v-col>
+                        </v-row>
+                      </v-tab-item>
+
+                      <v-tab-item>
+                        <v-row class="ma-3">
+                          <v-col cols="12">
+                            <v-text-field
+                              v-model="task.taskInfo.productName"
+                              label="Product Name"
+                              dense
+                              outlined
+                            ></v-text-field>
+                          </v-col>
+
+                          <v-col cols="12" md="6">
+                            <v-combobox
+                              v-model="computedClass"
+                              :items="mdClass"
+                              item-value="mdClassID"
+                              item-text="mdClassName"
+                              label="Class Name"
+                              return-object
+                              auto-select-first
+                              outlined
+                              clearable
+                            >
+                              <template v-slot:no-data>
+                                <v-list-item>
+                                  <v-list-item-content>
+                                    <v-list-item-title>
+                                      No results matching "<strong>{{
+                                        search
+                                      }}</strong
+                                      >". Press <kbd>enter</kbd> to create a new
+                                      one
+                                    </v-list-item-title>
+                                  </v-list-item-content>
+                                </v-list-item>
+                              </template>
+                            </v-combobox>
+                          </v-col>
+
+
+
+
+                          <v-col cols="12" md="6">
+                            <v-combobox
+                              v-model="computedClass"
+                              :items="mdClass"
+                              item-value="mdClassID"
+                              item-text="mdClassName"
+                              label="Class Name"
+                              return-object
+                              auto-select-first
+                              outlined
+                              clearable
+                            >
+                              <template v-slot:no-data>
+                                <v-list-item>
+                                  <v-list-item-content>
+                                    <v-list-item-title>
+                                      No results matching "<strong>{{
+                                        search
+                                      }}</strong
+                                      >". Press <kbd>enter</kbd> to create a new
+                                      one
+                                    </v-list-item-title>
+                                  </v-list-item-content>
+                                </v-list-item>
+                              </template>
+                            </v-combobox>
+                          </v-col>
+
+
+
+
+
+
+
+
+
+
+                          <v-col cols="12">
+                            <v-text-field
+                              v-model="user.userInfo.email"
+                              label="email"
+                              dense
+                              outlined
+                            ></v-text-field>
+                          </v-col>
+
+                          <v-col cols="12">
+                            <v-text-field
+                              v-model="user.userInfo.password"
+                              label="Temporary password"
+                              dense
+                              outlined
+                            ></v-text-field>
+                          </v-col>
+
+                          <v-col cols="12">
+                            <v-btn @click="task.tab = 0">Cancel</v-btn>
+                            <v-btn @click="saveTask()">Save</v-btn>
+                          </v-col>
+                        </v-row>
+                      </v-tab-item>
+                    </v-tabs-items>
+                  </v-tabs>
+                </v-container>
               </v-card-text>
 
               <v-card-actions>
@@ -322,9 +472,7 @@
 </template>
 
 <script>
-import taskActivity from "~/components/taskActivity.vue";
 export default {
-  components: { taskActivity },
   layout: "on",
   data() {
     return {
@@ -340,11 +488,11 @@ export default {
         { text: "country", value: "country" },
         { text: "Actions", value: "actions", sortable: false }
       ],
-      Items: [],
-      Roles: [],
-      mdClass: [],
-      mdActivity: [],
-      Structures: [],
+        Items: [],
+        Roles: [],
+        mdClass: [],
+        mdActivity: [],
+        Structures: [],
       dialogDelete: false,
       dialogUsers: false,
       dialogTasks: false,
@@ -450,9 +598,8 @@ export default {
           UserName: "",
           DisplayName: "",
           email: ""
-        }
-      },
-      selectedCompany: 0
+        },
+      }
     };
   },
   computed: {
@@ -497,7 +644,7 @@ export default {
         return r;
       }
     },
-    computedClass: {
+     computedClass: {
       get() {
         var r = {
           mdClassID:
@@ -534,8 +681,8 @@ export default {
         };
         return r;
       }
-    }
-  },
+    },
+ },
 
   watch: {
     dialog(val) {
@@ -561,7 +708,6 @@ export default {
       this.Structures = data.Structures;
       this.loadData = false;
     },
-    changeTab(n) {},
     fnNewUser() {
       console.log("fnNewUser");
       this.user.userInfo.userID = "0";
@@ -625,20 +771,14 @@ export default {
       console.log("openTasks");
       this.editedIndex = this.Items.indexOf(item);
       this.company.companyInfo = Object.assign({}, item);
-      this.selectedCompany = item.companyID;
       this.task.dialog = true;
-      if (this.$refs.Activities) {
-        this.$refs.Activities.task.tab = 0;
-      }
     },
 
     newTask() {
       console.log("newTask");
       this.editedIndex = 1;
       this.task.taskInfo = Object.assign({}, this.task.taskDefault);
-      if (this.$refs.Activities) {
-        this.$refs.Activities.task.tab = 1;
-      }
+      this.task.tab = 1;
       this.task.dialog = true;
     },
 

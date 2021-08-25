@@ -2,7 +2,7 @@
   <v-row>
     <v-col class="text-center">
       <img
-        src="/v.png"
+        src="/tfo-logo.png"
         alt="Vuetify.js"
         class="mb-5"
       >

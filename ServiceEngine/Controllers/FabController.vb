@@ -49,6 +49,10 @@ Namespace Controllers
                 Dim u As List(Of UserInfo) = (From ut In db.Users Where ut.companyID = c.companyID
                                               Select New UserInfo With {.UserName = ut.UserName, .DisplayName = ut.DisplayName, .email = ut.email, .userID = ut.userID, .password = "", .companyID = ut.companyID}).ToList
                 d.users = u
+                d.number_of_users = u.Count
+                'Recupero le attività dell'azienda
+                d.tasks = getTasksInfoList(c.companyID)
+                d.number_of_tasks = d.tasks.Count
                 c.details = d
             Next
 
@@ -61,12 +65,113 @@ Namespace Controllers
 
             Dim companyRoles As List(Of CompanyRoles) = (From cr In db.CompanyRoles Select cr Order By cr.companyRoleName).ToList
             r.add("roles", companyRoles)
+
+            Dim mdc As List(Of mdClass) = (From c In db.mdClass Select c Order By c.mdClassName).ToList
+            r.add("mdClass", mdc)
+
+            Dim mda As List(Of mdActivity) = (From a In db.mdActivity Select a Order By a.mdActivityName).ToList
+            r.add("mdActivity", mda)
+
+            Dim mds As List(Of Structures) = (From s In db.Structures Select s Order By s.structureName).ToList
+            r.add("Structures", mds)
+
+
+
             r.add("list", list)
             r.add("nHidden", isHidden)
             Return r
         End Function
 
 
+        <HttpGet>
+        <Route("fabEditData/{id}")>
+        Public Function GetfabEditData(id As Integer) As JRisposta
+            Dim r As New JRisposta
+            Dim cp As FabListDataBinding = (From c In db.Companies
+                                            Join cd In db.CompanyDetail On c.companyID Equals cd.companyID
+                                            Join cr In db.CompanyRoles On cd.companyRoleID Equals cr.companyRoleID
+                                            Where c.companyID = id
+                                            Select New FabListDataBinding With {.BusinessName = c.BusinessName, .companyID = c.companyID, .country = cd.country, .SRN = cd.SRN, .companyRoleID = cr.companyRoleID, .companyRoleName = cr.companyRoleName}).FirstOrDefault
+
+            If Not IsNothing(cp) Then
+                Dim d As New FabListDetailDataBinding
+
+                Dim u As List(Of UserInfo) = (From ut In db.Users Where ut.companyID = cp.companyID
+                                              Select New UserInfo With {.UserName = ut.UserName, .DisplayName = ut.DisplayName, .email = ut.email, .userID = ut.userID, .password = "", .companyID = ut.companyID}).ToList
+                d.users = u
+                'Recupero le attività dell'azienda
+                d.tasks = getTasksInfoList(cp.companyID)
+                d.number_of_users = u.Count
+                d.number_of_tasks = d.tasks.Count
+                cp.details = d
+
+            End If
+
+
+
+            Dim prd As List(Of Products) = (From p In db.Products Where p.companyID = id Select p Order By p.productName).ToList
+            r.add("products", prd)
+
+            Dim companyRoles As List(Of CompanyRoles) = (From cr In db.CompanyRoles Select cr Order By cr.companyRoleName).ToList
+            r.add("roles", companyRoles)
+
+            Dim mdc As List(Of mdClass) = (From c In db.mdClass Select c Order By c.mdClassName).ToList
+            r.add("mdClass", mdc)
+
+            Dim mda As List(Of mdActivity) = (From a In db.mdActivity Select a Order By a.mdActivityName).ToList
+            r.add("mdActivity", mda)
+
+            Dim mds As List(Of Structures) = (From s In db.Structures Select s Order By s.structureName).ToList
+            r.add("Structures", mds)
+
+            r.add("company", cp)
+            Return r
+        End Function
+
+
+
+
+
+
+        Private Function getTasksInfoList(companyID As Integer) As List(Of TaskInfoDataBindig)
+            Dim list As List(Of TaskInfoDataBindig) = (From p In db.Products
+                                                       Join cp In db.Companies On p.companyID Equals cp.companyID
+                                                       Join ed In db.Editions On ed.productID Equals p.productID
+                                                       Join act In db.mdActivity On ed.mdActivityID Equals act.mdActivityID
+                                                       Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
+                                                       Join tsk In db.mdTasks On ed.editionID Equals tsk.editionID
+                                                       Join tsks In db.mdTasksStates On tsk.mdTasksStatesID Equals tsks.mdTasksStatesID
+                                                       Join str In db.Structures On ed.StructureID Equals str.structureID
+                                                       Join u In db.Users On u.userID Equals tsk.ownerID
+                                                       Where cp.companyID = companyID
+                                                       Select New TaskInfoDataBindig _
+                                                               With {.companyID = cp.companyID,
+                                                               .BusinessName = cp.BusinessName,
+                                                               .productID = p.productID,
+                                                               .productName = p.productName,
+                                                               .mdClassID = cls.mdClassID,
+                                                               .mdClassName = cls.mdClassName,
+                                                               .editionID = ed.editionID,
+                                                               .editionName = ed.editionName,
+                                                               .certificationPlan = ed.certificationPlan,
+                                                               .mdActivityID = act.mdActivityID,
+                                                               .mdActivityName = act.mdActivityName,
+                                                               .editionNotes = ed.editionNotes,
+                                                                .deadline = ed.deadline,
+                                                               .StructureID = str.structureID,
+                                                               .structureName = str.structureName,
+                                                           .mdTaskID = tsk.mdTaskID,
+                                                           .mdTaskStatesID = tsk.mdTasksStatesID,
+                                                           .mdTaskStatesName = tsks.mdTasksStatesName,
+                                                               .insertDate = tsk.insertDate,
+                                                           .modDate = tsk.ModDate,
+                                                           .ownerID = tsk.ownerID,
+                                                           .UserName = u.UserName,
+                                                           .DisplayName = u.DisplayName,
+                                                           .email = u.email
+                                                               }).ToList
+            Return list
+        End Function
 
 
         ''' <summary>

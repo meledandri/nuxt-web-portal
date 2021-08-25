@@ -149,6 +149,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Communications.vb" />
+    <Compile Include="Controllers\ActivitiesController.vb" />
+    <Compile Include="Controllers\ActionsController.vb" />
     <Compile Include="Controllers\ProductsController.vb" />
     <Compile Include="Controllers\FabController.vb" />
     <Compile Include="Controllers\AuthController.vb" />
@@ -175,6 +177,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Providers\MultipartFileStreamProvider.vb" />
     <Compile Include="ServiceClass.vb" />
     <Compile Include="ValuesController.vb" />
   </ItemGroup>

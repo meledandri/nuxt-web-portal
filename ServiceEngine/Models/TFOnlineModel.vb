@@ -412,6 +412,11 @@ End Class
 
 Public Class FabListDetailDataBinding
     Public Property users As List(Of UserInfo) = New List(Of UserInfo)
+    Public Property tasks As List(Of TaskInfoDataBindig) = New List(Of TaskInfoDataBindig)
+
+    Public number_of_users As Integer = 0
+    Public number_of_tasks As Integer = 0
+
 
 End Class
 

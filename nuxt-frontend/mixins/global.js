@@ -185,6 +185,14 @@ export default {
     }
   }, //l'oggetto metodi contiene una coppia chiave-valore di nomi di metodo e la relativa definizione di funzione. Questi fanno parte del comportamento del componente Vue che l'altro componente può attivare.
   computed: {
+    lng: {
+      get() {
+        return this.$i18n.locale;
+      },
+      set(v){
+        return this.$i18n.setLocale(v)
+      }
+    },
     appConfig: {
       // getter
       get: function() {

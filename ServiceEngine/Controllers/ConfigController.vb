@@ -257,6 +257,11 @@ Namespace Controllers
                 db.mdTasks.Add(t)
                 db.SaveChanges()
 
+                Dim ts2 As New mdTasksStates
+                ts2.mdTasksStatesName = "Caricato"
+                db.mdTasksStates.Add(ts2)
+                db.SaveChanges()
+
 
                 insMenu()
 
