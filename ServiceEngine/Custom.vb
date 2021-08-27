@@ -307,7 +307,49 @@ Module GeneralFunctions
         Return le
     End Function
 
+    Public Function EnumToDataTable(ByVal EnumObject As Type,
+   ByVal KeyField As String, ByVal ValueField As String) As DataTable
 
+        Dim oData As DataTable = Nothing
+        Dim oRow As DataRow = Nothing
+        Dim oColumn As DataColumn = Nothing
+
+        '-------------------------------------------------------------
+        ' Sanity check
+        If KeyField.Trim() = String.Empty Then
+            KeyField = "KEY"
+        End If
+
+        If ValueField.Trim() = String.Empty Then
+            ValueField = "VALUE"
+        End If
+        '-------------------------------------------------------------
+
+        '-------------------------------------------------------------
+        ' Create the DataTable
+        oData = New DataTable
+
+        oColumn = New DataColumn(KeyField, GetType(System.Int32))
+        oData.Columns.Add(KeyField)
+
+        oColumn = New DataColumn(ValueField, GetType(System.String))
+        oData.Columns.Add(ValueField)
+        '-------------------------------------------------------------
+
+        '-------------------------------------------------------------
+        ' Add the enum items to the datatable
+        For Each iEnumItem As Object In [Enum].GetValues(EnumObject)
+            oRow = oData.NewRow()
+            oRow(KeyField) = CType(iEnumItem, Int32)
+            oRow(ValueField) = StrConv(Replace(iEnumItem.ToString(), "_", " "),
+              VbStrConv.ProperCase)
+            oData.Rows.Add(oRow)
+        Next
+        '-------------------------------------------------------------
+
+        Return oData
+
+    End Function
 
 
     Function cripta(strTesto, Optional intKey = 5) As String

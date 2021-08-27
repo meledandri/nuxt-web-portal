@@ -34,10 +34,10 @@ Namespace Controllers
             Dim startActiviyDate As Date = Now
 
 
-            Dim streamProvider = New CustomMultipartFileStreamProvider()
-            Await Request.Content.ReadAsMultipartAsync(streamProvider)
-            Dim fileStream = Await streamProvider.Contents(0).ReadAsStreamAsync()
-            Dim customData = streamProvider.CustomData
+            'Dim streamProvider = New CustomMultipartFileStreamProvider()
+            'Await Request.Content.ReadAsMultipartAsync(streamProvider)
+            'Dim fileStream = Await streamProvider.Contents(0).ReadAsStreamAsync()
+            'Dim customData = streamProvider.CustomData
 
 
             'If Not Request.Content.IsMimeMultipartContent() Then
@@ -77,44 +77,65 @@ Namespace Controllers
 
             '// Read the form data And return an async task.
             ' Await StreamContent.ReadAsMultipartAsync(provider);
-            Dim root As String = Path.Combine(My.Application.Info.DirectoryPath, "www\upload")
-            Dim provider = New MultipartFormDataStreamProvider(root)
+            Dim temp_dir As String = Path.Combine(My.Application.Info.DirectoryPath, "www\temp")
+            Dim StoragePath As String = Path.Combine(My.Application.Info.DirectoryPath, "www\files")
+            If Not Directory.Exists(temp_dir) Then Directory.CreateDirectory(temp_dir)
+            If Not Directory.Exists(StoragePath) Then Directory.CreateDirectory(StoragePath)
+            Dim provider = New MultipartFormDataStreamProvider(temp_dir)
 
-
-            Dim reqStream As Stream = Request.Content.ReadAsStreamAsync().Result
-            ' reqStream.Position = 0
-            Dim tempStream As MemoryStream = New MemoryStream()
-            reqStream.CopyTo(tempStream)
-            tempStream.Position = 0
-            tempStream.Seek(0, SeekOrigin.End)
-            Dim writer As StreamWriter = New StreamWriter(tempStream)
-            writer.WriteLine()
-            writer.Flush()
-            tempStream.Position = 0
-            Dim StreamContent As StreamContent = New StreamContent(tempStream)
-            For Each header In Request.Content.Headers
-                StreamContent.Headers.Add(header.Key, header.Value)
-            Next
-            Await StreamContent.ReadAsMultipartAsync(provider)
-
-
-
-
-
+            Dim mpfd As MultipartFileData
 
             Try
                 Await Request.Content.ReadAsMultipartAsync(provider)
 
-                For Each file As MultipartFileData In provider.FileData
-                    'Trace.WriteLine(file.Headers.ContentDisposition.FileName)
-                    'Trace.WriteLine("Server file path: " & file.LocalFileName)
-                    Dim errors As List(Of String) = checkFileRules(file.LocalFileName)
+                For Each fileData As MultipartFileData In provider.FileData
+                    mpfd = fileData
+                    For Each k As String In provider.FormData.AllKeys
+                        Select Case k
+                            Case "editionID"
+                                editionID = provider.FormData.GetValues(k)(0)
+                                ed = (From e In db.Editions Where e.editionID = editionID).FirstOrDefault
+                            Case "userID"
+                                userID = provider.FormData.GetValues(k)(0)
+                        End Select
+                    Next
+
+
+                    Dim errors As List(Of String) = checkFileRules(fileData.LocalFileName)
                     If errors.Count > 0 Then
                         r.stato = JRisposta.Stati.Errato
                         r.messaggio = String.Join(vbCrLf, errors.ToArray)
-                        If System.IO.File.Exists(file.LocalFileName) Then
-                            System.IO.File.Delete(file.LocalFileName)
+                        If File.Exists(fileData.LocalFileName) Then
+                            File.Delete(fileData.LocalFileName)
                         End If
+                        GoTo Fine
+                    Else
+
+
+                        If String.IsNullOrEmpty(fileData.Headers.ContentDisposition.FileName) Then
+                            r.stato = JRisposta.Stati.Errato
+                            r.messaggio = "La richiesta non è formattata propriamente."
+                            GoTo Fine
+                        End If
+
+                        Dim fileName = fileData.Headers.ContentDisposition.FileName
+
+                        If fileName.StartsWith("""") AndAlso fileName.EndsWith("""") Then
+                            fileName = fileName.Trim(""""c)
+                        End If
+
+                        If fileName.Contains("/") OrElse fileName.Contains("\") Then
+                            fileName = Path.GetFileName(fileName)
+                        End If
+
+                        If File.Exists(Path.Combine(StoragePath, fileName)) Then
+                            File.Delete(Path.Combine(StoragePath, fileName))
+                        End If
+
+                        File.Move(fileData.LocalFileName, Path.Combine(StoragePath, fileName))
+
+
+
                     End If
                 Next
 
@@ -124,87 +145,39 @@ Namespace Controllers
             Catch e As System.Exception
                 r.stato = JRisposta.Stati.Errato
                 r.messaggio = "Errore: " & e.Message
-                Return r
+                GoTo Fine
             End Try
 
 
+            If Not IsNothing(ed) Then
+                With al
+                    .editionID = editionID
+                    .mdTasksStatesID = ed.mdTasksStatesID
+                    .resultID = r.stato
+                    .resultMessage = IIf(r.messaggio = "", mpfd.LocalFileName & " (OK)", r.messaggio)
+                    .startActiviyDate = startActiviyDate
+                    .stopActiviyDate = Now
+                    .userID = userID
+                End With
+                db.ActivityLog.Add(al)
+                Try
+                    db.SaveChanges()
 
-            With al
-                .editionID = editionID
-                .mdTasksStatesID = ed.mdTasksStatesID
-                .resultID = r.stato
-                .resultMessage = r.messaggio
-                .startActiviyDate = startActiviyDate
-                .stopActiviyDate = Now
-                .userID = userID
-            End With
-            db.ActivityLog.Add(al)
-            ed.fileStatus = r.stato
-            ed.ownerID = userID
-            ed.modifiedDate = Now
-            db.Editions.Attach(ed)
-            db.Entry(ed).State = EntityState.Modified
-            db.SaveChanges()
+                Catch ex As Exception
+                    r.stato = JRisposta.Stati.Errato
+                    r.messaggio = ex.Message
+                    GoTo Fine
+                End Try
+                ed.fileStatus = r.stato
+                ed.ownerID = userID
+                ed.modifiedDate = Now
+                db.Editions.Attach(ed)
+                db.Entry(ed).State = EntityState.Modified
+                db.SaveChanges()
+            End If
 
-            'Dim httpRequest = HttpContext.Current.Request
-            ''Dim cd As New MyCustomData
-            ''For Each p In customData
-            ''    cd.add(p, httpRequest.Form(p))
-            ''Next
+Fine:
 
-            'Dim mdTaskID = 0 'httpRequest.Form("mdTaskID")
-            'Dim userID = 0 ' httpRequest.Form("userID")
-
-            'For n = 0 To customData.Count - 1
-            '    Try
-            '        mdTaskID = customData(n).Item("mdTaskID")
-
-            '    Catch ex As Exception
-
-            '    End Try
-            '    Try
-            '        userID = customData(n).Item("userID")
-
-            '    Catch ex As Exception
-
-            '    End Try
-
-            'Next
-
-
-
-
-
-
-            'Dim uploadDir As String = Path.Combine(My.Application.Info.DirectoryPath, "www\upload")
-            'If Not Directory.Exists(uploadDir) Then Directory.CreateDirectory(uploadDir)
-
-            'Dim flag_stato As Integer = 0
-            'Dim fileName As String = ""
-            'Dim fileName_ext As String = ""
-            'Dim filepath As String = ""
-
-            Dim docfiles = New List(Of String)()
-            'If httpRequest.Files.Count > 0 Then
-            '    For Each file As String In httpRequest.Files
-            '        Dim postedFile = httpRequest.Files(file)
-            '        Dim fi As New FileInfo(postedFile.FileName)
-            '        fileName_ext = fi.Extension.Replace(".", "")
-
-            '        fileName = mdTaskID & fileName_ext
-
-            '        filepath = uploadDir & "\" & fileName
-            '        postedFile.SaveAs(filepath)
-            '        docfiles.Add(filepath)
-            '    Next
-
-            '    'result = Request.CreateResponse(HttpStatusCode.Created, docfiles)
-            'Else
-            '    'result = Request.CreateResponse(HttpStatusCode.BadRequest)
-            'End If
-
-
-            r.messaggio = String.Format("Sono stati caticati {0} files.", docfiles.Count)
             Return r
         End Function
         Private Function checkFileRules(file As String) As List(Of String)

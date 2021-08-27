@@ -215,8 +215,8 @@ export default {
       this.uploading = true;
 
       var formData = new FormData();
-      formData.append("mdTaskID", this.selectedDocument.mdTaskID);
-      formData.append("userID", this.userInfo.userID);
+      formData.append("editionID", this.selectedDocument.editionID);
+      formData.append("userID", this.userInfo.UserID);
       formData.append("file", this.uploadFile, "package.zip");
       this.$axios
         .post("actions/upload", formData, {

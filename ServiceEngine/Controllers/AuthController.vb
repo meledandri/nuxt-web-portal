@@ -55,6 +55,7 @@ Namespace Controllers
                 r.messaggio = "Le credenziali fornite non sono corrette."
             Else
                 Dim ut As New JRisposta(True)
+                ut.add("UserID", usr.userID)
                 ut.add("UserName", usr.UserName)
                 ut.add("DisplayName", usr.DisplayName)
                 ut.add("companyID", usr.companyID)
