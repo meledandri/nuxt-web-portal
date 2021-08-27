@@ -1,10 +1,10 @@
 <template>
   <v-row>
     <v-overlay color="primary" opacity="0.7" v-if="uploadPercentage > 0">
-      <h1>{{uploadPercentage}}</h1>
+      <h1>{{ uploadPercentage }}</h1>
     </v-overlay>
 
-    <v-col class="text-center">
+    <v-col class="text-center" cols="12">
       <img src="/tfo-logo.png" alt="Vuetify.js" class="mb-5" />
       <blockquote class="blockquote">
         &#8220;ACCESSO FABBRICANTE&#8221;
@@ -15,7 +15,7 @@
         </footer>
       </blockquote>
     </v-col>
-    <v-col class="text-center">
+    <v-col cols="12">
       <v-card height="100%">
         <v-card-title>
           <v-text-field
@@ -57,7 +57,7 @@
             </v-icon>
 
             <v-file-input
-              v-model="uploadFiles"
+              v-model="uploadFile"
               :rules="uploadRules"
               :accept="uploadAcceptType"
               hide-input
@@ -70,6 +70,7 @@
               @click="resetAttachFile('upload' + item.mdTaskID)"
               @change="attachFile('upload' + item.mdTaskID, item)"
               :id="'upload' + item.mdTaskID"
+              :name="'upload' + item.mdTaskID"
               :ref="'upload' + item.mdTaskID"
               dense
             >
@@ -108,8 +109,11 @@ export default {
       ],
       Items: [],
       uploadFiles: [],
+      uploadFile: null,
       uploadAcceptType:
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/zip, application/pdf, application/x-7z-compressed",
+      // uploadAcceptType:
+      //   "application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       uploadRules: [
         value =>
           !value ||
@@ -119,7 +123,7 @@ export default {
       selectedDocument: null,
       selectedCompany: 0,
       inProgress: [],
-      uploadPercentage: 0,
+      uploadPercentage: 0
     };
   },
   computed: {},
@@ -137,7 +141,29 @@ export default {
       console.log(this.selectedDocument);
       var ext = val.name.split(".").pop();
       console.log("ext: " + ext);
-      if (["zip"].indexOf(ext) > -1) {
+      if (["zip", "docx"].indexOf(ext) > -1) {
+        this.startProcess(this.selectedDocument.mdTaskID);
+        this.uploading = true;
+        this.uploadDocument();
+      } else if (["doc", "docx", "pdf", "xls", "xlsx"].indexOf(ext) > -1) {
+        // this.setTemplate = true;
+        // this.startProcess(this.selectedDocument.mdTaskID);
+        // this.uploading = false;
+        this.viewMessage("error", "Formato non supportato", "Upload");
+      } else {
+        this.uploading = false;
+      }
+
+      console.log(val);
+    },
+        uploadFile(val) {
+      if (!val) return;
+      console.log("detailsList\\watch\\uploadFile..");
+      console.log("selectedDocument:");
+      console.log(this.selectedDocument);
+      var ext = val.name.split(".").pop();
+      console.log("ext: " + ext);
+      if (["zip", "docx"].indexOf(ext) > -1) {
         this.startProcess(this.selectedDocument.mdTaskID);
         this.uploading = true;
         this.uploadDocument();
@@ -152,6 +178,7 @@ export default {
 
       console.log(val);
     }
+
   },
   mounted() {
     this.loadDataList();
@@ -182,26 +209,26 @@ export default {
         // this.$("#" + id).val("");
       } catch (error) {}
     },
-    uploadDocument() {
+    async uploadDocument() {
       //Carica il file sul server
       console.log("detailsList\\methods\\uploadTemplate");
       this.uploading = true;
-      this.setTemplate = false;
-      var formData = new FormData();
 
+      var formData = new FormData();
       formData.append("mdTaskID", this.selectedDocument.mdTaskID);
       formData.append("userID", this.userInfo.userID);
+      formData.append("file", this.uploadFile, "package.zip");
       this.$axios
         .post("actions/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data;"
-          },
+          // headers: {
+          //   "Content-Type": "multipart/form-data;"
+          // },
           onUploadProgress: function(progressEvent) {
             this.uploadPercentage = parseInt(
               Math.round((progressEvent.loaded / progressEvent.total) * 100)
             );
-            if (this.uploadPercentage == 100){
-              setTimeout(() => this.uploadPercentage = 0, 3000);
+            if (this.uploadPercentage == 100) {
+              setTimeout(() => (this.uploadPercentage = 0), 3000);
             }
           }.bind(this)
         })
@@ -209,8 +236,7 @@ export default {
           console.log(response.data);
           this.endProcess(this.selectedDocument.mdTaskID);
           this.uploading = false;
-          //this.loadDataList();
-          this.getDetailID(this.selectedDocument.mdTaskID);
+          //this.getDetailID(this.selectedDocument.mdTaskID);
         })
         .catch(e => {
           this.endProcess(this.selectedDocument.mdTaskID);

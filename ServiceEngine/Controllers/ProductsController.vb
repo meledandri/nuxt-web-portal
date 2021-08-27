@@ -96,10 +96,9 @@ Namespace Controllers
                                                        Join ed In db.Editions On ed.productID Equals p.productID
                                                        Join act In db.mdActivity On ed.mdActivityID Equals act.mdActivityID
                                                        Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
-                                                       Join tsk In db.mdTasks On ed.editionID Equals tsk.editionID
-                                                       Join tsks In db.mdTasksStates On tsk.mdTasksStatesID Equals tsks.mdTasksStatesID
+                                                       Join tsks In db.mdTasksStates On ed.mdTasksStatesID Equals tsks.mdTasksStatesID
                                                        Join str In db.Structures On ed.StructureID Equals str.structureID
-                                                       Join u In db.Users On u.userID Equals tsk.ownerID
+                                                       Join u In db.Users On u.userID Equals ed.ownerID
                                                        Where cp.isHidden = hidden
                                                        Select New TaskInfoDataBindig _
                                                                With {.companyID = cp.companyID,
@@ -117,12 +116,11 @@ Namespace Controllers
                                                                 .deadline = ed.deadline,
                                                                .StructureID = str.structureID,
                                                                .structureName = str.structureName,
-                                                           .mdTaskID = tsk.mdTaskID,
-                                                           .mdTaskStatesID = tsk.mdTasksStatesID,
+                                                           .mdTaskStatesID = ed.mdTasksStatesID,
                                                            .mdTaskStatesName = tsks.mdTasksStatesName,
-                                                               .insertDate = tsk.insertDate,
-                                                           .modDate = tsk.ModDate,
-                                                           .ownerID = tsk.ownerID,
+                                                               .insertDate = ed.insertDate,
+                                                           .modifiedDate = ed.modifiedDate,
+                                                           .ownerID = ed.ownerID,
                                                            .UserName = u.UserName,
                                                            .DisplayName = u.DisplayName,
                                                            .email = u.email

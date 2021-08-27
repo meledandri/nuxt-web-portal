@@ -125,9 +125,9 @@ Namespace Controllers
                 db.Companies.Add(cn)
                 db.SaveChanges()
 
+                Dim un As New Users
                 Dim ui As Integer = (From u In db.Users Select u).Count
                 If ui = 0 Then
-                    Dim un As New Users
                     With un
                         .DisplayName = "Administrator"
                         .email = "sergio.meledandri@pro360web.com"
@@ -218,6 +218,7 @@ Namespace Controllers
                     .productName = "Prodotto demo Cerotto"
                     .mdClassID = mdc.mdClassID
                     .companyID = cp.companyID
+                    .mdCode = "MD0123"
                 End With
                 db.Products.Add(p)
                 db.SaveChanges()
@@ -230,6 +231,12 @@ Namespace Controllers
                 db.Structures.Add(s)
                 db.SaveChanges()
 
+                Dim ts As New mdTasksStates
+                ts.mdTasksStatesName = "Creato"
+                db.mdTasksStates.Add(ts)
+                db.SaveChanges()
+
+
                 Dim ed As New Editions
                 With ed
                     .editionName = "Prima Edizione"
@@ -239,23 +246,21 @@ Namespace Controllers
                     .editionNotes = "Note automatiche prima edizione."
                     .deadline = Now.AddDays(20)
                     .StructureID = s.structureID
+                    .mdTasksStatesID = ts.mdTasksStatesID
+                    .ownerID = un.userID
                 End With
                 db.Editions.Add(ed)
                 db.SaveChanges()
 
-                Dim ts As New mdTasksStates
-                ts.mdTasksStatesName = "Creato"
-                db.mdTasksStates.Add(ts)
-                db.SaveChanges()
 
-                Dim t As New mdTasks
-                With t
-                    .editionID = ed.editionID
-                    .mdTasksStatesID = ts.mdTasksStatesID
-                    .ownerID = uc.userID
-                End With
-                db.mdTasks.Add(t)
-                db.SaveChanges()
+                'Dim t As New mdTasks
+                'With t
+                '    .editionID = ed.editionID
+                '    .mdTasksStatesID = ts.mdTasksStatesID
+                '    .ownerID = uc.userID
+                'End With
+                'db.mdTasks.Add(t)
+                'db.SaveChanges()
 
                 Dim ts2 As New mdTasksStates
                 ts2.mdTasksStatesName = "Caricato"

@@ -30,7 +30,7 @@ Partial Public Class ApplicationDbContext
     Public Property mdClass As System.Data.Entity.DbSet(Of mdClass)
     Public Property mdActivity As System.Data.Entity.DbSet(Of mdActivity)
     Public Property mdTasksStates As System.Data.Entity.DbSet(Of mdTasksStates)
-    Public Property mdTasks As System.Data.Entity.DbSet(Of mdTasks)
+    ' Public Property mdTasks As System.Data.Entity.DbSet(Of mdTasks)
 
 
 

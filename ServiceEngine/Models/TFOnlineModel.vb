@@ -21,6 +21,10 @@ Public Class Products
     <Required>
     <Column(Order:=3)>
     Public Property mdClassID As Integer
+    <Required>
+    <StringLength(10)>
+    <Column(Order:=4)>
+    Public Property mdCode As String = ""
 
 
 End Class
@@ -52,21 +56,43 @@ Public Class Editions
     <Column(Order:=4)>
     Public Property mdActivityID As Integer
 
-    <MaxLength>
+    <Required>
     <Column(Order:=5)>
+    Public Property mdTasksStatesID As Integer
+
+    <MaxLength>
+    <Column(Order:=6)>
     Public Property editionNotes As String = ""
 
     <Required>
-    <Column(Order:=6)>
+    <Column(Order:=7)>
     Public Property deadline As Nullable(Of Date)
 
     <Required>
-    <Column(Order:=7)>
+    <Column(Order:=8)>
     Public Property StructureID As Integer
 
     <Required>
-    <Column(Order:=8)>
+    <Column(Order:=9)>
+    Public Property fileStatus As Integer
+    <Required>
+    <Column(Order:=10)>
+    Public Property productInfoStatus As Integer
+    <Required>
+    <Column(Order:=11)>
+    Public Property checkListStatus As Integer
+
+    <Required>
+    <Column(Order:=12)>
     Public Property insertDate As Date = Now
+
+    <Required>
+    <Column(Order:=13)>
+    Public Property ownerID As String = ""
+
+    <Required>
+    <Column(Order:=14)>
+    Public Property modifiedDate As Date = Now
 
 
 End Class
@@ -104,24 +130,78 @@ Public Class StructureDetails
     <Column(Order:=1)>
     Public Property structureID As Integer
 
-    <Column(Order:=2)>
-    Public Property editionID As Integer
 
-
-    <Column(Order:=3)>
-    Public Property productID As Integer
-
-
+    <Required>
     <MaxLength>
-    <Column(Order:=4)>
+    <Column(Order:=2)>
     Public Property Title As String = ""
 
-    <Column(Order:=5)>
+    <Required>
+    <Column(Order:=3)>
     Public Property idParent As Integer
 
-    <Column(Order:=6)>
+    <Required>
+    <Column(Order:=4)>
     Public Property documentID As Integer
 
+    <Required>
+    <StringLength(250)>
+    <Column(Order:=5)>
+    Public Property fileName As String = ""
+
+    <Required>
+    <Column(Order:=6)>
+    Public Property addFolder As Integer = 0
+
+    <Required>
+    <Column(Order:=7)>
+    Public Property addFile As Integer = 0
+
+    <Required>
+    <Column(Order:=8)>
+    Public Property nLevels As Integer = 0
+
+
+    <Required>
+    <Column(Order:=9)>
+    Public Property idVerDoc As Integer = 0
+
+
+    <Required>
+    <Column(Order:=10)>
+    Public Property flagState As Integer = 0    'o = da caricare, 2 = completato
+
+    <Required>
+    <StringLength(4)>
+    <Column(Order:=11)>
+    Public Property fileExtension As String = ""
+
+    <Required>
+    <Column(Order:=12)>
+    Public Property operatorID As Integer = 0
+
+    <Required>
+    <MaxLength>
+    <Column(Order:=13)>
+    Public Property MD5 As String = ""
+
+    <Required>
+    <Column(Order:=14)>
+    Public Property swTarget As Integer = 0
+
+    <Required>
+    <MaxLength>
+    <Column(Order:=15)>
+    Public Property file_for_checklist As String = ""
+
+    <Required>
+    <MaxLength>
+    <Column(Order:=16)>
+    Public Property fullPath As String = ""
+
+    <Required>
+    <Column(Order:=17)>
+    Public Property flagContainer As Integer = 0
 
 End Class
 
@@ -197,9 +277,8 @@ Public Class Details
     <Column(Order:=13)>
     Public Property fileExtension As String = ""
 
-    <Required>
     <Column(Order:=14)>
-    Public Property operatorID As Integer = 0
+    Public Property operatorID As Nullable(Of Integer)
 
     <Required>
     <MaxLength>
@@ -220,6 +299,9 @@ Public Class Details
     <Column(Order:=18)>
     Public Property fullPath As String = ""
 
+    <Required>
+    <Column(Order:=19)>
+    Public Property flagContainer As Integer = 0
 
 End Class
 
@@ -242,15 +324,24 @@ Public Class ActivityLog
 
     <Required>
     <Column(Order:=3)>
-    Public Property activityStatusID As Integer = 0
+    Public Property mdTasksStatesID As Integer = 0
 
     <Required>
     <Column(Order:=4)>
     Public Property userID As String = ""
 
+    <Required>
     <Column(Order:=5)>
-    Public Property startActiviyDate As Nullable(Of Date)
+    Public Property resultID As Integer = 0
+
+    <Required>
     <Column(Order:=6)>
+    <MaxLength>
+    Public Property resultMessage As String = ""
+
+    <Column(Order:=7)>
+    Public Property startActiviyDate As Nullable(Of Date)
+    <Column(Order:=8)>
     Public Property stopActiviyDate As Nullable(Of Date)
 
 
@@ -349,37 +440,37 @@ End Class
 
 
 
-''' <summary>
-''' Tabella che elenca le attività di caricamento e valutazione svolte su una specifica Edizione
-''' </summary>
-Public Class mdTasks
-    <Key>
-    <Column(Order:=0)>
-    Public Property mdTaskID As Integer
+'''' <summary>
+'''' Tabella che elenca le attività di caricamento e valutazione svolte su una specifica Edizione
+'''' </summary>
+'Public Class mdTasks
+'    <Key>
+'    <Column(Order:=0)>
+'    Public Property mdTaskID As Integer
 
-    <Required>
-    <Column(Order:=1)>
-    Public Property editionID As Integer
+'    <Required>
+'    <Column(Order:=1)>
+'    Public Property editionID As Integer
 
-    <Required>
-    <Column(Order:=2)>
-    Public Property mdTasksStatesID As Integer
+'    <Required>
+'    <Column(Order:=2)>
+'    Public Property mdTasksStatesID As Integer
 
-    <Required>
-    <Column(Order:=3)>
-    Public Property insertDate As Date = Now
-
-
-    <Required>
-    <Column(Order:=4)>
-    Public Property ownerID As String
-
-    <Required>
-    <Column(Order:=5)>
-    Public Property ModDate As Date = Now
+'    <Required>
+'    <Column(Order:=3)>
+'    Public Property insertDate As Date = Now
 
 
-End Class
+'    <Required>
+'    <Column(Order:=4)>
+'    Public Property ownerID As String
+
+'    <Required>
+'    <Column(Order:=5)>
+'    Public Property ModDate As Date = Now
+
+
+'End Class
 
 
 
@@ -538,8 +629,8 @@ Public Class TaskInfoDataBindig
     <MaxLength>
     Public Property structureName As String = ""
 
-    <Required>
-    Public Property mdTaskID As Integer
+    '<Required>
+    'Public Property mdTaskID As Integer
     <Required>
     Public Property mdTaskStatesID As Integer
     <Required>
@@ -550,7 +641,7 @@ Public Class TaskInfoDataBindig
     Public Property insertDate As Date = Now
 
     <Required>
-    Public Property modDate As Date = Now
+    Public Property modifiedDate As Date = Now
 
     Public Property ownerID As String = ""
     <StringLength(50)>
