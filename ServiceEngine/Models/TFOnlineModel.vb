@@ -1,6 +1,8 @@
 ﻿Imports System.ComponentModel.DataAnnotations
 Imports System.ComponentModel.DataAnnotations.Schema
 
+
+
 ''' <summary>
 ''' Tabella per l'Anagrafica dei Prodotti
 ''' </summary>
@@ -20,7 +22,7 @@ Public Class Products
 
     <Required>
     <Column(Order:=3)>
-    Public Property mdClassID As Integer
+    Public Property mdClassID As mdClass_enum = mdClass_enum.none
     <Required>
     <StringLength(10)>
     <Column(Order:=4)>
@@ -54,11 +56,11 @@ Public Class Editions
 
     <Required>
     <Column(Order:=4)>
-    Public Property mdActivityID As Integer
+    Public Property mdActivityID As mdActivity_enum = mdActivity_enum.none
 
     <Required>
     <Column(Order:=5)>
-    Public Property mdTasksStatesID As Integer
+    Public Property mdTasksStatesID As mdTaskStates_enum = mdTaskStates_enum.created
 
     <MaxLength>
     <Column(Order:=6)>
@@ -171,7 +173,6 @@ Public Class StructureDetails
     <Column(Order:=10)>
     Public Property flagState As Integer = 0    'o = da caricare, 2 = completato
 
-    <Required>
     <StringLength(4)>
     <Column(Order:=11)>
     Public Property fileExtension As String = ""
@@ -180,7 +181,6 @@ Public Class StructureDetails
     <Column(Order:=12)>
     Public Property operatorID As Integer = 0
 
-    <Required>
     <MaxLength>
     <Column(Order:=13)>
     Public Property MD5 As String = ""
@@ -189,12 +189,10 @@ Public Class StructureDetails
     <Column(Order:=14)>
     Public Property swTarget As Integer = 0
 
-    <Required>
     <MaxLength>
     <Column(Order:=15)>
     Public Property file_for_checklist As String = ""
 
-    <Required>
     <MaxLength>
     <Column(Order:=16)>
     Public Property fullPath As String = ""
@@ -212,7 +210,7 @@ End Class
 Public Class Details
     <Key>
     <Column(Order:=0)>
-    Public Property detyailID As Integer
+    Public Property detailID As Integer
 
     <Required>
     <Column(Order:=1)>
@@ -246,7 +244,7 @@ Public Class Details
     Public Property documentID As Integer
 
     <Required>
-    <StringLength(20)>
+    <StringLength(250)>
     <Column(Order:=7)>
     Public Property fileName As String = ""
 
@@ -272,15 +270,13 @@ Public Class Details
     <Column(Order:=12)>
     Public Property flagState As Integer = 0    'o = da caricare, 2 = completato
 
-    <Required>
     <StringLength(20)>
     <Column(Order:=13)>
     Public Property fileExtension As String = ""
 
     <Column(Order:=14)>
-    Public Property operatorID As Nullable(Of Integer)
+    Public Property operatorID As String = ""
 
-    <Required>
     <MaxLength>
     <Column(Order:=15)>
     Public Property MD5 As String = ""
@@ -289,12 +285,10 @@ Public Class Details
     <Column(Order:=16)>
     Public Property swTarget As Integer = 0
 
-    <Required>
     <MaxLength>
     <Column(Order:=17)>
     Public Property file_for_checklist As String = ""
 
-    <Required>
     <MaxLength>
     <Column(Order:=18)>
     Public Property fullPath As String = ""
@@ -303,6 +297,17 @@ Public Class Details
     <Column(Order:=19)>
     Public Property flagContainer As Integer = 0
 
+End Class
+
+
+Public Class DetailsModel
+    Inherits Details
+End Class
+
+
+Public Class DetailsTree
+    Inherits Details
+    Public Property children As New List(Of DetailsTree)
 End Class
 
 
@@ -324,7 +329,7 @@ Public Class ActivityLog
 
     <Required>
     <Column(Order:=3)>
-    Public Property mdTasksStatesID As Integer = 0
+    Public Property mdTasksStatesID As mdTaskStates_enum = mdTaskStates_enum.created
 
     <Required>
     <Column(Order:=4)>
@@ -396,8 +401,8 @@ End Class
 ''' Tabella che raccoglie tutte le tipologie di Classi dei MD
 ''' </summary>
 Public Class mdClass
-    <Required>
     <Key>
+    <DatabaseGenerated(DatabaseGeneratedOption.None)>
     <Column(Order:=0)>
     Public Property mdClassID As Integer
     <StringLength(50)>
@@ -406,15 +411,20 @@ Public Class mdClass
     Public Property mdClassName As String = ""
 End Class
 
-
+Public Enum mdClass_enum
+    none = 0
+    Class_I = 10
+    Class_II_and_IIb = 20
+    Class_III = 30
+End Enum
 
 
 ''' <summary>
 ''' Tabella che raccoglie tutte le tipologie di attività che possono essere eseguite sui TF
 ''' </summary>
 Public Class mdActivity
-    <Required>
     <Key>
+    <DatabaseGenerated(DatabaseGeneratedOption.None)>
     <Column(Order:=0)>
     Public Property mdActivityID As Integer
     <StringLength(50)>
@@ -423,20 +433,42 @@ Public Class mdActivity
     Public Property mdActivityName As String = ""
 End Class
 
+Public Enum mdActivity_enum
+    none = 0
+    product_registration = 10
+
+End Enum
 
 ''' <summary>
 ''' Tabella che contiene gli stati del processo di acquisizione e valutazione
 ''' </summary>
 Public Class mdTasksStates
     <Key>
+    <DatabaseGenerated(DatabaseGeneratedOption.None)>
     <Column(Order:=0)>
     Public Property mdTasksStatesID As Integer
     <Required>
-    <StringLength(20)>
+    <StringLength(50)>
     <Column(Order:=1)>
     Public Property mdTasksStatesName As String = ""
 
 End Class
+
+
+
+''' <summary>
+''' Valori della tabella mdTasksStates Enumerati
+''' </summary>
+Public Enum mdTaskStates_enum
+    created = 0
+    uploading_process = 10
+    uploading_process_error = 11
+    ready_for_evaluation = 20
+    preliminary_evaluation_process = 30
+    preliminary_evaluation_rejected = 31
+    evaluation_process = 40
+    evaluation_rejected = 41
+End Enum
 
 
 
@@ -548,7 +580,7 @@ Public Class ProductInfoDataBinding
     Public Property productName As String = ""
 
     <Required>
-    Public Property mdClassID As Integer
+    Public Property mdClassID As mdClass_enum = mdClass_enum.none
     <Required>
     <StringLength(50)>
     Public Property mdClassName As String = ""
@@ -563,7 +595,7 @@ Public Class ProductInfoDataBinding
     Public Property certificationPlan As String = ""
 
     <Required>
-    Public Property mdActivityID As Integer
+    Public Property mdActivityID As mdActivity_enum = mdActivity_enum.none
     <Required>
     <StringLength(50)>
     Public Property mdActivityName As String = ""
@@ -598,7 +630,7 @@ Public Class TaskInfoDataBindig
     Public Property productName As String = ""
 
     <Required>
-    Public Property mdClassID As Integer
+    Public Property mdClassID As mdClass_enum = mdClass_enum.none
     <Required>
     <StringLength(50)>
     Public Property mdClassName As String = ""
@@ -613,7 +645,7 @@ Public Class TaskInfoDataBindig
     Public Property certificationPlan As String = ""
 
     <Required>
-    Public Property mdActivityID As Integer
+    Public Property mdActivityID As mdActivity_enum = mdActivity_enum.none
     <Required>
     <StringLength(50)>
     Public Property mdActivityName As String = ""

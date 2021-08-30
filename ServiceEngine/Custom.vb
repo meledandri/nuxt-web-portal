@@ -1,5 +1,8 @@
-﻿Imports System.Reflection
+﻿Imports System.Data.Entity
+Imports System.IO
+Imports System.Reflection
 Imports System.Web.Http.ModelBinding
+Imports log4net
 
 Public Class ClassiJSON
     Public Function toJDate(ByVal Data As Date) As String
@@ -297,6 +300,8 @@ End Module
 
 
 Module GeneralFunctions
+    Private ReadOnly log As ILog = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType)
+
     Function getModelStateMessages(msd As ModelStateDictionary) As List(Of String)
         Dim le As List(Of String) = New List(Of String)
         For Each ms As ModelState In msd.Values
@@ -342,7 +347,7 @@ Module GeneralFunctions
             oRow = oData.NewRow()
             oRow(KeyField) = CType(iEnumItem, Int32)
             oRow(ValueField) = StrConv(Replace(iEnumItem.ToString(), "_", " "),
-              VbStrConv.ProperCase)
+              VbStrConv.None)
             oData.Rows.Add(oRow)
         Next
         '-------------------------------------------------------------
@@ -350,6 +355,300 @@ Module GeneralFunctions
         Return oData
 
     End Function
+
+
+#Region "Datatable ed Entity framework .."
+    ''' <summary>
+    ''' Converte un risultato Entity Framework in Datatable
+    ''' </summary>
+    ''' <typeparam name="T"></typeparam>
+    ''' <param name="items"></param>
+    ''' <returns></returns>
+    Public Function ToDataTable(Of T)(ByVal items As List(Of T)) As DataTable
+        Dim dataTable As DataTable = New DataTable(GetType(T).Name)
+        Dim Props As PropertyInfo() = GetType(T).GetProperties(BindingFlags.[Public] Or BindingFlags.Instance)
+
+        For Each prop As PropertyInfo In Props
+            dataTable.Columns.Add(prop.Name)
+        Next
+
+        For Each item As T In items
+            Dim values = New Object(Props.Length - 1) {}
+
+            For i As Integer = 0 To Props.Length - 1
+                values(i) = Props(i).GetValue(item, Nothing)
+            Next
+
+            dataTable.Rows.Add(values)
+        Next
+
+        Return dataTable
+    End Function
+
+    ''' <summary>
+    ''' Funzione che converte un datatable in EF
+    ''' </summary>
+    ''' <typeparam name="T"></typeparam>
+    ''' <param name="dt"></param>
+    ''' <returns></returns>
+    Public Function toEntityFramework(Of T)(ByVal dt As DataTable) As List(Of T)
+        Dim data As List(Of T) = New List(Of T)()
+
+        For Each row As DataRow In dt.Rows
+            Dim item As T = GetItem(Of T)(row)
+            data.Add(item)
+        Next
+
+        Return data
+    End Function
+
+    ''' <summary>
+    ''' Funzione utile a toEntityFramework per la conversione di un Datatable a EF
+    ''' </summary>
+    ''' <typeparam name="T"></typeparam>
+    ''' <param name="dr"></param>
+    ''' <returns></returns>
+    Private Function GetItem(Of T)(ByVal dr As DataRow) As T
+        Dim temp As Type = GetType(T)
+        Dim obj As T = Activator.CreateInstance(Of T)()
+
+        For Each column As DataColumn In dr.Table.Columns
+
+            For Each pro As PropertyInfo In temp.GetProperties()
+
+                If pro.Name = column.ColumnName Then
+                    Dim v = dr(column.ColumnName)
+                    'Try
+                    '    If Int32.Parse(v) Then v = Convert.ToInt32(v)
+                    'Catch ex As Exception
+                    'End Try
+
+                    'Try
+                    '    Dim flag As Boolean
+                    '    If Boolean.TryParse(v, flag) Then v = flag
+                    'Catch ex As Exception
+                    'End Try
+
+                    pro.SetValue(obj, Convert.ChangeType(v, pro.PropertyType), Nothing)
+                    Exit For
+                Else
+                    Continue For
+                End If
+            Next
+        Next
+
+        Return obj
+    End Function
+
+#End Region
+
+
+#Region "File system"
+
+
+    Public Function FileSystemInfoList(p As String) As List(Of FileSystemInfo)
+        Dim fileList As List(Of FileSystemInfo)
+        Dim di As New DirectoryInfo(p)
+        If Directory.Exists(di.FullName) Then '   Se la directori A esiste..
+            'fileList = di.GetFiles("*.*", System.IO.SearchOption.AllDirectories).Where(AddressOf exclusions).ToList()  'Escludo il percorso di destinazione dal controllo
+            fileList = di.GetFileSystemInfos("*.*", SearchOption.AllDirectories).Where(AddressOf exclusions).OrderBy(Function(fi) fi.FullName).ToList()  'Escludo il percorso di destinazione dal controllo
+        End If
+        Return fileList
+    End Function
+
+    Private Function exclusions(e As FileSystemInfo) As Boolean
+        Dim r As Boolean = True ' Non escuso per default
+        Return r
+    End Function
+
+    Private Function SortArray(ByVal x As FileSystemInfo, ByVal y As FileSystemInfo) As Integer
+        Return x.FullName.CompareTo(y.FullName)
+    End Function
+
+    Public Function createCustomStructureDB(p As String, productID As Integer, editionID As Integer, idParent As Integer, progressiveID As Integer) As Boolean
+        Dim r As Boolean = True
+        Dim structureID As Integer = 1
+        Dim di As New DirectoryInfo(p)
+        If Directory.Exists(di.FullName) Then '   Se la directori A esiste..
+
+            Dim db As New ApplicationDbContext
+            Dim list As List(Of FileSystemInfo) = di.GetFileSystemInfos("*.*", SearchOption.TopDirectoryOnly).Where(AddressOf exclusions).OrderBy(Function(fi) fi.FullName).ToList()  'Escludo il percorso di destinazione dal controllo
+            For Each fsi As FileSystemInfo In list
+                progressiveID += 1
+                Dim flagContainer As Integer = 1
+                Try
+                    If (fsi.Attributes And FileAttributes.Directory) = FileAttributes.Directory Then
+                        flagContainer = 2
+                    Else
+                        flagContainer = 1
+                    End If
+
+                Catch ex As Exception
+                    log.Error(ex.Message)
+                End Try
+                Dim d As New Details
+                With d
+                    .editionID = editionID
+                    .documentID = progressiveID
+                    .addFile = 0
+                    .addFolder = 0
+                    .nLevels = 0
+                    .fileExtension = fsi.Extension
+                    .fileName = fsi.Name
+                    .flagContainer = flagContainer
+                    .flagState = flagContainer
+                    .fullPath = fsi.FullName
+                    .idParent = idParent
+                    .idVerDoc = 0
+                    .operatorID = 1
+                    .productID = productID
+                    .structureDetailID = 0
+                    .swTarget = 1
+                    .Title = fsi.Name
+                End With
+                db.Details.Add(d)
+                Try
+                    db.SaveChanges()
+
+                Catch ex As Exception
+                    log.Error("createCustomStructure : " & ex.Message)
+                End Try
+
+                If flagContainer = 2 Then
+
+                    createCustomStructureDB(fsi.FullName, productID, editionID, d.documentID, progressiveID)
+                End If
+
+            Next
+
+        Else
+
+        End If
+
+        Return r
+
+    End Function
+
+    Public Function createTemplateStructureDB(editionID As Integer, userID As String) As Boolean
+        Dim r As Boolean = True
+
+        Using db As New ApplicationDbContext
+            Dim ed As Editions = (From e In db.Editions Where e.editionID = editionID).FirstOrDefault
+            If Not IsNothing(ed) Then
+                Dim n As Integer = (From d In db.Details Where d.editionID = editionID).Count
+                If n > 0 Then
+                    r = False
+                    log.Error("Edizione non presente")
+                Else
+                    Dim sd = (From sdx In db.StructureDetails Where sdx.structureID = ed.StructureID Select New With {
+                                                                                                                                      .addFile = sdx.addFile,
+                                                                                                                                     .addFolder = sdx.addFolder,
+                                                                                                                                     .documentID = sdx.documentID,
+                                                                                                                                     .editionID = editionID,
+                                                                                                                                     .fileExtension = sdx.fileExtension,
+                                                                                                                                     .fileName = sdx.fileName,
+                                                                                                                                     .file_for_checklist = sdx.file_for_checklist,
+                                                                                                                                     .flagContainer = sdx.flagContainer,
+                                                                                                                                     .flagState = sdx.flagState,
+                                                                                                                                     .fullPath = sdx.fullPath,
+                                                                                                                                     .idParent = sdx.idParent,
+                                                                                                                                     .idVerDoc = sdx.idVerDoc,
+                                                                                                                                     .MD5 = sdx.MD5,
+                                                                                                                                     .nLevels = sdx.nLevels,
+                                                                                                                                     .operatorID = userID,
+                                                                                                                                     .productID = ed.productID,
+                                                                                                                                     .structureDetailID = sdx.structureDetailID,
+                                                                                                                                     .swTarget = sdx.swTarget,
+                                                                                                                                     .Title = sdx.Title
+                                                                                                                                      }).ToList
+
+
+                    Dim list As List(Of Details) = sd.Select(Function(sdx) New Details With {
+                                                                                                                                      .addFile = sdx.addFile,
+                                                                                                                                     .addFolder = sdx.addFolder,
+                                                                                                                                     .documentID = sdx.documentID,
+                                                                                                                                     .editionID = editionID,
+                                                                                                                                     .fileExtension = sdx.fileExtension,
+                                                                                                                                     .fileName = sdx.fileName,
+                                                                                                                                     .file_for_checklist = sdx.file_for_checklist,
+                                                                                                                                     .flagContainer = sdx.flagContainer,
+                                                                                                                                     .flagState = sdx.flagState,
+                                                                                                                                     .fullPath = sdx.fullPath,
+                                                                                                                                     .idParent = sdx.idParent,
+                                                                                                                                     .idVerDoc = sdx.idVerDoc,
+                                                                                                                                     .MD5 = sdx.MD5,
+                                                                                                                                     .nLevels = sdx.nLevels,
+                                                                                                                                     .operatorID = userID,
+                                                                                                                                     .productID = ed.productID,
+                                                                                                                                     .structureDetailID = sdx.structureDetailID,
+                                                                                                                                     .swTarget = sdx.swTarget,
+                                                                                                                                     .Title = sdx.Title
+                                                                                                                                      }).ToList
+
+
+                    db.Configuration.AutoDetectChangesEnabled = False
+                    db.Configuration.ValidateOnSaveEnabled = False
+                    db.Details.AddRange(list)
+                    db.ChangeTracker.DetectChanges()
+                    db.SaveChanges()
+                    'db.Details.AddRange(list)
+                    'db.SaveChanges()
+
+                End If
+            Else
+                log.Error("Edizione non presente")
+            End If
+        End Using
+
+
+
+
+        Return r
+    End Function
+
+    Public Function createFileSystemFromDB(editionID As Integer)
+        Dim r As Boolean = True
+        Dim db As New ApplicationDbContext
+        Dim ed As Editions = (From e In db.Editions Where editionID = editionID).FirstOrDefault
+        Dim storePath As String = Path.Combine(My.Application.Info.DirectoryPath, "store")
+        storePath = Path.Combine(storePath, editionID)
+        If Not Directory.Exists(storePath) Then Directory.CreateDirectory(storePath)
+
+        Dim list As List(Of Details) = (From d In db.Details Where d.editionID = editionID Select d Order By d.idParent, d.Title, d.documentID).ToList
+        For Each row As Details In list
+
+        Next
+
+
+        Return r
+    End Function
+
+
+
+    Private Function makeTreeList(ByRef data As List(Of Details), parentID As String) As List(Of DetailsTree)
+        Dim items As New List(Of DetailsTree)
+        Try
+            For Each r In data.Where(Function(x) (x.idParent = parentID)).OrderBy(Function(y) y.flagContainer).ThenBy(Function(y) y.Title).ToList()
+                Dim titolo As Boolean = False
+                Dim n As New DetailsTree
+                n = r
+                Dim subElements As Integer = data.Where(Function(x) (x.idParent = r.documentID)).Count
+
+                If subElements > 0 Then
+                    n.children = makeTreeList(data, r.documentID)
+                End If
+                items.Add(r)
+            Next
+
+        Catch ex As Exception
+            log.Error("makeTreeList : " & ex.Message)
+        End Try
+        Return items
+    End Function
+
+
+#End Region
+
 
 
     Function cripta(strTesto, Optional intKey = 5) As String

@@ -101,6 +101,20 @@ Namespace Controllers
 
         Private Sub init()
             Dim li As Integer = (From ci In db.Companies).Count
+
+            Dim fl As List(Of FileSystemInfo) = FileSystemInfoList(My.Application.Info.DirectoryPath)
+            For Each fsi As FileSystemInfo In fl
+                Dim entryType As String = "File"
+
+                If (fsi.Attributes And FileAttributes.Directory) = FileAttributes.Directory Then
+                    entryType = "Folder"
+                    log.Error("[" & entryType & "]" & fsi.FullName)
+                Else
+                    log.Info("[" & entryType & "]" & fsi.FullName)
+
+                End If
+            Next
+
             If li = 0 Then
                 log.Info("[INIT]" & vbTab & "ConfigController\Init")
 
@@ -142,20 +156,20 @@ Namespace Controllers
                     db.SaveChanges()
                 End If
 
-                Dim mdc As New mdClass
-                mdc.mdClassName = "MD Classe 1"
-                db.mdClass.Add(mdc)
-                db.SaveChanges()
+                'Dim mdc As New mdClass
+                'mdc.mdClassName = "MD Classe 1"
+                'db.mdClass.Add(mdc)
+                'db.SaveChanges()
 
-                Dim mda As New mdActivity
-                Try
-                    mda.mdActivityName = "Registrazione Prodotto"
-                    db.mdActivity.Add(mda)
-                    db.SaveChanges()
+                'Dim mda As New mdActivity
+                'Try
+                '    mda.mdActivityName = "Registrazione Prodotto"
+                '    db.mdActivity.Add(mda)
+                '    db.SaveChanges()
 
-                Catch ex As Exception
-                    log.Error("Errore nell'inserimento di un record in mdActivity", ex)
-                End Try
+                'Catch ex As Exception
+                '    log.Error("Errore nell'inserimento di un record in mdActivity", ex)
+                'End Try
 
 
 
@@ -216,7 +230,7 @@ Namespace Controllers
                 Dim p As New Products
                 With p
                     .productName = "Prodotto demo Cerotto"
-                    .mdClassID = mdc.mdClassID
+                    .mdClassID = mdClass_enum.Class_I
                     .companyID = cp.companyID
                     .mdCode = "MD0123"
                 End With
@@ -231,10 +245,10 @@ Namespace Controllers
                 db.Structures.Add(s)
                 db.SaveChanges()
 
-                Dim ts As New mdTasksStates
-                ts.mdTasksStatesName = "Creato"
-                db.mdTasksStates.Add(ts)
-                db.SaveChanges()
+                'Dim ts As New mdTasksStates
+                'ts.mdTasksStatesName = "Creato"
+                'db.mdTasksStates.Add(ts)
+                'db.SaveChanges()
 
 
                 Dim ed As New Editions
@@ -242,15 +256,35 @@ Namespace Controllers
                     .editionName = "Prima Edizione"
                     .productID = p.productID
                     .certificationPlan = "IT-MD-000001234"
-                    .mdActivityID = mda.mdActivityID
+                    .mdActivityID = mdActivity_enum.product_registration
                     .editionNotes = "Note automatiche prima edizione."
                     .deadline = Now.AddDays(20)
                     .StructureID = s.structureID
-                    .mdTasksStatesID = ts.mdTasksStatesID
+                    .mdTasksStatesID = mdTaskStates_enum.created
                     .ownerID = un.userID
                 End With
                 db.Editions.Add(ed)
                 db.SaveChanges()
+
+                Dim ed2 As New Editions
+                With ed2
+                    .editionName = "Altra Edizione"
+                    .productID = p.productID
+                    .certificationPlan = "IT-MD-00000999"
+                    .mdActivityID = mdActivity_enum.product_registration
+                    .editionNotes = "Note automatiche prima edizione."
+                    .deadline = Now.AddDays(20)
+                    .StructureID = 2
+                    .mdTasksStatesID = mdTaskStates_enum.created
+                    .ownerID = un.userID
+                End With
+                db.Editions.Add(ed)
+                db.SaveChanges()
+
+
+
+
+
 
 
                 'Dim t As New mdTasks
@@ -262,18 +296,30 @@ Namespace Controllers
                 'db.mdTasks.Add(t)
                 'db.SaveChanges()
 
-                Dim ts2 As New mdTasksStates
-                ts2.mdTasksStatesName = "Caricato"
-                db.mdTasksStates.Add(ts2)
-                db.SaveChanges()
-
+                'Dim ts2 As New mdTasksStates
+                'ts2.mdTasksStatesName = "Caricato"
+                'db.mdTasksStates.Add(ts2)
+                'db.SaveChanges()
 
                 insMenu()
 
 
 
             End If
+            init_mdTasksStates()
+            init_mdActivity()
+            init_mdClass()
+            init_StructureDetails()
+            Dim ncd As Integer = (From nd In db.Details).Count
+            If ncd = 0 Then
+                createCustomStructureDB("D:\TechFile\Dossier\Garza\v_1_0", 1, 1, 0, 1000)
+                Try
+                    createTemplateStructureDB(2, "6ce5d4d1-8f9a-407b-9f56-f68b9c8cc8b8")
 
+                Catch ex As Exception
+                    log.Error(ex.Message)
+                End Try
+            End If
         End Sub
 
         Private Sub insMenu()
@@ -345,6 +391,131 @@ Namespace Controllers
 
 
             db.SaveChanges()
+        End Sub
+
+        Private Sub init_mdTasksStates()
+            Dim dt As New DataTable
+            dt = EnumToDataTable(GetType(mdTaskStates_enum), "mdTasksStatesID", "mdTasksStatesName")
+            For Each row As DataRow In dt.Rows
+                Dim ts As New mdTasksStates
+                ts.mdTasksStatesID = row("mdTasksStatesID")
+                ts.mdTasksStatesName = row("mdTasksStatesName")
+                Try
+                    db.mdTasksStates.AddOrUpdate(ts)
+                    db.SaveChanges()
+
+                Catch ex As Exception
+                    log.Error("init_mdTasksStates : " & ex.Message)
+                End Try
+            Next
+        End Sub
+
+
+        Private Sub init_mdActivity()
+            Dim dt As New DataTable
+            dt = EnumToDataTable(GetType(mdActivity_enum), "mdActivityID", "mdActivityName")
+            For Each row As DataRow In dt.Rows
+                Dim ts As New mdActivity
+                ts.mdActivityID = row("mdActivityID")
+                ts.mdActivityName = row("mdActivityName")
+                Try
+                    db.mdActivity.AddOrUpdate(ts)
+                    db.SaveChanges()
+
+                Catch ex As Exception
+                    log.Error("init_mdActivity : " & ex.Message)
+                End Try
+            Next
+        End Sub
+
+        Private Sub init_mdClass()
+            Dim dt As New DataTable
+            dt = EnumToDataTable(GetType(mdClass_enum), "mdClassID", "mdClassName")
+            For Each row As DataRow In dt.Rows
+                Dim ts As New mdClass
+                ts.mdClassID = row("mdClassID")
+                ts.mdClassName = row("mdClassName")
+                Try
+                    db.mdClass.AddOrUpdate(ts)
+                    db.SaveChanges()
+
+                Catch ex As Exception
+                    log.Error("init_mdClass : " & ex.Message)
+                End Try
+            Next
+        End Sub
+
+        Private Sub init_StructureDetails()
+            Dim store_path As String = Path.Combine(My.Application.Info.DirectoryPath, "init")
+            Dim full_name As String = Path.Combine(My.Application.Info.DirectoryPath, "init\Structures.xml")
+            Dim c As Integer = (From n In db.StructureDetails Select n).Count
+            If c = 0 Then
+                If File.Exists(full_name) Then
+                    Dim ds As New DataSet
+                    Try
+                        ds.ReadXml(full_name)
+
+                    Catch ex As Exception
+                        log.Error("init_StructureDetails : " & ex.Message)
+                    End Try
+
+                    Dim s As List(Of Structures) = New List(Of Structures)
+                    Try
+                        s = toEntityFramework(Of Structures)(ds.Tables("Structures"))
+                    Catch ex As Exception
+                        log.Error("init_StructureDetails: " & ex.Message)
+                    End Try
+
+                    For Each str As Structures In s
+                        Try
+                            db.Structures.AddOrUpdate(str)
+                            db.SaveChanges()
+                        Catch ex As Exception
+                            log.Error("init_StructureDetails: " & ex.Message)
+                        End Try
+                    Next
+
+
+
+                    Dim sd As List(Of StructureDetails) = New List(Of StructureDetails)
+                    Try
+                        sd = toEntityFramework(Of StructureDetails)(ds.Tables("StructureDetails"))
+
+                    Catch ex As Exception
+                        log.Error("init_StructureDetails: " & ex.Message)
+                    End Try
+
+                    For Each strd As StructureDetails In sd
+                        Try
+                            db.StructureDetails.AddOrUpdate(strd)
+                            db.SaveChanges()
+                        Catch ex As Exception
+                            log.Error("init_StructureDetails: " & ex.Message)
+                        End Try
+                    Next
+
+
+
+                End If
+            Else
+                Dim listStructures As List(Of Structures) = (From s In db.Structures Select s).ToList()
+                Dim dtStructures As DataTable = ToDataTable(Of Structures)(listStructures)
+                dtStructures.TableName = "Structures"
+
+                Dim listStructureDetails As List(Of StructureDetails) = (From sd In db.StructureDetails Select sd).ToList()
+                Dim dtStructureDetails As DataTable = ToDataTable(Of StructureDetails)(listStructureDetails)
+                dtStructureDetails.TableName = "StructureDetails"
+
+                Dim ds As New DataSet("Strusctures")
+                ds.Tables.Add(dtStructures)
+                ds.Tables.Add(dtStructureDetails)
+
+                If Not Directory.Exists(store_path) Then Directory.CreateDirectory(store_path)
+                If File.Exists(full_name) Then File.Delete(full_name)
+                ds.WriteXml(full_name, XmlWriteMode.WriteSchema)
+
+            End If
+
         End Sub
 
     End Class

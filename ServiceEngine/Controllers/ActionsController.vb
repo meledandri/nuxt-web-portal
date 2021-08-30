@@ -152,7 +152,7 @@ Namespace Controllers
             If Not IsNothing(ed) Then
                 With al
                     .editionID = editionID
-                    .mdTasksStatesID = ed.mdTasksStatesID
+                    .mdTasksStatesID = mdTaskStates_enum.uploading_process
                     .resultID = r.stato
                     .resultMessage = IIf(r.messaggio = "", mpfd.LocalFileName & " (OK)", r.messaggio)
                     .startActiviyDate = startActiviyDate
@@ -186,18 +186,18 @@ Fine:
     End Class
 
 
-    Class MyCustomData
-        Inherits Dictionary(Of String, Object)
-        Sub New()
-        End Sub
+    'Class MyCustomData
+    '    Inherits Dictionary(Of String, Object)
+    '    Sub New()
+    '    End Sub
 
-        Public Overloads Sub add(ByVal nome As String, ByVal valore As Object)
-            If MyBase.ContainsKey(nome) Then
-                MyBase.Remove(nome)
-                MyBase.Add(nome, valore)
-            Else
-                MyBase.Add(nome, valore)
-            End If
-        End Sub
-    End Class
+    '    Public Overloads Sub add(ByVal nome As String, ByVal valore As Object)
+    '        If MyBase.ContainsKey(nome) Then
+    '            MyBase.Remove(nome)
+    '            MyBase.Add(nome, valore)
+    '        Else
+    '            MyBase.Add(nome, valore)
+    '        End If
+    '    End Sub
+    'End Class
 End Namespace
