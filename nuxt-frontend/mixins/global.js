@@ -1,7 +1,28 @@
 export default {
   //Definizione-----------------
   components: {}, //Elenco di componenti utilizzati
-  data: () => ({}), // i dati definiscono un oggetto che rappresenta i dati interni del componente Vue. Può anche essere una funzione che restituisce l'oggetto dati.
+  data: () => ({
+    uploadAcceptType:
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    files: {
+      html: "fa fa-file-code",
+      doc: "fas fa-file-word",
+      docx: "fas fa-file-word",
+      json: "fa fa-js-square",
+      pdf: "fas fa-file-pdf",
+      png: "fa fa-file-image",
+      jpg: "fa fa-file-image",
+      gif: "fa fa-file-image",
+      txt: "fas fa-file-alt",
+      xls: "fas fa-file-excel",
+      xlsx: "fas fa-file-excel",
+      zip: "fa fa-file-archive",
+      rar: "fa fa-file-archive",
+      "7z": "fa fa-file-archive",
+      xml : "far fa-file-code"
+    },
+
+  }), // i dati definiscono un oggetto che rappresenta i dati interni del componente Vue. Può anche essere una funzione che restituisce l'oggetto dati.
   methods: {
     async loadConfig() {
       console.log("loadConfig");
@@ -182,7 +203,15 @@ export default {
           });
           break;
       }
-    }
+    },
+    permitted(v) {
+      // var p =
+      //   v == "" ? true : this.$store.state.userData.permissionsList.includes(v);
+      var p = true;
+      console.log("permitted (" + v + ") : " + p);
+      return p;
+    },
+
   }, //l'oggetto metodi contiene una coppia chiave-valore di nomi di metodo e la relativa definizione di funzione. Questi fanno parte del comportamento del componente Vue che l'altro componente può attivare.
   computed: {
     lng: {

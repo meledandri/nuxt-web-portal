@@ -38,6 +38,7 @@ Namespace Controllers
             'Dim t = db.Database.SqlQuery("Select * from AppConfig",
             'Return (From c In db.YourView Select c Where c.App = "common" Or c.App = "webapi" Order By c.Parameter)
             r.add("list", t)
+
             Return r
         End Function
 
@@ -278,7 +279,7 @@ Namespace Controllers
                     .mdTasksStatesID = mdTaskStates_enum.created
                     .ownerID = un.userID
                 End With
-                db.Editions.Add(ed)
+                db.Editions.Add(ed2)
                 db.SaveChanges()
 
 
@@ -312,7 +313,8 @@ Namespace Controllers
             init_StructureDetails()
             Dim ncd As Integer = (From nd In db.Details).Count
             If ncd = 0 Then
-                createCustomStructureDB("D:\TechFile\Dossier\Garza\v_1_0", 1, 1, 0, 1000)
+                Dim progr As Integer = 1000
+                createCustomStructureDB("D:\TechFile\Dossier\Garza\v_1_0", 1, 1, 0, progr)
                 Try
                     createTemplateStructureDB(2, "6ce5d4d1-8f9a-407b-9f56-f68b9c8cc8b8")
 
@@ -386,6 +388,20 @@ Namespace Controllers
                 .destination = "fab"
             End With
             db.AppMenu.Add(m10)
+
+            '################### VOCE MENU FAB
+            Dim m11 As New AppMenu
+            With m11
+                .Name = "TechFile Light"
+                .Link = "tf_light"
+                .parentID = 0
+                .icon = "fas fa-sitemap"
+                .Permissions = "on_fab"
+                .flagVisible = True
+                .order = 0
+                .destination = "fab"
+            End With
+            db.AppMenu.Add(m11)
 
 
 

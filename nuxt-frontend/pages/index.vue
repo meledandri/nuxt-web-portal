@@ -42,7 +42,7 @@
                 >{{ locale.name }}</nuxt-link
               >
               <v-spacer></v-spacer>
-              <v-btn color="primary" @click="loadConfig()">Config</v-btn>
+              <v-btn color="primary" @click="loadConfig()" v-show="false">Config</v-btn>
               <v-btn color="primary" @click="login()" :loading="loginProgess"
                 >Login</v-btn
               >

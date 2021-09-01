@@ -465,7 +465,7 @@ Module GeneralFunctions
         Return x.FullName.CompareTo(y.FullName)
     End Function
 
-    Public Function createCustomStructureDB(p As String, productID As Integer, editionID As Integer, idParent As Integer, progressiveID As Integer) As Boolean
+    Public Function createCustomStructureDB(p As String, productID As Integer, editionID As Integer, idParent As Integer, ByRef progressiveID As Integer) As Boolean
         Dim r As Boolean = True
         Dim structureID As Integer = 1
         Dim di As New DirectoryInfo(p)
@@ -493,16 +493,16 @@ Module GeneralFunctions
                     .addFile = 0
                     .addFolder = 0
                     .nLevels = 0
-                    .fileExtension = fsi.Extension
+                    .fileExtension = fsi.Extension.Replace(".", "")
                     .fileName = fsi.Name
                     .flagContainer = flagContainer
-                    .flagState = flagContainer
+                    .flagState = 2
                     .fullPath = fsi.FullName
                     .idParent = idParent
                     .idVerDoc = 0
                     .operatorID = 1
                     .productID = productID
-                    .structureDetailID = 0
+                    .structureID = 1
                     .swTarget = 1
                     .Title = fsi.Name
                 End With
@@ -540,7 +540,56 @@ Module GeneralFunctions
                     r = False
                     log.Error("Edizione non presente")
                 Else
-                    Dim sd = (From sdx In db.StructureDetails Where sdx.structureID = ed.StructureID Select New With {
+                    'Dim sd = (From sdx In db.StructureDetails Where sdx.structureID = ed.StructureID Select New With {
+                    '                                                                                                                  .addFile = sdx.addFile,
+                    '                                                                                                                 .addFolder = sdx.addFolder,
+                    '                                                                                                                 .documentID = sdx.documentID,
+                    '                                                                                                                 .editionID = editionID,
+                    '                                                                                                                 .fileExtension = sdx.fileExtension,
+                    '                                                                                                                 .fileName = sdx.fileName,
+                    '                                                                                                                 .file_for_checklist = sdx.file_for_checklist,
+                    '                                                                                                                 .flagContainer = sdx.flagContainer,
+                    '                                                                                                                 .flagState = sdx.flagState,
+                    '                                                                                                                 .fullPath = sdx.fullPath,
+                    '                                                                                                                 .idParent = sdx.idParent,
+                    '                                                                                                                 .idVerDoc = sdx.idVerDoc,
+                    '                                                                                                                 .MD5 = sdx.MD5,
+                    '                                                                                                                 .nLevels = sdx.nLevels,
+                    '                                                                                                                 .operatorID = userID,
+                    '                                                                                                                 .productID = ed.productID,
+                    '                                                                                                                 .structureID = sdx.structureID,
+                    '                                                                                                                 .swTarget = sdx.swTarget,
+                    '                                                                                                                 .Title = sdx.Title
+                    '                                                                                                                  }).ToList
+
+
+                    'Dim list As List(Of Details) = sd.Select(Function(sdx) New Details With {
+                    '                                                                                                                  .addFile = sdx.addFile,
+                    '                                                                                                                 .addFolder = sdx.addFolder,
+                    '                                                                                                                 .documentID = sdx.documentID,
+                    '                                                                                                                 .editionID = editionID,
+                    '                                                                                                                 .fileExtension = sdx.fileExtension,
+                    '                                                                                                                 .fileName = sdx.fileName,
+                    '                                                                                                                 .file_for_checklist = sdx.file_for_checklist,
+                    '                                                                                                                 .flagContainer = sdx.flagContainer,
+                    '                                                                                                                 .flagState = sdx.flagState,
+                    '                                                                                                                 .fullPath = sdx.fullPath,
+                    '                                                                                                                 .idParent = sdx.idParent,
+                    '                                                                                                                 .idVerDoc = sdx.idVerDoc,
+                    '                                                                                                                 .MD5 = sdx.MD5,
+                    '                                                                                                                 .nLevels = sdx.nLevels,
+                    '                                                                                                                 .operatorID = userID,
+                    '                                                                                                                 .productID = ed.productID,
+                    '                                                                                                                 .structureID = sdx.structureID,
+                    '                                                                                                                 .swTarget = sdx.swTarget,
+                    '                                                                                                                 .Title = sdx.Title
+                    '                                                                                                                  }).ToList
+
+
+
+
+
+                    Dim list As List(Of Details) = (From sd In db.StructureDetails Where sd.structureID = ed.StructureID Select sd).ToList.Select(Function(sdx) New Details With {
                                                                                                                                       .addFile = sdx.addFile,
                                                                                                                                      .addFolder = sdx.addFolder,
                                                                                                                                      .documentID = sdx.documentID,
@@ -557,37 +606,27 @@ Module GeneralFunctions
                                                                                                                                      .nLevels = sdx.nLevels,
                                                                                                                                      .operatorID = userID,
                                                                                                                                      .productID = ed.productID,
-                                                                                                                                     .structureDetailID = sdx.structureDetailID,
+                                                                                                                                     .structureID = sdx.structureID,
                                                                                                                                      .swTarget = sdx.swTarget,
                                                                                                                                      .Title = sdx.Title
                                                                                                                                       }).ToList
 
 
-                    Dim list As List(Of Details) = sd.Select(Function(sdx) New Details With {
-                                                                                                                                      .addFile = sdx.addFile,
-                                                                                                                                     .addFolder = sdx.addFolder,
-                                                                                                                                     .documentID = sdx.documentID,
-                                                                                                                                     .editionID = editionID,
-                                                                                                                                     .fileExtension = sdx.fileExtension,
-                                                                                                                                     .fileName = sdx.fileName,
-                                                                                                                                     .file_for_checklist = sdx.file_for_checklist,
-                                                                                                                                     .flagContainer = sdx.flagContainer,
-                                                                                                                                     .flagState = sdx.flagState,
-                                                                                                                                     .fullPath = sdx.fullPath,
-                                                                                                                                     .idParent = sdx.idParent,
-                                                                                                                                     .idVerDoc = sdx.idVerDoc,
-                                                                                                                                     .MD5 = sdx.MD5,
-                                                                                                                                     .nLevels = sdx.nLevels,
-                                                                                                                                     .operatorID = userID,
-                                                                                                                                     .productID = ed.productID,
-                                                                                                                                     .structureDetailID = sdx.structureDetailID,
-                                                                                                                                     .swTarget = sdx.swTarget,
-                                                                                                                                     .Title = sdx.Title
-                                                                                                                                      }).ToList
+
 
 
                     db.Configuration.AutoDetectChangesEnabled = False
-                    db.Configuration.ValidateOnSaveEnabled = False
+                    'db.Configuration.ValidateOnSaveEnabled = False
+                    'For Each d As Details In list
+                    '    Try
+                    '        db.Details.Add(d)
+                    '        db.Entry(d).State = EntityState.Modified
+                    '        db.SaveChanges()
+
+                    '    Catch ex As Exception
+                    '        log.Error("createTemplateStructureDB : " & ex.Message)
+                    '    End Try
+                    'Next
                     db.Details.AddRange(list)
                     db.ChangeTracker.DetectChanges()
                     db.SaveChanges()
@@ -625,18 +664,14 @@ Module GeneralFunctions
 
 
 
-    Private Function makeTreeList(ByRef data As List(Of Details), parentID As String) As List(Of DetailsTree)
-        Dim items As New List(Of DetailsTree)
+    Public Function makeTreeList(ByRef data As List(Of DetailsTreeModel), Optional parentID As Integer = 0) As List(Of DetailsTreeModel)
+        Dim items As New List(Of DetailsTreeModel)
         Try
             For Each r In data.Where(Function(x) (x.idParent = parentID)).OrderBy(Function(y) y.flagContainer).ThenBy(Function(y) y.Title).ToList()
-                Dim titolo As Boolean = False
-                Dim n As New DetailsTree
+                Dim n As New DetailsTreeModel
+                'n = CType(Convert.ChangeType(r, r.GetType), DetailsTreeModel)
                 n = r
-                Dim subElements As Integer = data.Where(Function(x) (x.idParent = r.documentID)).Count
-
-                If subElements > 0 Then
-                    n.children = makeTreeList(data, r.documentID)
-                End If
+                n.children = makeTreeList(data, r.documentID)
                 items.Add(r)
             Next
 

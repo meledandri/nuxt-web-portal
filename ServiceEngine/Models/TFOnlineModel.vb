@@ -214,8 +214,7 @@ Public Class Details
 
     <Required>
     <Column(Order:=1)>
-    Public Property structureDetailID As Integer
-
+    Public Property productID As Integer
     '<Required>
     '<Column(Order:=0)>
     'Public Property structureID As Integer
@@ -227,7 +226,7 @@ Public Class Details
 
     <Required>
     <Column(Order:=3)>
-    Public Property productID As Integer
+    Public Property structureID As Integer
 
 
     <Required>
@@ -301,13 +300,141 @@ End Class
 
 
 Public Class DetailsModel
-    Inherits Details
+    '            Select Case Details.detailID,
+    '            Structures.structureID,
+    '            Structures.structureName,
+    '            Editions.editionID,
+    '            Editions.editionName,
+    '            Editions.certificationPlan,
+    '            Products.productID,
+    '            Products.productName,
+    '            Companies.companyID, 
+    '            Companies.BusinessName,
+    '            mdClass.mdClassID,
+    '            mdClass.mdClassName,
+    '            Products.mdCode,
+    '            Details.Title,
+    '            Details.idParent,
+    '            Details.documentID,
+    '            Details.fileName,
+    '            Details.addFolder,
+    '            Details.addFile,
+    '            Details.nLevels,
+    '            Details.idVerDoc,
+    '            Details.flagState,
+    '            Details.fileExtension,
+    '            Details.operatorID,
+    '            Details.MD5,
+    '            Details.swTarget,
+    '            Details.file_for_checklist,
+    '            Details.fullPath,
+    '            Details.flagContainer
+
+    <Key>
+    Public Property detailID As Integer
+
+    <Required>
+    Public Property productID As Integer
+
+    <MaxLength>
+    Public Property productName As String = ""
+
+
+    <Required>
+    Public Property editionID As Integer
+
+    <MaxLength>
+    Public Property editionName As String = ""
+
+    <StringLength(20)>
+    Public Property certificationPlan As String = ""
+
+
+    <Required>
+    Public Property structureID As Integer
+
+    <MaxLength>
+    Public Property structureName As String = ""
+
+    Public Property companyID As Integer
+
+    <StringLength(50)>
+    Public Property BusinessName As String = ""
+
+    Public Property mdClassID As mdClass_enum = mdClass_enum.none
+
+    <StringLength(50)>
+    Public Property mdClassName As String = ""
+
+    <StringLength(10)>
+    Public Property mdCode As String = ""
+
+
+    <Required>
+    <MaxLength>
+    Public Property Title As String = ""
+
+    <Required>
+    Public Property idParent As Integer
+
+    <Required>
+    Public Property documentID As Integer
+
+    <Required>
+    <StringLength(250)>
+    Public Property fileName As String = ""
+
+    <Required>
+    Public Property addFolder As Integer = 0
+
+    <Required>
+    Public Property addFile As Integer = 0
+
+    <Required>
+    Public Property nLevels As Integer = 0
+
+
+    <Required>
+    Public Property idVerDoc As Integer = 0
+
+
+    <Required>
+    Public Property flagState As Integer = 0    'o = da caricare, 2 = completato
+
+    <StringLength(20)>
+    Public Property fileExtension As String = ""
+
+    Public Property operatorID As String = ""
+
+    <MaxLength>
+    Public Property MD5 As String = ""
+
+    <Required>
+    Public Property swTarget As Integer = 0
+
+    <MaxLength>
+    Public Property file_for_checklist As String = ""
+
+    <MaxLength>
+    Public Property fullPath As String = ""
+
+    <Required>
+    Public Property flagContainer As Integer = 0
+
+    <Required>
+    Public Property fileStatus As Integer
+    <Required>
+    Public Property productInfoStatus As Integer
+    <Required>
+    Public Property checkListStatus As Integer
+
+
 End Class
 
 
-Public Class DetailsTree
-    Inherits Details
-    Public Property children As New List(Of DetailsTree)
+Public Class DetailsTreeModel
+    Inherits DetailsModel
+    Public Property children As New List(Of DetailsTreeModel)
 End Class
 
 
@@ -684,5 +811,13 @@ Public Class TaskInfoDataBindig
 
     <StringLength(50)>
     Public Property email As String = ""
+
+    <Required>
+    Public Property fileStatus As Integer
+    <Required>
+    Public Property productInfoStatus As Integer
+    <Required>
+    Public Property checkListStatus As Integer
+
 
 End Class

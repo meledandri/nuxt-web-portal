@@ -166,7 +166,10 @@ Namespace Controllers
                                                            .ownerID = ed.ownerID,
                                                            .UserName = u.UserName,
                                                            .DisplayName = u.DisplayName,
-                                                           .email = u.email
+                                                           .email = u.email,
+                                                           .fileStatus = ed.fileStatus,
+                                                           .productInfoStatus = ed.productInfoStatus,
+                                                           .checkListStatus = ed.checkListStatus
                                                                }).ToList
             Return list
         End Function
@@ -304,6 +307,69 @@ Namespace Controllers
             r.add("companyInfo", model)
             Return r
 
+        End Function
+
+
+        <Route("tree/{editionID}")>
+        Public Function GetTreeEdition(editionID As Integer) As JRisposta
+            Dim r As New JRisposta
+            '            Select Case Details.detailID, Structures.structureID, Structures.structureName, Editions.editionID, Editions.editionName, Editions.certificationPlan, Products.productID, Products.productName, Companies.companyID, 
+            '                         Companies.BusinessName, mdClass.mdClassID, mdClass.mdClassName, Products.mdCode, Details.Title, Details.idParent, Details.documentID, Details.fileName, Details.addFolder, Details.addFile, Details.nLevels,
+            '                         Details.idVerDoc, Details.flagState, Details.fileExtension, Details.operatorID, Details.MD5, Details.swTarget, Details.file_for_checklist, Details.fullPath, Details.flagContainer
+            'From Products INNER Join
+            '              Details On Products.productID = Details.productID INNER Join
+            '              mdClass On Products.mdClassID = mdClass.mdClassID INNER Join
+            '              Editions On Details.editionID = Editions.editionID INNER Join
+            '              Structures On Details.structureID = Structures.structureID INNER Join
+            '              Companies On Products.companyID = Companies.companyID
+
+            'where Details.editionID = 2
+
+            Dim t As List(Of DetailsTreeModel) = (From p In db.Products
+                                                  Join d In db.Details On p.productID Equals d.productID
+                                                  Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
+                                                  Join e In db.Editions On d.editionID Equals e.editionID
+                                                  Join str In db.Structures On str.structureID Equals e.StructureID
+                                                  Join c In db.Companies On c.companyID Equals p.companyID
+                                                  Where e.editionID = editionID
+                                                  Select New DetailsTreeModel With {
+                                                                          .detailID = d.detailID,
+                                                                          .structureID = str.structureID,
+                                                                          .structureName = str.structureName,
+                                                                          .editionID = e.editionID,
+                                                                          .editionName = e.editionName,
+                                                                          .certificationPlan = e.certificationPlan,
+                                                                          .productID = p.productID,
+                                                                          .productName = p.productName,
+                                                                          .companyID = c.companyID,
+                                                                          .BusinessName = c.BusinessName,
+                                                                          .mdClassID = cls.mdClassID,
+                                                                          .mdClassName = cls.mdClassName,
+                                                                          .mdCode = p.mdCode,
+                                                                          .Title = d.Title,
+                                                                          .idParent = d.idParent,
+                                                                          .documentID = d.documentID,
+                                                                          .fileName = d.fileName,
+                                                                          .addFile = d.addFile,
+                                                                          .addFolder = d.addFolder,
+                                                                          .nLevels = d.nLevels,
+                                                                          .idVerDoc = d.idVerDoc,
+                                                                          .flagState = d.flagState,
+                                                                          .fileExtension = d.fileExtension,
+                                                                          .operatorID = d.operatorID,
+                                                                          .MD5 = d.MD5,
+                                                                          .swTarget = d.swTarget,
+                                                                          .file_for_checklist = d.file_for_checklist,
+                                                                          .fullPath = d.fullPath,
+                                                                          .flagContainer = d.flagContainer,
+                                                                          .fileStatus = e.fileStatus,
+                                                                          .checkListStatus = e.checkListStatus,
+                                                                          .productInfoStatus = e.productInfoStatus
+                                                                          }).ToList
+
+            r.add("tree", makeTreeList(t))
+
+            Return r
         End Function
 
 

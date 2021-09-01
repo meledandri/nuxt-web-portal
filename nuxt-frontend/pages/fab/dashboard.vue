@@ -5,7 +5,6 @@
     </v-overlay>
 
     <v-col class="text-center" cols="12">
-      <img src="/tfo-logo.png" alt="Vuetify.js" class="mb-5" />
       <blockquote class="blockquote">
         &#8220;ACCESSO FABBRICANTE&#8221;
         <footer>
@@ -17,7 +16,20 @@
     </v-col>
     <v-col cols="12">
       <v-card height="100%">
-        <v-card-title>
+        <v-app-bar v-if="viewTree">
+          <v-btn text @click="back">
+            <v-icon class="mr-2">
+              far fa-arrow-alt-circle-left
+            </v-icon>
+            Back
+          </v-btn>
+          <v-spacer />
+                      <v-icon small color="red">
+              fas fa-trash-alt
+            </v-icon>
+        </v-app-bar>
+
+        <v-card-title v-if="!viewTree">
           <v-text-field
             v-model="search"
             append-icon="fas fa-search"
@@ -33,6 +45,7 @@
           :search="search"
           :loading="loadData"
           class="elevation-1"
+          v-if="!viewTree"
         >
           <template v-slot:top>
             <v-toolbar flat>
@@ -52,7 +65,7 @@
           </template>
 
           <template v-slot:item.actions="{ item }">
-            <v-icon small class="mr-2" color="primary" @click="usersItem(item)">
+            <v-icon small class="mr-2" color="primary" >
               fas fa-users-cog
             </v-icon>
 
@@ -62,38 +75,59 @@
               :accept="uploadAcceptType"
               hide-input
               color="primary"
-              :prepend-icon="
-                item.StructureID == 1
-                  ? 'fas fa-cloud-upload-alt'
-                  : 'fas fa-sitemap'
-              "
+              prepend-icon="fas fa-cloud-upload-alt"
               @click="resetAttachFile('upload' + item.mdTaskID)"
               @change="attachFile('upload' + item.mdTaskID, item)"
               :id="'upload' + item.mdTaskID"
               :name="'upload' + item.mdTaskID"
               :ref="'upload' + item.mdTaskID"
+              v-if="item.StructureID == 1 && item.fileStatus == 0"
               dense
+               class="mr-2"
             >
             </v-file-input>
+            <v-btn
+              icon
+              x-small
+              v-else-if="item.StructureID == 1 && item.fileStatus > 0"
+              @click="handleClick(item)"
+               class="mr-2"
+            >
+              <v-icon color="success">
+                fas fa-cloud-upload-alt
+              </v-icon>
+            </v-btn>
 
-            <v-icon small color="red" @click="deleteItem(item)">
-              fas fa-trash-alt
-            </v-icon>
+            <v-btn
+              icon
+              x-small
+              v-if="item.StructureID > 1"
+              @click="handleClick(item)"
+               class="mr-2"
+            >
+              <v-icon color="#ffc107">
+                fas fa-sitemap
+              </v-icon>
+            </v-btn>
+
           </template>
           <template v-slot:no-data>
             <v-btn color="primary" @click="loadDataList()">
-              Reset
+              Refresh
             </v-btn>
           </template>
         </v-data-table>
+
+        <tf-treeview v-if="viewTree" :editionID.sync="editionID" />
       </v-card>
     </v-col>
   </v-row>
 </template>
 
 <script>
+import TfTreeview from "~/components/TfTreeview.vue";
 export default {
-  components: {},
+  components: { TfTreeview },
   layout: "on",
   data() {
     return {
@@ -123,7 +157,9 @@ export default {
       selectedDocument: null,
       selectedCompany: 0,
       inProgress: [],
-      uploadPercentage: 0
+      uploadPercentage: 0,
+      viewTree: false,
+      editionID: 0
     };
   },
   computed: {},
@@ -156,7 +192,7 @@ export default {
 
       console.log(val);
     },
-        uploadFile(val) {
+    uploadFile(val) {
       if (!val) return;
       console.log("detailsList\\watch\\uploadFile..");
       console.log("selectedDocument:");
@@ -178,7 +214,6 @@ export default {
 
       console.log(val);
     }
-
   },
   mounted() {
     this.loadDataList();
@@ -235,6 +270,7 @@ export default {
         .then(response => {
           console.log(response.data);
           this.endProcess(this.selectedDocument.mdTaskID);
+          this.loadDataList();
           this.uploading = false;
           //this.getDetailID(this.selectedDocument.mdTaskID);
         })
@@ -258,6 +294,15 @@ export default {
       if (index > -1) {
         this.inProgress.splice(index, 1);
       }
+    },
+    handleClick(row) {
+      this.viewMessage("success", row.productName, row.BusinessName);
+      this.editionID = row.editionID;
+      this.viewTree = true;
+    },
+    back() {
+      this.viewTree = false;
+      this.loadDataList();
     }
   }
 };
