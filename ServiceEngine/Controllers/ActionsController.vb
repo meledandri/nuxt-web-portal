@@ -5,6 +5,7 @@ Imports System.Net.Http
 Imports System.Web
 Imports System.Web.Hosting
 Imports System.Web.Http
+Imports Ionic.Zip
 Imports log4net
 Imports Microsoft.Owin.Host.SystemWeb
 
@@ -82,6 +83,7 @@ Namespace Controllers
             If Not Directory.Exists(temp_dir) Then Directory.CreateDirectory(temp_dir)
             If Not Directory.Exists(StoragePath) Then Directory.CreateDirectory(StoragePath)
             Dim provider = New MultipartFormDataStreamProvider(temp_dir)
+            Dim fullname As String = ""
 
             Dim mpfd As MultipartFileData
 
@@ -128,11 +130,13 @@ Namespace Controllers
                             fileName = Path.GetFileName(fileName)
                         End If
 
-                        If File.Exists(Path.Combine(StoragePath, fileName)) Then
-                            File.Delete(Path.Combine(StoragePath, fileName))
+                        fullname = Path.Combine(StoragePath, fileName)
+
+                        If File.Exists(fullname) Then
+                            File.Delete(fullname)
                         End If
 
-                        File.Move(fileData.LocalFileName, Path.Combine(StoragePath, fileName))
+                        File.Move(fileData.LocalFileName, fullname)
 
 
 
@@ -174,6 +178,30 @@ Namespace Controllers
                 db.Editions.Attach(ed)
                 db.Entry(ed).State = EntityState.Modified
                 db.SaveChanges()
+
+                Try
+                    Dim storeEdition As String = Path.Combine(StoragePath, editionID)
+                    Using zip As New ZipFile(fullname)
+                        If Directory.Exists(storeEdition) Then Directory.Delete(storeEdition, True)
+                        zip.ExtractAll(storeEdition)
+                        'Dim e As ZipEntry
+                        'For Each e In zip
+                        '    If (e.UsesEncryption) Then
+                        '        e.ExtractWithPassword("Secret!")
+                        '    Else
+                        '        e.Extract()
+                        '    End If
+                        'Next
+                    End Using
+                    File.Delete(fullname)
+
+                    createCustomStructureDB(storeEdition, ed.productID, ed.editionID, 0, 1000)
+
+                Catch ex As Exception
+                    r.stato = JRisposta.Stati.Errato
+                    r.messaggio = ex.Message
+                End Try
+
             End If
 
 Fine:

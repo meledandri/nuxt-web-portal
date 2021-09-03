@@ -131,13 +131,13 @@
           </v-dialog>
 
           <!-- Dialog per la gestione degli utenti -->
-          <v-dialog v-model="user.dialog" max-width="800px">
+          <v-dialog v-model="user.dialog" persistent max-width="800px">
             <v-card>
               <v-toolbar color="indigo" dark>
                 <v-app-bar-nav-icon></v-app-bar-nav-icon>
 
                 <v-toolbar-title>
-                  {{ editedItem.BusinessName }} \ Users</v-toolbar-title
+                  {{ company.companyInfo.BusinessName }} \ Users</v-toolbar-title
                 >
 
                 <v-spacer></v-spacer>
@@ -168,11 +168,11 @@
                                 </v-list-item-avatar>
                                 <v-list-item-content>
                                   <v-list-item-title>
-                                    {{ user.DisplayName }}
+                                    {{ user.displayName }}
                                   </v-list-item-title>
                                   <v-list-item-subtitle>
                                     <b style="color: #4183a9;">{{
-                                      user.UserName
+                                      user.userName
                                     }}</b>
                                     ({{ user.email }})
                                   </v-list-item-subtitle>
@@ -202,7 +202,7 @@
                         <v-row class="ma-3">
                           <v-col cols="12">
                             <v-text-field
-                              v-model="user.userInfo.UserName"
+                              v-model="user.userInfo.userName"
                               label="User Name"
                               dense
                               outlined
@@ -211,7 +211,7 @@
 
                           <v-col cols="12">
                             <v-text-field
-                              v-model="user.userInfo.DisplayName"
+                              v-model="user.userInfo.displayName"
                               label="Display name"
                               dense
                               outlined
@@ -250,17 +250,14 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="blue darken-1" text @click="closeUsers">
-                  Cancel
-                </v-btn>
-                <v-btn color="blue darken-1" text @click="save">
-                  Save
+                  Close
                 </v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
 
           <!-- Dialog per la gestione delle attività -->
-          <v-dialog v-model="task.dialog" max-width="800px">
+          <v-dialog v-model="task.dialog" persistent max-width="800px">
             <v-card>
               <v-toolbar color="indigo" dark>
                 <v-app-bar-nav-icon></v-app-bar-nav-icon>
@@ -287,10 +284,7 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="blue darken-1" text @click="closeTasks">
-                  Cancel
-                </v-btn>
-                <v-btn color="blue darken-1" text @click="save">
-                  Save
+                  Close
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -371,9 +365,9 @@ export default {
         dialog: false,
         userInfo: {
           userID: "",
-          UserName: "",
+          userName: "",
           password: "",
-          DisplayName: "",
+          displayName: "",
           email: "",
           companyID: 0
         }
@@ -421,8 +415,8 @@ export default {
           insertDate: null,
           modDate: null,
           ownerID: "0",
-          UserName: "",
-          DisplayName: "",
+          userName: "",
+          displayName: "",
           email: ""
         },
         taskDefault: {
@@ -447,8 +441,8 @@ export default {
           insertDate: null,
           modDate: null,
           ownerID: "0",
-          UserName: "",
-          DisplayName: "",
+          userName: "",
+          displayName: "",
           email: ""
         }
       },
@@ -565,9 +559,9 @@ export default {
     fnNewUser() {
       console.log("fnNewUser");
       this.user.userInfo.userID = "0";
-      this.user.userInfo.UserName = "";
+      this.user.userInfo.userName = "";
       this.user.userInfo.password = "";
-      this.user.userInfo.DisplayName = "";
+      this.user.userInfo.displayName = "";
       this.user.userInfo.email = "";
       this.user.userInfo.companyID = this.editedItem.companyID;
       this.user.tab = 1;
@@ -634,10 +628,15 @@ export default {
 
     newTask() {
       console.log("newTask");
-      this.editedIndex = 1;
+      this.task.editedIndex = 1;
       this.task.taskInfo = Object.assign({}, this.task.taskDefault);
       if (this.$refs.Activities) {
-        this.$refs.Activities.task.tab = 1;
+        this.$refs.Activities.newTask();
+      //    this.$refs.Activities.task.tab = 1;
+      //  this.$refs.Activities.task.taskInfo = this.task.taskInfo;
+      //   this.$refs.Activities.task.taskInfo.ownerID = this.userInfo.userID;
+      //   this.$refs.Activities.task.taskInfo.companyID = this.company.companyInfo.companyID;
+      //   this.$refs.Activities.task.taskInfo.BusinessName = this.company.companyInfo.BusinessName;
       }
       this.task.dialog = true;
     },

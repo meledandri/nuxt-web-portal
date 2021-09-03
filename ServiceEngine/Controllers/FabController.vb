@@ -47,7 +47,7 @@ Namespace Controllers
                 Dim d As New FabListDetailDataBinding
 
                 Dim u As List(Of UserInfo) = (From ut In db.Users Where ut.companyID = c.companyID
-                                              Select New UserInfo With {.UserName = ut.UserName, .DisplayName = ut.DisplayName, .email = ut.email, .userID = ut.userID, .password = "", .companyID = ut.companyID}).ToList
+                                              Select New UserInfo With {.userName = ut.userName, .displayName = ut.displayName, .email = ut.email, .userID = ut.userID, .password = "", .companyID = ut.companyID}).ToList
                 d.users = u
                 d.number_of_users = u.Count
                 'Recupero le attività dell'azienda
@@ -97,7 +97,7 @@ Namespace Controllers
                 Dim d As New FabListDetailDataBinding
 
                 Dim u As List(Of UserInfo) = (From ut In db.Users Where ut.companyID = cp.companyID
-                                              Select New UserInfo With {.UserName = ut.UserName, .DisplayName = ut.DisplayName, .email = ut.email, .userID = ut.userID, .password = "", .companyID = ut.companyID}).ToList
+                                              Select New UserInfo With {.userName = ut.userName, .displayName = ut.displayName, .email = ut.email, .userID = ut.userID, .password = "", .companyID = ut.companyID}).ToList
                 d.users = u
                 'Recupero le attività dell'azienda
                 d.tasks = getTasksInfoList(cp.companyID)
@@ -140,7 +140,7 @@ Namespace Controllers
                                                        Join act In db.mdActivity On ed.mdActivityID Equals act.mdActivityID
                                                        Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
                                                        Join tsks In db.mdTasksStates On ed.mdTasksStatesID Equals tsks.mdTasksStatesID
-                                                       Join str In db.Structures On ed.StructureID Equals str.structureID
+                                                       Join str In db.Structures On ed.structureID Equals str.structureID
                                                        Join u In db.Users On u.userID Equals ed.ownerID
                                                        Where cp.companyID = companyID
                                                        Select New TaskInfoDataBindig _
@@ -150,6 +150,7 @@ Namespace Controllers
                                                                .productName = p.productName,
                                                                .mdClassID = cls.mdClassID,
                                                                .mdClassName = cls.mdClassName,
+                                                               .mdCode = p.mdCode,
                                                                .editionID = ed.editionID,
                                                                .editionName = ed.editionName,
                                                                .certificationPlan = ed.certificationPlan,
@@ -157,19 +158,19 @@ Namespace Controllers
                                                                .mdActivityName = act.mdActivityName,
                                                                .editionNotes = ed.editionNotes,
                                                                 .deadline = ed.deadline,
-                                                               .StructureID = str.structureID,
+                                                               .structureID = str.structureID,
                                                                .structureName = str.structureName,
-                                                           .mdTaskStatesID = ed.mdTasksStatesID,
-                                                           .mdTaskStatesName = tsks.mdTasksStatesName,
+                                                               .mdTaskStatesID = ed.mdTasksStatesID,
+                                                               .mdTaskStatesName = tsks.mdTasksStatesName,
                                                                .insertDate = ed.insertDate,
-                                                           .modifiedDate = ed.modifiedDate,
-                                                           .ownerID = ed.ownerID,
-                                                           .UserName = u.UserName,
-                                                           .DisplayName = u.DisplayName,
-                                                           .email = u.email,
-                                                           .fileStatus = ed.fileStatus,
-                                                           .productInfoStatus = ed.productInfoStatus,
-                                                           .checkListStatus = ed.checkListStatus
+                                                               .modifiedDate = ed.modifiedDate,
+                                                               .ownerID = ed.ownerID,
+                                                               .userName = u.userName,
+                                                               .displayName = u.displayName,
+                                                               .email = u.email,
+                                                               .fileStatus = ed.fileStatus,
+                                                               .productInfoStatus = ed.productInfoStatus,
+                                                               .checkListStatus = ed.checkListStatus
                                                                }).ToList
             Return list
         End Function
@@ -195,8 +196,8 @@ Namespace Controllers
                 '#### Inserire tutte le verifiche del caso
                 With ut
                     .userID = System.Guid.NewGuid.ToString()
-                    .UserName = model.UserName
-                    .DisplayName = model.DisplayName
+                    .userName = model.userName
+                    .DisplayName = model.displayName
                     .email = model.email
                     .password = cripta(model.password)
                     .companyID = model.companyID
@@ -222,11 +223,11 @@ Namespace Controllers
             Dim ui As New UserInfo
             With ui
                 .companyID = ut.companyID
-                .DisplayName = ut.DisplayName
+                .displayName = ut.DisplayName
                 .email = ut.email
                 .password = ""
                 .userID = ut.userID
-                .UserName = ut.UserName
+                .UserName = ut.userName
             End With
 
             r.add("userInfo", ui)
@@ -329,7 +330,7 @@ Namespace Controllers
                                                   Join d In db.Details On p.productID Equals d.productID
                                                   Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
                                                   Join e In db.Editions On d.editionID Equals e.editionID
-                                                  Join str In db.Structures On str.structureID Equals e.StructureID
+                                                  Join str In db.Structures On str.structureID Equals e.structureID
                                                   Join c In db.Companies On c.companyID Equals p.companyID
                                                   Where e.editionID = editionID
                                                   Select New DetailsTreeModel With {
@@ -372,6 +373,75 @@ Namespace Controllers
             Return r
         End Function
 
+        <Route("task/save")>
+        Public Function PostTaskSave(model As TaskInfoDataBindig) As JRisposta
+            Dim r As New JRisposta
+            Dim ed As New Editions
+            If Not ModelState.IsValid Then
+                r.stato = JRisposta.Stati.Errato
+                r.add("ModelState", getModelStateMessages(ModelState))
+                r.messaggio = "Errore nei dati trasmessi"
+                Return r
+            End If
 
+            'Classe Prodotto
+            If (model.mdClassID = 0) Then
+                Dim mdc As New mdClass
+                mdc.mdClassName = model.mdClassName
+                db.mdClass.Add(mdc)
+                db.SaveChanges()
+                model.mdClassID = mdc.mdClassID ' Reimposto il modello con la classe aggiornata
+            End If
+
+
+            'Prodotto
+            If model.productID = 0 Then
+                Dim p As New Products
+                p.productName = model.productName
+                p.companyID = model.companyID
+                p.mdClassID = model.mdClassID
+                p.mdCode = model.mdCode
+                db.Products.Add(p)
+                db.SaveChanges()
+                model.productID = p.productID ' Reimposto il modello conil prodotto  aggiornato
+            End If
+
+            'Edizione
+            If model.editionID <> 0 Then
+                ed = (From e In db.Editions Where e.editionID = model.editionID).FirstOrDefault
+            End If
+
+            With ed
+                .productID = model.productID
+                .certificationPlan = model.certificationPlan
+                .editionName = model.editionName
+                .editionNotes = model.editionNotes
+                .mdActivityID = model.mdActivityID
+                '.mdTasksStatesID = model.certificationPlan
+                .modifiedDate = Now
+                .ownerID = model.ownerID
+                .structureID = model.structureID
+                If IsNothing(.deadline) Then .deadline = Now.AddDays(30)
+            End With
+
+            Try
+                db.Editions.AddOrUpdate(ed)
+                db.SaveChanges()
+
+                If ed.structureID > 1 Then
+                    createTemplateStructureDB(ed.editionID, model.ownerID)
+                End If
+
+            Catch ex As Exception
+                r.messaggio = ex.Message
+                r.stato = JRisposta.Stati.Errato
+
+            End Try
+
+
+
+
+            Return r
+        End Function
     End Class
 End Namespace

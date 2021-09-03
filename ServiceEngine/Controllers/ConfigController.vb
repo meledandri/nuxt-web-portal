@@ -79,13 +79,13 @@ Namespace Controllers
             '    If ui = 0 Then
             '        Dim un As New Users
             '        With un
-            '            .DisplayName = "Administrator"
+            '            .displayName = "Administrator"
             '            .email = "sergio.meledandri@pro360web.com"
             '            .insertDate = Now
             '            .password = cripta("Password123!")
             '            .PasswordMustChange = False
             '            .LockoutEnabled = False
-            '            .UserName = "admin"
+            '            .userName = "admin"
             '            .companyID = cn.companyID
             '        End With
             '        db.Users.Add(un)
@@ -144,7 +144,7 @@ Namespace Controllers
                 Dim ui As Integer = (From u In db.Users Select u).Count
                 If ui = 0 Then
                     With un
-                        .DisplayName = "Administrator"
+                        .displayName = "Administrator"
                         .email = "sergio.meledandri@pro360web.com"
                         .insertDate = Now
                         .password = cripta("Password123!")
@@ -199,7 +199,7 @@ Namespace Controllers
 
                 Dim uc As New Users
                 With uc
-                    .DisplayName = "MD User 1"
+                    .displayName = "MD User 1"
                     .email = "user1.md-pharma.srl"
                     .insertDate = Now
                     .password = cripta("Password123!")
@@ -214,7 +214,7 @@ Namespace Controllers
 
                 'Dim uc2 As New Users
                 'With uc2
-                '    .DisplayName = "MD User 2"
+                '    .displayName = "MD User 2"
                 '    .email = "user2.md-pharma.srl"
                 '    .insertDate = Now
                 '    .password = cripta("Password123!")
@@ -260,7 +260,7 @@ Namespace Controllers
                     .mdActivityID = mdActivity_enum.product_registration
                     .editionNotes = "Note automatiche prima edizione."
                     .deadline = Now.AddDays(20)
-                    .StructureID = s.structureID
+                    .structureID = s.structureID
                     .mdTasksStatesID = mdTaskStates_enum.created
                     .ownerID = un.userID
                 End With
@@ -275,7 +275,7 @@ Namespace Controllers
                     .mdActivityID = mdActivity_enum.product_registration
                     .editionNotes = "Note automatiche prima edizione."
                     .deadline = Now.AddDays(20)
-                    .StructureID = 2
+                    .structureID = 2
                     .mdTasksStatesID = mdTaskStates_enum.created
                     .ownerID = un.userID
                 End With

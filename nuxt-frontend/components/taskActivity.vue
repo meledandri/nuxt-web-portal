@@ -25,13 +25,16 @@
                     ({{ task.mdTaskStatesName }})
                   </v-list-item-subtitle>
                 </v-list-item-content>
-
-                <v-icon small class="mx-2 d-inline-block">
-                  far fa-edit
-                </v-icon>
-                <v-icon small color="red" class="mx-2 d-inline-block">
-                  far fa-trash-alt
-                </v-icon>
+                <v-btn icon class="mr-2" @click="editTask(task)">
+                  <v-icon small class="mx-2 d-inline-block">
+                    far fa-edit
+                  </v-icon>
+                </v-btn>
+                <v-btn icon class="mr-2">
+                  <v-icon small color="red" class="mx-2 d-inline-block">
+                    far fa-trash-alt
+                  </v-icon>
+                </v-btn>
               </v-list-item>
             </v-list>
           </v-col>
@@ -117,13 +120,17 @@
           </v-col>
           <!-- Codice del Prodotto -->
           <v-col cols="12" md="6">
-            <v-text-field label="Product code" outlined></v-text-field>
+            <v-text-field
+              label="Product code"
+              outlined
+              v-model="task.taskInfo.mdCode"
+            ></v-text-field>
           </v-col>
           <!-- Edizione Prodotto -->
           <v-col cols="12" md="6">
             <v-text-field
               label="Product Edition"
-              v-model="computedEdition"
+              v-model="task.taskInfo.editionName"
               outlined
             ></v-text-field>
           </v-col>
@@ -155,7 +162,7 @@
             <v-textarea
               outlined
               label="Notes"
-              :value="task.taskInfo.editionNotes"
+              v-model="task.taskInfo.editionNotes"
             ></v-textarea>
           </v-col>
 
@@ -225,35 +232,38 @@ export default {
         insertDate: null,
         modDate: null,
         ownerID: "0",
-        UserName: "",
-        DisplayName: "",
+        userName: "",
+        displayName: "",
         email: ""
       },
       taskDefault: {
-        companyID: "0",
+        companyID: 0,
         BusinessName: "",
-        productID: "0",
+        productID: 0,
         productName: "",
-        mdClassID: "0",
+        mdClassID: 0,
         mdClassName: "",
-        editionID: "0",
+        mdCode: "",
+        editionID: 0,
         editionName: "",
         certificationPlan: "",
-        mdActivityID: "0",
+        mdActivityID: 0,
         mdActivityName: "",
         editionNotes: "",
-        deadline: null,
-        StructureID: "0",
+        deadline: "",
+        structureID: 0,
         structureName: "",
-        mdTaskID: "",
-        mdTaskStatesID: "",
-        mdTaskStatesName: "",
-        insertDate: null,
-        modDate: null,
-        ownerID: "0",
-        UserName: "",
-        DisplayName: "",
-        email: ""
+        mdTaskStatesID: 0,
+        mdTaskStatesName: "New",
+        insertDate: "",
+        modifiedDate: "",
+        ownerID: "",
+        userName: "",
+        displayName: "",
+        email: "",
+        fileStatus: 0,
+        productInfoStatus: 0,
+        checkListStatus: 0
       }
     }
   }), // i dati definiscono un oggetto che rappresenta i dati interni del componente Vue. Può anche essere una funzione che restituisce l'oggetto dati.
@@ -261,6 +271,7 @@ export default {
     async loadCompanyData(companyID) {
       console.log("loadCompanyData..(" + companyID + ")");
       this.loadData = true;
+      this.task.tab = 0;
       var data = (await this.$axios.get("fabEditData/" + companyID)).data;
       this.company.companyInfo = data.company;
       this.products = data.products;
@@ -272,6 +283,24 @@ export default {
     },
     changeTab(n) {
       this.task.tab = n;
+    },
+    newTask() {
+      this.task.editedIndex = 1;
+      this.task.taskInfo = Object.assign({}, this.task.taskDefault);
+      delete this.task.taskInfo.insertDate;
+      delete this.task.taskInfo.modifiedDate;
+      this.task.tab = 1;
+      this.task.taskInfo.ownerID = this.userInfo.userID;
+      this.task.taskInfo.companyID = this.company.companyInfo.companyID;
+      this.task.taskInfo.BusinessName = this.company.companyInfo.BusinessName;
+    },
+    editTask(item) {
+      console.log("editTask");
+      this.task.editedIndex = this.company.companyInfo.details.tasks.indexOf(
+        item
+      );
+      this.task.taskInfo = Object.assign({}, item);
+      this.changeTab(1);
     }
   }, //l'oggetto metodi contiene una coppia chiave-valore di nomi di metodo e la relativa definizione di funzione. Questi fanno parte del comportamento del componente Vue che l'altro componente può attivare.
   computed: {
@@ -451,21 +480,21 @@ export default {
         return r;
       }
     },
-    computedEdition: {
-      get() {
-        return this.task.taskInfo.editionName == undefined
-          ? ""
-          : this.task.taskInfo.editionName;
-      },
-      set(v) {
-        this.task.taskInfo.editionID = 0;
-        this.task.taskInfo.editionName = v;
+    // computedEdition: {
+    //   get() {
+    //     return this.task.taskInfo.editionName == undefined
+    //       ? ""
+    //       : this.task.taskInfo.editionName;
+    //   },
+    //   set(v) {
+    //     this.task.taskInfo.editionID = 0;
+    //     this.task.taskInfo.editionName = v;
 
-        return this.task.taskInfo.editionName == undefined
-          ? ""
-          : this.task.taskInfo.editionName;
-      }
-    },
+    //     return this.task.taskInfo.editionName == undefined
+    //       ? ""
+    //       : this.task.taskInfo.editionName;
+    //   }
+    // },
     computedStructure: {
       get() {
         var r = {
@@ -533,11 +562,8 @@ export default {
 };
 </script>
 
-
 <style scoped>
-.v-input:not(.v-textarea)
-{
-    max-height: 50px;
+.v-input:not(.v-textarea) {
+  max-height: 50px;
 }
-
 </style>

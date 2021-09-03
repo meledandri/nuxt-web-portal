@@ -3,7 +3,7 @@ Imports System.ComponentModel.DataAnnotations.Schema
 
 Public Class LoginBindingModel
     <Required>
-    Public Property UserName As String = ""
+    Public Property userName As String = ""
     <Required>
     Public Property password As String = ""
 

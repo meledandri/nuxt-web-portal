@@ -39,7 +39,7 @@ Namespace Controllers
             Dim hidden As Boolean = False
             Dim list As List(Of ProductInfoDataBinding) = (From p In db.Products
                                                            Join ed In db.Editions On p.productID Equals ed.productID
-                                                           Join str In db.Structures On ed.StructureID Equals str.structureID
+                                                           Join str In db.Structures On ed.structureID Equals str.structureID
                                                            Join cp In db.Companies On p.companyID Equals cp.companyID
                                                            Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
                                                            Join act In db.mdActivity On ed.mdActivityID Equals act.mdActivityID
@@ -58,7 +58,7 @@ Namespace Controllers
                                                                .mdActivityName = act.mdActivityName,
                                                                .editionNotes = ed.editionNotes,
                                                                                                                       .deadline = ed.deadline,
-                                                               .StructureID = str.structureID,
+                                                               .structureID = str.structureID,
                                                                .structureName = str.structureName,
                                                                .insertDate = ed.insertDate
                                                                }).ToList
@@ -97,7 +97,7 @@ Namespace Controllers
                                                        Join act In db.mdActivity On ed.mdActivityID Equals act.mdActivityID
                                                        Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
                                                        Join tsks In db.mdTasksStates On ed.mdTasksStatesID Equals tsks.mdTasksStatesID
-                                                       Join str In db.Structures On ed.StructureID Equals str.structureID
+                                                       Join str In db.Structures On ed.structureID Equals str.structureID
                                                        Join u In db.Users On u.userID Equals ed.ownerID
                                                        Where cp.isHidden = hidden
                                                        Select New TaskInfoDataBindig _
@@ -114,15 +114,15 @@ Namespace Controllers
                                                                .mdActivityName = act.mdActivityName,
                                                                .editionNotes = ed.editionNotes,
                                                                 .deadline = ed.deadline,
-                                                               .StructureID = str.structureID,
+                                                               .structureID = str.structureID,
                                                                .structureName = str.structureName,
                                                            .mdTaskStatesID = ed.mdTasksStatesID,
                                                            .mdTaskStatesName = tsks.mdTasksStatesName,
                                                                .insertDate = ed.insertDate,
                                                            .modifiedDate = ed.modifiedDate,
                                                            .ownerID = ed.ownerID,
-                                                           .UserName = u.UserName,
-                                                           .DisplayName = u.DisplayName,
+                                                           .userName = u.userName,
+                                                           .displayName = u.displayName,
                                                            .email = u.email
                                                                }).ToList
 
@@ -172,8 +172,8 @@ Namespace Controllers
         '        '#### Inserire tutte le verifiche del caso
         '        With ut
         '            .userID = System.Guid.NewGuid.ToString()
-        '            .UserName = model.UserName
-        '            .DisplayName = model.DisplayName
+        '            .userName = model.userName
+        '            .displayName = model.displayName
         '            .email = model.email
         '            .password = cripta(model.password)
         '            .companyID = model.companyID
@@ -199,11 +199,11 @@ Namespace Controllers
         '    Dim ui As New UserInfo
         '    With ui
         '        .companyID = ut.companyID
-        '        .DisplayName = ut.DisplayName
+        '        .displayName = ut.displayName
         '        .email = ut.email
         '        .password = ""
         '        .userID = ut.userID
-        '        .UserName = ut.UserName
+        '        .userName = ut.userName
         '    End With
 
         '    r.add("userInfo", ui)

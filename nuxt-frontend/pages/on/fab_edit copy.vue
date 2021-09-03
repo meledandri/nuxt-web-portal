@@ -168,11 +168,11 @@
                                 </v-list-item-avatar>
                                 <v-list-item-content>
                                   <v-list-item-title>
-                                    {{ user.DisplayName }}
+                                    {{ user.displayName }}
                                   </v-list-item-title>
                                   <v-list-item-subtitle>
                                     <b style="color: #4183a9;">{{
-                                      user.UserName
+                                      user.userName
                                     }}</b>
                                     ({{ user.email }})
                                   </v-list-item-subtitle>
@@ -202,7 +202,7 @@
                         <v-row class="ma-3">
                           <v-col cols="12">
                             <v-text-field
-                              v-model="user.userInfo.UserName"
+                              v-model="user.userInfo.userName"
                               label="User Name"
                               dense
                               outlined
@@ -211,7 +211,7 @@
 
                           <v-col cols="12">
                             <v-text-field
-                              v-model="user.userInfo.DisplayName"
+                              v-model="user.userInfo.displayName"
                               label="Display name"
                               dense
                               outlined
@@ -519,9 +519,9 @@ export default {
         dialog: false,
         userInfo: {
           userID: "",
-          UserName: "",
+          userName: "",
           password: "",
-          DisplayName: "",
+          displayName: "",
           email: "",
           companyID: 0
         }
@@ -569,8 +569,8 @@ export default {
           insertDate: null,
           modDate: null,
           ownerID: "0",
-          UserName: "",
-          DisplayName: "",
+          userName: "",
+          displayName: "",
           email: ""
         },
         taskDefault: {
@@ -595,8 +595,8 @@ export default {
           insertDate: null,
           modDate: null,
           ownerID: "0",
-          UserName: "",
-          DisplayName: "",
+          userName: "",
+          displayName: "",
           email: ""
         },
       }
@@ -711,9 +711,9 @@ export default {
     fnNewUser() {
       console.log("fnNewUser");
       this.user.userInfo.userID = "0";
-      this.user.userInfo.UserName = "";
+      this.user.userInfo.userName = "";
       this.user.userInfo.password = "";
-      this.user.userInfo.DisplayName = "";
+      this.user.userInfo.displayName = "";
       this.user.userInfo.email = "";
       this.user.userInfo.companyID = this.editedItem.companyID;
       this.user.tab = 1;

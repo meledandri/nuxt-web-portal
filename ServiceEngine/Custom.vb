@@ -472,6 +472,15 @@ Module GeneralFunctions
         If Directory.Exists(di.FullName) Then '   Se la directori A esiste..
 
             Dim db As New ApplicationDbContext
+            If idParent = 0 Then
+                Try
+                    db.Database.ExecuteSqlCommand("DELETE FROM Details WHERE editionID = " & editionID)
+
+                Catch ex As Exception
+                    Dim m = ex.Message
+                End Try
+            End If
+
             Dim list As List(Of FileSystemInfo) = di.GetFileSystemInfos("*.*", SearchOption.TopDirectoryOnly).Where(AddressOf exclusions).OrderBy(Function(fi) fi.FullName).ToList()  'Escludo il percorso di destinazione dal controllo
             For Each fsi As FileSystemInfo In list
                 progressiveID += 1
@@ -540,7 +549,7 @@ Module GeneralFunctions
                     r = False
                     log.Error("Edizione non presente")
                 Else
-                    'Dim sd = (From sdx In db.StructureDetails Where sdx.structureID = ed.StructureID Select New With {
+                    'Dim sd = (From sdx In db.StructureDetails Where sdx.structureID = ed.structureID Select New With {
                     '                                                                                                                  .addFile = sdx.addFile,
                     '                                                                                                                 .addFolder = sdx.addFolder,
                     '                                                                                                                 .documentID = sdx.documentID,
@@ -589,7 +598,7 @@ Module GeneralFunctions
 
 
 
-                    Dim list As List(Of Details) = (From sd In db.StructureDetails Where sd.structureID = ed.StructureID Select sd).ToList.Select(Function(sdx) New Details With {
+                    Dim list As List(Of Details) = (From sd In db.StructureDetails Where sd.structureID = ed.structureID Select sd).ToList.Select(Function(sdx) New Details With {
                                                                                                                                       .addFile = sdx.addFile,
                                                                                                                                      .addFolder = sdx.addFolder,
                                                                                                                                      .documentID = sdx.documentID,
@@ -684,7 +693,36 @@ Module GeneralFunctions
 
 #End Region
 
+#Region "Backup e Ripristino"
+    Dim backupPath As String = Path.Combine(My.Application.Info.DirectoryPath, "BackupData")
 
+    Public Function saveAllData()
+        Dim dtIndex As DataTable = newBackupIndex()
+        If Not Directory.Exists(backupPath) Then Directory.CreateDirectory(backupPath)
+        Dim backupFile As String = Path.Combine(backupPath, "index.xml")
+        If File.Exists(backupFile) Then dtIndex.ReadXml(backupFile)
+
+        Dim ds As New DataSet("Backup")
+        Using db As New ApplicationDbContext
+
+        End Using
+
+
+    End Function
+
+    Private Function newBackupIndex() As DataTable
+        Dim table As New DataTable("Index")
+        table.Columns.Add("ID", GetType(Integer))
+        table.Columns.Add("relPath", GetType(String))
+        table.Columns.Add("Date", GetType(DateTime))
+        table.Columns("ID").AutoIncrement = True
+        table.Columns("ID").AutoIncrementSeed = 1
+        table.Columns("ID").AutoIncrementSeed = 1
+
+        Return table
+    End Function
+
+#End Region
 
     Function cripta(strTesto, Optional intKey = 5) As String
         Dim ctInd

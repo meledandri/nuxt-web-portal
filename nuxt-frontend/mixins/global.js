@@ -73,9 +73,9 @@ export default {
       this.user.progress = true;
       const params = {
         userID: this.user.userInfo.userID,
-        UserName: this.user.userInfo.UserName,
+        userName: this.user.userInfo.userName,
         password: this.user.userInfo.password,
-        DisplayName: this.user.userInfo.DisplayName,
+        displayName: this.user.userInfo.displayName,
         email: this.user.userInfo.email,
         companyID: this.company.companyInfo.companyID,
       };
@@ -132,6 +132,30 @@ export default {
           this.viewMessageError(e);
         });
     },
+    async saveTask() {
+      this.task.progress = true;
+      const params = this.task.taskInfo;
+      console.log("saveTask");
+      await this.$axios
+        .post("task/save", params)
+        .then(response => {
+          this.task.progress = false;
+          var r = response.data;
+          if (r.stato < 0) {
+            // Errore login
+            this.viewMessageError(response);
+          } else {
+            //var Info = r.userInfo;
+            this.viewMessage("success", r.messaggio, "SAVE TASK");
+            this.loadCompanyData(this.selectedCompany);
+          }
+        })
+        .catch(e => {
+          this.task.progress = false;
+          this.viewMessageError(e);
+        });
+    },
+
     viewMessageError(error, title) {
       var msg = "Errore generico";
       var timeout = 2000;

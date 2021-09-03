@@ -42,7 +42,7 @@ Namespace Controllers
                                                        Join act In db.mdActivity On ed.mdActivityID Equals act.mdActivityID
                                                        Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
                                                        Join tsks In db.mdTasksStates On ed.mdTasksStatesID Equals tsks.mdTasksStatesID
-                                                       Join str In db.Structures On ed.StructureID Equals str.structureID
+                                                       Join str In db.Structures On ed.structureID Equals str.structureID
                                                        Join u In db.Users On u.userID Equals ed.ownerID
                                                        Where cp.isHidden = False
                                                        Order By cp.BusinessName, p.productName
@@ -60,15 +60,15 @@ Namespace Controllers
                                                            .mdActivityName = act.mdActivityName,
                                                            .editionNotes = ed.editionNotes,
                                                             .deadline = ed.deadline,
-                                                           .StructureID = str.structureID,
+                                                           .structureID = str.structureID,
                                                            .structureName = str.structureName,
                                                        .mdTaskStatesID = ed.mdTasksStatesID,
                                                        .mdTaskStatesName = tsks.mdTasksStatesName,
                                                            .insertDate = ed.insertDate,
                                                        .modifiedDate = ed.modifiedDate,
                                                        .ownerID = ed.ownerID,
-                                                       .UserName = u.UserName,
-                                                       .DisplayName = u.DisplayName,
+                                                       .userName = u.userName,
+                                                       .displayName = u.displayName,
                                                        .email = u.email
                                                            }).ToList
 

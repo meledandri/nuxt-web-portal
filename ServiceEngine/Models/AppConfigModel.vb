@@ -45,13 +45,13 @@ End Class
 Public Class Users
 
     '    Id
-    'DisplayName
+    'displayName
     'PasswordHash
     'TwoFactorEnabled
     'LockoutEndDateUtc
     'LockoutEnabled
     'AccessFailedCount
-    'UserName
+    'userName
     'Disabled
     'lastAccess
     'LastPasswordChangedDate
@@ -65,10 +65,10 @@ Public Class Users
     Public Property userID As String = System.Guid.NewGuid.ToString()
     <Column(Order:=1)>
     <StringLength(50)>
-    Public Property UserName As String = ""
+    Public Property userName As String = ""
     <Column(Order:=2)>
     <StringLength(20)>
-    Public Property DisplayName As String = ""
+    Public Property displayName As String = ""
 
     <Column(Order:=3)>
     <StringLength(20)>

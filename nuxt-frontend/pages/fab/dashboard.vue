@@ -1,7 +1,7 @@
 <template>
   <v-row>
     <v-overlay color="primary" opacity="0.7" v-if="uploadPercentage > 0">
-      <h1>{{ uploadPercentage }}</h1>
+      <h1><v-icon>fas fa-cloud-upload-alt</v-icon>{{ uploadPercentage }} <v-icon>fas fa-percentage</v-icon></h1>
     </v-overlay>
 
     <v-col class="text-center" cols="12">
@@ -9,7 +9,7 @@
         &#8220;ACCESSO FABBRICANTE&#8221;
         <footer>
           <small>
-            <em>&mdash; {{ userInfo.DisplayName }} ({{ $t("welcome") }})</em>
+            <em>&mdash; {{ userInfo.displayName }} ({{ $t("welcome") }})</em>
           </small>
         </footer>
       </blockquote>
@@ -81,7 +81,7 @@
               :id="'upload' + item.mdTaskID"
               :name="'upload' + item.mdTaskID"
               :ref="'upload' + item.mdTaskID"
-              v-if="item.StructureID == 1 && item.fileStatus == 0"
+              v-if="item.structureID == 1 && item.fileStatus == 0"
               dense
                class="mr-2"
             >
@@ -89,7 +89,7 @@
             <v-btn
               icon
               x-small
-              v-else-if="item.StructureID == 1 && item.fileStatus > 0"
+              v-else-if="item.structureID == 1 && item.fileStatus > 0"
               @click="handleClick(item)"
                class="mr-2"
             >
@@ -101,7 +101,7 @@
             <v-btn
               icon
               x-small
-              v-if="item.StructureID > 1"
+              v-if="item.structureID > 1"
               @click="handleClick(item)"
                class="mr-2"
             >
@@ -251,7 +251,7 @@ export default {
 
       var formData = new FormData();
       formData.append("editionID", this.selectedDocument.editionID);
-      formData.append("userID", this.userInfo.UserID);
+      formData.append("userID", this.userInfo.userID);
       formData.append("file", this.uploadFile, "package.zip");
       this.$axios
         .post("actions/upload", formData, {

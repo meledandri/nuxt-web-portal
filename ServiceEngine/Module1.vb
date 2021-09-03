@@ -42,7 +42,7 @@ Module Module1
         '                                        End Sub)
         '    serviceConfig.RunAsLocalSystem()
         '    serviceConfig.SetDescription(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name & " as Background service of relative web Application.")
-        '    serviceConfig.SetDisplayName(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name)
+        '    serviceConfig.SetdisplayName(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name)
         '    serviceConfig.SetServiceName(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name)
         'End Sub)
 
@@ -60,7 +60,7 @@ Module Module1
         '                                                            recoveryOption.RestartComputer(delay, System.Reflection.Assembly.GetExecutingAssembly().GetName().Name & " computer reboot")
         '                                                        End Function)
         '                    serviceConfig.SetServiceName(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name)
-        '                    serviceConfig.SetDisplayName(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name)
+        '                    serviceConfig.SetdisplayName(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name)
         '                    serviceConfig.SetDescription(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name & " as Background service of relative web Application.")
         '                    serviceConfig.StartAutomatically()
         '                End Function)
@@ -135,7 +135,7 @@ Module Module1
                                                    Join act In db.mdActivity On ed.mdActivityID Equals act.mdActivityID
                                                    Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
                                                    Join tsks In db.mdTasksStates On ed.mdTasksStatesID Equals tsks.mdTasksStatesID
-                                                   Join str In db.Structures On ed.StructureID Equals str.structureID
+                                                   Join str In db.Structures On ed.structureID Equals str.structureID
                                                    Join u In db.Users On u.userID Equals ed.ownerID
                                                    Where cp.companyID = companyID
                                                    Select New TaskInfoDataBindig _
@@ -152,15 +152,15 @@ Module Module1
                                                            .mdActivityName = act.mdActivityName,
                                                            .editionNotes = ed.editionNotes,
                                                             .deadline = ed.deadline,
-                                                           .StructureID = str.structureID,
+                                                           .structureID = str.structureID,
                                                            .structureName = str.structureName,
                                                        .mdTaskStatesID = ed.mdTasksStatesID,
                                                        .mdTaskStatesName = tsks.mdTasksStatesName,
                                                            .insertDate = ed.insertDate,
                                                        .modifiedDate = ed.modifiedDate,
                                                        .ownerID = ed.ownerID,
-                                                       .UserName = u.UserName,
-                                                       .DisplayName = u.DisplayName,
+                                                       .userName = u.userName,
+                                                       .displayName = u.displayName,
                                                        .email = u.email
                                                            }).ToList
         Return list

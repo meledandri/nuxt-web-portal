@@ -24,7 +24,7 @@ Public Class Products
     <Column(Order:=3)>
     Public Property mdClassID As mdClass_enum = mdClass_enum.none
     <Required>
-    <StringLength(10)>
+    <StringLength(20)>
     <Column(Order:=4)>
     Public Property mdCode As String = ""
 
@@ -72,7 +72,7 @@ Public Class Editions
 
     <Required>
     <Column(Order:=8)>
-    Public Property StructureID As Integer
+    Public Property structureID As Integer
 
     <Required>
     <Column(Order:=9)>
@@ -679,14 +679,14 @@ Public Class UserInfo
 
     <Required>
     <StringLength(50)>
-    Public Property UserName As String = ""
+    Public Property userName As String = ""
 
     <Required>
     <StringLength(20)>
     Public Property password As String = ""
 
     <Required>
-    Public Property DisplayName As String = ""
+    Public Property displayName As String = ""
 
     <StringLength(50)>
     Public Property email As String = ""
@@ -733,7 +733,7 @@ Public Class ProductInfoDataBinding
     Public Property deadline As Nullable(Of Date)
 
     <Required>
-    Public Property StructureID As Integer
+    Public Property structureID As Integer
     <Required>
     <MaxLength>
     Public Property structureName As String = ""
@@ -762,6 +762,10 @@ Public Class TaskInfoDataBindig
     <StringLength(50)>
     Public Property mdClassName As String = ""
 
+    <StringLength(20)>
+    Public Property mdCode As String = ""
+
+
     <Required>
     Public Property editionID As Integer
     <Required>
@@ -783,7 +787,7 @@ Public Class TaskInfoDataBindig
     Public Property deadline As Nullable(Of Date)
 
     <Required>
-    Public Property StructureID As Integer
+    Public Property structureID As Integer
     <Required>
     <MaxLength>
     Public Property structureName As String = ""
@@ -796,18 +800,16 @@ Public Class TaskInfoDataBindig
     <MaxLength>
     Public Property mdTaskStatesName As String = ""
 
-    <Required>
     Public Property insertDate As Date = Now
 
-    <Required>
     Public Property modifiedDate As Date = Now
 
     Public Property ownerID As String = ""
     <StringLength(50)>
-    Public Property UserName As String = ""
+    Public Property userName As String = ""
 
     <StringLength(20)>
-    Public Property DisplayName As String = ""
+    Public Property displayName As String = ""
 
     <StringLength(50)>
     Public Property email As String = ""

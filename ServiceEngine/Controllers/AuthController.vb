@@ -47,7 +47,7 @@ Namespace Controllers
             Dim pwd = cripta(model.password)
             Dim usr As Users = (From u In db.Users
                                 Join c In db.Companies On u.companyID Equals c.companyID
-                                Where u.UserName = model.UserName And u.password = pwd And u.Disabled = False And u.isHidden = False And c.isHidden = False
+                                Where u.userName = model.userName And u.password = pwd And u.Disabled = False And u.isHidden = False And c.isHidden = False
                                 Select u).FirstOrDefault
 
             If IsNothing(usr) Then
@@ -55,9 +55,9 @@ Namespace Controllers
                 r.messaggio = "Le credenziali fornite non sono corrette."
             Else
                 Dim ut As New JRisposta(True)
-                ut.add("UserID", usr.userID)
-                ut.add("UserName", usr.UserName)
-                ut.add("DisplayName", usr.DisplayName)
+                ut.add("userID", usr.userID)
+                ut.add("userName", usr.userName)
+                ut.add("displayName", usr.displayName)
                 ut.add("companyID", usr.companyID)
                 ut.add("email", usr.email)
                 ut.add("lastAccess", usr.lastAccess)
