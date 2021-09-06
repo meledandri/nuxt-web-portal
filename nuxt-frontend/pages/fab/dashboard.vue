@@ -81,7 +81,7 @@
               :id="'upload' + item.mdTaskID"
               :name="'upload' + item.mdTaskID"
               :ref="'upload' + item.mdTaskID"
-              v-if="item.structureID == 1 && item.fileStatus == 0"
+              v-if="item.asZipFile  && item.fileStatus == 0"
               dense
                class="mr-2"
             >
@@ -89,7 +89,7 @@
             <v-btn
               icon
               x-small
-              v-else-if="item.structureID == 1 && item.fileStatus > 0"
+              v-else-if="item.asZipFile && item.fileStatus > 0"
               @click="handleClick(item)"
                class="mr-2"
             >
@@ -101,7 +101,7 @@
             <v-btn
               icon
               x-small
-              v-if="item.structureID > 1"
+              v-if="!item.asZipFile "
               @click="handleClick(item)"
                class="mr-2"
             >

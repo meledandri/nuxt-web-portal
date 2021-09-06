@@ -74,26 +74,32 @@ Public Class Editions
     <Column(Order:=8)>
     Public Property structureID As Integer
 
+
     <Required>
     <Column(Order:=9)>
-    Public Property fileStatus As Integer
+    Public Property asZipFile As Boolean = True
+
+
     <Required>
     <Column(Order:=10)>
-    Public Property productInfoStatus As Integer
+    Public Property fileStatus As Integer
     <Required>
     <Column(Order:=11)>
+    Public Property productInfoStatus As Integer
+    <Required>
+    <Column(Order:=12)>
     Public Property checkListStatus As Integer
 
     <Required>
-    <Column(Order:=12)>
+    <Column(Order:=13)>
     Public Property insertDate As Date = Now
 
     <Required>
-    <Column(Order:=13)>
+    <Column(Order:=14)>
     Public Property ownerID As String = ""
 
     <Required>
-    <Column(Order:=14)>
+    <Column(Order:=15)>
     Public Property modifiedDate As Date = Now
 
 
@@ -356,6 +362,10 @@ Public Class DetailsModel
     <MaxLength>
     Public Property structureName As String = ""
 
+    <Required>
+    Public Property asZipFile As Boolean = True
+
+
     Public Property companyID As Integer
 
     <StringLength(50)>
@@ -541,7 +551,7 @@ End Class
 Public Enum mdClass_enum
     none = 0
     Class_I = 10
-    Class_II_and_IIb = 20
+    Class_IIa_and_IIb = 20
     Class_III = 30
 End Enum
 
@@ -738,6 +748,10 @@ Public Class ProductInfoDataBinding
     <MaxLength>
     Public Property structureName As String = ""
 
+
+    <Required>
+    Public Property asZipFile As Boolean = True
+
     <Required>
     Public Property insertDate As Date = Now
 
@@ -791,6 +805,10 @@ Public Class TaskInfoDataBindig
     <Required>
     <MaxLength>
     Public Property structureName As String = ""
+
+    <Required>
+    Public Property asZipFile As Boolean = True
+
 
     '<Required>
     'Public Property mdTaskID As Integer

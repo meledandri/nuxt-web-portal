@@ -3,7 +3,7 @@ export default {
   components: {}, //Elenco di componenti utilizzati
   data: () => ({
     uploadAcceptType:
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     files: {
       html: "fa fa-file-code",
       doc: "fas fa-file-word",
@@ -19,9 +19,8 @@ export default {
       zip: "fa fa-file-archive",
       rar: "fa fa-file-archive",
       "7z": "fa fa-file-archive",
-      xml : "far fa-file-code"
-    },
-
+      xml: "far fa-file-code"
+    }
   }), // i dati definiscono un oggetto che rappresenta i dati interni del componente Vue. Può anche essere una funzione che restituisce l'oggetto dati.
   methods: {
     async loadConfig() {
@@ -77,7 +76,7 @@ export default {
         password: this.user.userInfo.password,
         displayName: this.user.userInfo.displayName,
         email: this.user.userInfo.email,
-        companyID: this.company.companyInfo.companyID,
+        companyID: this.company.companyInfo.companyID
       };
       console.log("saveUser");
       await this.$axios
@@ -109,7 +108,7 @@ export default {
         companyRoleName: this.company.companyInfo.companyRoleName,
         SRN: this.company.companyInfo.SRN,
         country: this.company.companyInfo.country,
-        details: {users:[]}
+        details: { users: [] }
       };
       console.log("saveCompany");
       await this.$axios
@@ -235,15 +234,26 @@ export default {
       console.log("permitted (" + v + ") : " + p);
       return p;
     },
+    formatDate(date) {
+      if (!date) return null;
+const [dt, hh] = date.split("T")
+      const [year, month, day] = dt.split("-");
+      return `${day}/${month}/${year}`;
+    },
+    parseDate(date) {
+      if (!date) return null;
 
+      const [month, day, year] = date.split("/");
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
   }, //l'oggetto metodi contiene una coppia chiave-valore di nomi di metodo e la relativa definizione di funzione. Questi fanno parte del comportamento del componente Vue che l'altro componente può attivare.
   computed: {
     lng: {
       get() {
         return this.$i18n.locale;
       },
-      set(v){
-        return this.$i18n.setLocale(v)
+      set(v) {
+        return this.$i18n.setLocale(v);
       }
     },
     appConfig: {
@@ -302,6 +312,9 @@ export default {
     language() {
       return this.$i18n.locales.filter(i => i.code == this.$i18n.locale)[0]
         .name;
+    },
+    computedDateFormatted() {
+      return this.formatDate(this.date);
     }
   }, // contiene un oggetto che definisce le funzioni getter e setter per le proprietà calcolate del componente Vue. Le proprietà calcolate influenzano un aggiornamento reattivo sul DOM ogni volta che il loro valore cambia.
   props: {}, //contiene un array o un oggetto di proprietà specifiche del componente Vue.js, impostato al momento dell'invocazione.

@@ -148,13 +148,51 @@
           <v-col cols="12" md="6">
             <v-select
               :items="Structures"
-              label="Upload mode"
+              label="Structure"
               item-text="structureName"
               item-value="structureID"
               v-model="computedStructure"
               return-object
               outlined
             ></v-select>
+          </v-col>
+
+          <!-- Data termine caricamenrto -->
+          <v-col cols="12" md="6">
+            <v-menu
+              v-model="datepicker1"
+              :close-on-content-click="false"
+              transition="scale-transition"
+              offset-y
+              max-width="290px"
+              min-width="auto"
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <v-text-field
+                  v-model="computedDateFormatted"
+                  label="Deadline"
+                  prepend-inner-icon="far fa-calendar-alt"
+                  readonly
+                  outlined
+                  v-bind="attrs"
+                  v-on="on"
+                ></v-text-field>
+              </template>
+              <v-date-picker
+                v-model="date"
+                no-title
+                @input="datepicker1 = false"
+              ></v-date-picker>
+            </v-menu>
+
+          </v-col>
+          <!-- Switch per il caricemtno file Zip -->
+          <v-col cols="12" md="6">
+                <v-switch
+      v-model="task.taskInfo.asZipFile"
+      inset
+      label="Upload unique file Zip"
+    ></v-switch>
           </v-col>
 
           <!-- Note sull'edizione -->
@@ -189,6 +227,10 @@ export default {
     mdActivity: [],
     Structures: [],
     products: [],
+    datepicker1: false,
+    date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+      .toISOString()
+      .substr(0, 10),
     company: {
       progress: false,
       tab: 0,
@@ -239,6 +281,7 @@ export default {
       taskDefault: {
         companyID: 0,
         BusinessName: "",
+        asZipFile: true,
         productID: 0,
         productName: "",
         mdClassID: 0,
@@ -250,7 +293,7 @@ export default {
         mdActivityID: 0,
         mdActivityName: "",
         editionNotes: "",
-        deadline: "",
+        deadline: null,
         structureID: 0,
         structureName: "",
         mdTaskStatesID: 0,
@@ -285,6 +328,7 @@ export default {
       this.task.tab = n;
     },
     newTask() {
+      console.log("newTask")
       this.task.editedIndex = 1;
       this.task.taskInfo = Object.assign({}, this.task.taskDefault);
       delete this.task.taskInfo.insertDate;
@@ -293,6 +337,9 @@ export default {
       this.task.taskInfo.ownerID = this.userInfo.userID;
       this.task.taskInfo.companyID = this.company.companyInfo.companyID;
       this.task.taskInfo.BusinessName = this.company.companyInfo.BusinessName;
+      this.task.taskInfo.deadline = (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10);
+      this.date = (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10);
+
     },
     editTask(item) {
       console.log("editTask");
@@ -300,6 +347,7 @@ export default {
         item
       );
       this.task.taskInfo = Object.assign({}, item);
+      this.date = item.deadline;
       this.changeTab(1);
     }
   }, //l'oggetto metodi contiene una coppia chiave-valore di nomi di metodo e la relativa definizione di funzione. Questi fanno parte del comportamento del componente Vue che l'altro componente può attivare.
@@ -546,6 +594,10 @@ export default {
       if (n != 0) {
         this.loadCompanyData(this.selectedCompany);
       }
+    },
+    date(val) {
+      console.log("sono qui")
+      this.task.taskInfo.deadline = this.date;
     }
   }, // questo oggetto tiene traccia dei cambiamenti nel valore di una qualsiasi delle proprietà definite come parte dei "dati" impostando le funzioni per controllarli.
   //Eventi------------------------

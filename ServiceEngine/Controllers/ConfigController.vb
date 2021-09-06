@@ -103,18 +103,18 @@ Namespace Controllers
         Private Sub init()
             Dim li As Integer = (From ci In db.Companies).Count
 
-            Dim fl As List(Of FileSystemInfo) = FileSystemInfoList(My.Application.Info.DirectoryPath)
-            For Each fsi As FileSystemInfo In fl
-                Dim entryType As String = "File"
+            'Dim fl As List(Of FileSystemInfo) = FileSystemInfoList(My.Application.Info.DirectoryPath)
+            'For Each fsi As FileSystemInfo In fl
+            '    Dim entryType As String = "File"
 
-                If (fsi.Attributes And FileAttributes.Directory) = FileAttributes.Directory Then
-                    entryType = "Folder"
-                    log.Error("[" & entryType & "]" & fsi.FullName)
-                Else
-                    log.Info("[" & entryType & "]" & fsi.FullName)
+            '    If (fsi.Attributes And FileAttributes.Directory) = FileAttributes.Directory Then
+            '        entryType = "Folder"
+            '        log.Error("[" & entryType & "]" & fsi.FullName)
+            '    Else
+            '        log.Info("[" & entryType & "]" & fsi.FullName)
 
-                End If
-            Next
+            '    End If
+            'Next
 
             If li = 0 Then
                 log.Info("[INIT]" & vbTab & "ConfigController\Init")
@@ -182,6 +182,7 @@ Namespace Controllers
                 db.SaveChanges()
 
 
+
                 Dim cr As New CompanyRoles
                 cr.companyRoleName = "Manufacturer"
                 db.CompanyRoles.Add(cr)
@@ -238,14 +239,6 @@ Namespace Controllers
                 db.Products.Add(p)
                 db.SaveChanges()
 
-                Dim s As New Structures
-                With s
-                    .structureName = "File ZIP"
-                    .isMaster = False
-                End With
-                db.Structures.Add(s)
-                db.SaveChanges()
-
                 'Dim ts As New mdTasksStates
                 'ts.mdTasksStatesName = "Creato"
                 'db.mdTasksStates.Add(ts)
@@ -260,7 +253,7 @@ Namespace Controllers
                     .mdActivityID = mdActivity_enum.product_registration
                     .editionNotes = "Note automatiche prima edizione."
                     .deadline = Now.AddDays(20)
-                    .structureID = s.structureID
+                    .structureID = 1
                     .mdTasksStatesID = mdTaskStates_enum.created
                     .ownerID = un.userID
                 End With
@@ -275,7 +268,8 @@ Namespace Controllers
                     .mdActivityID = mdActivity_enum.product_registration
                     .editionNotes = "Note automatiche prima edizione."
                     .deadline = Now.AddDays(20)
-                    .structureID = 2
+                    .structureID = 1
+                    .asZipFile = False
                     .mdTasksStatesID = mdTaskStates_enum.created
                     .ownerID = un.userID
                 End With
@@ -314,8 +308,9 @@ Namespace Controllers
             Dim ncd As Integer = (From nd In db.Details).Count
             If ncd = 0 Then
                 Dim progr As Integer = 1000
-                createCustomStructureDB("D:\TechFile\Dossier\Garza\v_1_0", 1, 1, 0, progr)
+                'createCustomStructureDB("D:\TechFile\Dossier\Garza\v_1_0", 1, 1, 0, progr)
                 Try
+                    createTemplateStructureDB(1, "6ce5d4d1-8f9a-407b-9f56-f68b9c8cc8b8")
                     createTemplateStructureDB(2, "6ce5d4d1-8f9a-407b-9f56-f68b9c8cc8b8")
 
                 Catch ex As Exception

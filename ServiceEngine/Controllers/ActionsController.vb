@@ -172,6 +172,9 @@ Namespace Controllers
                     r.messaggio = ex.Message
                     GoTo Fine
                 End Try
+
+
+                ed.mdTasksStatesID = mdTaskStates_enum.uploading_process
                 ed.fileStatus = r.stato
                 ed.ownerID = userID
                 ed.modifiedDate = Now
@@ -195,7 +198,7 @@ Namespace Controllers
                     End Using
                     File.Delete(fullname)
 
-                    createCustomStructureDB(storeEdition, ed.productID, ed.editionID, 0, 1000)
+                    'createCustomStructureDB(storeEdition, ed.productID, ed.editionID, 0, 1000)
 
                 Catch ex As Exception
                     r.stato = JRisposta.Stati.Errato

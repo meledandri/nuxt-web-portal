@@ -160,6 +160,7 @@ Namespace Controllers
                                                                 .deadline = ed.deadline,
                                                                .structureID = str.structureID,
                                                                .structureName = str.structureName,
+                                                               .asZipFile = ed.asZipFile,
                                                                .mdTaskStatesID = ed.mdTasksStatesID,
                                                                .mdTaskStatesName = tsks.mdTasksStatesName,
                                                                .insertDate = ed.insertDate,
@@ -337,6 +338,7 @@ Namespace Controllers
                                                                           .detailID = d.detailID,
                                                                           .structureID = str.structureID,
                                                                           .structureName = str.structureName,
+                                                                           .asZipFile = e.asZipFile,
                                                                           .editionID = e.editionID,
                                                                           .editionName = e.editionName,
                                                                           .certificationPlan = e.certificationPlan,
@@ -421,16 +423,16 @@ Namespace Controllers
                 .modifiedDate = Now
                 .ownerID = model.ownerID
                 .structureID = model.structureID
-                If IsNothing(.deadline) Then .deadline = Now.AddDays(30)
+                If IsNothing(.deadline) Then .deadline = Now
+                If Not IsNothing(model.deadline) Then .deadline = model.deadline
+                .asZipFile = model.asZipFile
             End With
 
             Try
                 db.Editions.AddOrUpdate(ed)
                 db.SaveChanges()
 
-                If ed.structureID > 1 Then
-                    createTemplateStructureDB(ed.editionID, model.ownerID)
-                End If
+                createTemplateStructureDB(ed.editionID, model.ownerID)
 
             Catch ex As Exception
                 r.messaggio = ex.Message

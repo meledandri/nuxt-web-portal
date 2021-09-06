@@ -293,10 +293,10 @@
       </template>
 
       <template v-slot:item.actions="{ item }">
-        <v-icon small class="mr-2" color="primary" @click="usersItem(item)">
+        <v-icon small class="mr-2" :color="item.details.number_of_users == 0 ? 'grey': 'primary'" @click="usersItem(item)">
           fas fa-users-cog
         </v-icon>
-        <v-icon small class="mr-2" color="primary" @click="openTasks(item)">
+        <v-icon small class="mr-2" :color="item.details.number_of_tasks == 0 ? 'grey': 'primary'" @click="openTasks(item)">
           fas fa-tasks
         </v-icon>
         <v-icon small class="mr-2" @click="editItem(item)">

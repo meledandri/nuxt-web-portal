@@ -154,6 +154,7 @@ Module Module1
                                                             .deadline = ed.deadline,
                                                            .structureID = str.structureID,
                                                            .structureName = str.structureName,
+                                                       .asZipFile = ed.asZipFile,
                                                        .mdTaskStatesID = ed.mdTasksStatesID,
                                                        .mdTaskStatesName = tsks.mdTasksStatesName,
                                                            .insertDate = ed.insertDate,
