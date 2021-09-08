@@ -35,6 +35,8 @@ Namespace Controllers
 
         <Route("activitiesList")>
         Public Function GetactivitiesList() As JRisposta
+            log.Info("[GET]" & vbTab & "api/activitiesList")
+
             Dim r As New JRisposta
             Dim list As List(Of TaskInfoDataBindig) = (From p In db.Products
                                                        Join cp In db.Companies On p.companyID Equals cp.companyID

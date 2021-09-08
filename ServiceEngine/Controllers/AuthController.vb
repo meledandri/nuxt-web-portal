@@ -37,6 +37,8 @@ Namespace Controllers
 
         <Route("login")>
         Public Function PostLogin(model As LoginBindingModel) As JRisposta
+            log.Info("[POST]" & vbTab & "api/login")
+
             Dim r As New JRisposta
             If Not ModelState.IsValid Then
                 r.stato = JRisposta.Stati.Errato

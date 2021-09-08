@@ -74,16 +74,16 @@
               :rules="uploadRules"
               :accept="uploadAcceptType"
               hide-input
-              color="primary"
+              :color="item.fileStatus > -1 ? 'primary' : 'error'"
               prepend-icon="fas fa-cloud-upload-alt"
               @click="resetAttachFile('upload' + item.mdTaskID)"
               @change="attachFile('upload' + item.mdTaskID, item)"
               :id="'upload' + item.mdTaskID"
               :name="'upload' + item.mdTaskID"
               :ref="'upload' + item.mdTaskID"
-              v-if="item.asZipFile  && item.fileStatus == 0"
+              v-if="item.asZipFile  && item.fileStatus < 1"
               dense
-               class="mr-2"
+              :class="item.fileStatus == 0 ? 'mr-2' : 'mr-2 p-0 icon-error'"
             >
             </v-file-input>
             <v-btn
@@ -145,7 +145,8 @@ export default {
       uploadFiles: [],
       uploadFile: null,
       uploadAcceptType:
-        "application/zip, application/pdf, application/x-7z-compressed",
+        ".7z,.rar,.gzip,application/x-rar-compressed, application/zip",
+      //  "application/zip, application/pdf, application/x-7z-compressed, application/vnd.rar",
       // uploadAcceptType:
       //   "application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       uploadRules: [
@@ -177,16 +178,16 @@ export default {
       console.log(this.selectedDocument);
       var ext = val.name.split(".").pop();
       console.log("ext: " + ext);
-      if (["zip", "docx"].indexOf(ext) > -1) {
+      if (["zip", "7z", "gzip", "rar"].indexOf(ext) > -1) {
         this.startProcess(this.selectedDocument.mdTaskID);
         this.uploading = true;
         this.uploadDocument();
-      } else if (["doc", "docx", "pdf", "xls", "xlsx"].indexOf(ext) > -1) {
-        // this.setTemplate = true;
-        // this.startProcess(this.selectedDocument.mdTaskID);
-        // this.uploading = false;
-        this.viewMessage("error", "Formato non supportato", "Upload");
+      // } else if (["doc", "docx", "pdf", "xls", "xlsx"].indexOf(ext) > -1) {
+      //   // this.setTemplate = true;
+      //   // this.startProcess(this.selectedDocument.mdTaskID);
+      //   // this.uploading = false;
       } else {
+        this.viewMessage("error", "Formato non supportato", "Upload");
         this.uploading = false;
       }
 
@@ -199,16 +200,16 @@ export default {
       console.log(this.selectedDocument);
       var ext = val.name.split(".").pop();
       console.log("ext: " + ext);
-      if (["zip", "docx"].indexOf(ext) > -1) {
+      if (["zip", "7z", "rar", "gzip"].indexOf(ext) > -1) {
         this.startProcess(this.selectedDocument.mdTaskID);
         this.uploading = true;
         this.uploadDocument();
-      } else if (["doc", "docx", "pdf", "xls", "xlsx"].indexOf(ext) > -1) {
-        // this.setTemplate = true;
-        // this.startProcess(this.selectedDocument.mdTaskID);
-        // this.uploading = false;
-        this.viewMessage("error", "Formato non supportato", "Upload");
+      // } else if (["doc", "docx", "pdf", "xls", "xlsx"].indexOf(ext) > -1) {
+      //   // this.setTemplate = true;
+      //   // this.startProcess(this.selectedDocument.mdTaskID);
+      //   // this.uploading = false;
       } else {
+        this.viewMessage("error", "Formato non supportato", "Upload");
         this.uploading = false;
       }
 
@@ -252,7 +253,7 @@ export default {
       var formData = new FormData();
       formData.append("editionID", this.selectedDocument.editionID);
       formData.append("userID", this.userInfo.userID);
-      formData.append("file", this.uploadFile, "package.zip");
+      formData.append("file", this.uploadFile);
       this.$axios
         .post("actions/upload", formData, {
           // headers: {
@@ -270,6 +271,10 @@ export default {
         .then(response => {
           console.log(response.data);
           this.endProcess(this.selectedDocument.mdTaskID);
+          var data = response.data
+          if (data.stato == -1){
+            this.viewMessage('error', data.messaggio, 'Upload')
+          }
           this.loadDataList();
           this.uploading = false;
           //this.getDetailID(this.selectedDocument.mdTaskID);
@@ -309,8 +314,12 @@ export default {
 </script>
 
 <style scoped>
-.v-file-input ::before {
+.v-file-input:not(.icon-error) ::before {
   color: #1976d2;
+  font-size: 1rem;
+}
+.v-file-input.icon-error ::before {
+  color: #d21919;
   font-size: 1rem;
 }
 .v-file-input {

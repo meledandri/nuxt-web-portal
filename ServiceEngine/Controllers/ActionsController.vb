@@ -5,10 +5,9 @@ Imports System.Net.Http
 Imports System.Web
 Imports System.Web.Hosting
 Imports System.Web.Http
-Imports Ionic.Zip
 Imports log4net
 Imports Microsoft.Owin.Host.SystemWeb
-
+Imports SevenZipExtractor
 
 Namespace Controllers
     <RoutePrefix("api/Actions")>
@@ -21,6 +20,8 @@ Namespace Controllers
 
         <Route("upload")>
         Public Async Function PostUpload() As Task(Of JRisposta)
+            log.Info("[POST]" & vbTab & "api/Actions/upload")
+
             Dim r As New JRisposta
             'If Not ModelState.IsValid Then
             '    r.stato = JRisposta.Stati.Errato
@@ -130,7 +131,7 @@ Namespace Controllers
                             fileName = Path.GetFileName(fileName)
                         End If
 
-                        fullname = Path.Combine(StoragePath, fileName)
+                        fullname = Path.Combine(temp_dir, fileName)
 
                         If File.Exists(fullname) Then
                             File.Delete(fullname)
@@ -154,25 +155,39 @@ Namespace Controllers
 
 
             If Not IsNothing(ed) Then
-                With al
-                    .editionID = editionID
-                    .mdTasksStatesID = mdTaskStates_enum.uploading_process
-                    .resultID = r.stato
-                    .resultMessage = IIf(r.messaggio = "", mpfd.LocalFileName & " (OK)", r.messaggio)
-                    .startActiviyDate = startActiviyDate
-                    .stopActiviyDate = Now
-                    .userID = userID
-                End With
-                db.ActivityLog.Add(al)
+                'With al
+                '    .editionID = editionID
+                '    .mdTasksStatesID = mdTaskStates_enum.uploading_process
+                '    .resultID = r.stato
+                '    .resultMessage = IIf(r.messaggio = "", mpfd.LocalFileName & " (OK)", r.messaggio)
+                '    .startActiviyDate = startActiviyDate
+                '    .stopActiviyDate = Now
+                '    .userID = userID
+                'End With
+                'db.ActivityLog.Add(al)
+                'Try
+                '    db.SaveChanges()
+
+                'Catch ex As Exception
+                '    r.stato = JRisposta.Stati.Errato
+                '    r.messaggio = ex.Message
+                '    GoTo Fine
+                'End Try
+
+
+
+                Dim storeEdition As String = Path.Combine(StoragePath, editionID)
                 Try
-                    db.SaveChanges()
+
+                    UnpackArchive(fullname, storeEdition, True, True)
+
 
                 Catch ex As Exception
                     r.stato = JRisposta.Stati.Errato
                     r.messaggio = ex.Message
-                    GoTo Fine
+                    log.Error(ex.Message, ex)
                 End Try
-
+                File.Delete(fullname)
 
                 ed.mdTasksStatesID = mdTaskStates_enum.uploading_process
                 ed.fileStatus = r.stato
@@ -182,29 +197,9 @@ Namespace Controllers
                 db.Entry(ed).State = EntityState.Modified
                 db.SaveChanges()
 
-                Try
-                    Dim storeEdition As String = Path.Combine(StoragePath, editionID)
-                    Using zip As New ZipFile(fullname)
-                        If Directory.Exists(storeEdition) Then Directory.Delete(storeEdition, True)
-                        zip.ExtractAll(storeEdition)
-                        'Dim e As ZipEntry
-                        'For Each e In zip
-                        '    If (e.UsesEncryption) Then
-                        '        e.ExtractWithPassword("Secret!")
-                        '    Else
-                        '        e.Extract()
-                        '    End If
-                        'Next
-                    End Using
-                    File.Delete(fullname)
+                AppLog(editionID, mdTaskStates_enum.uploading_process, r.stato, "[ActionsController\UPLOAD] " & r.messaggio, userID, startActiviyDate)
 
-                    'createCustomStructureDB(storeEdition, ed.productID, ed.editionID, 0, 1000)
-
-                Catch ex As Exception
-                    r.stato = JRisposta.Stati.Errato
-                    r.messaggio = ex.Message
-                End Try
-
+                createCustomStructureDT(storeEdition, ed.editionID, 0, 1000)
             End If
 
 Fine:
@@ -214,6 +209,42 @@ Fine:
         Private Function checkFileRules(file As String) As List(Of String)
             Return New List(Of String)
         End Function
+
+
+
+        <Route("clearArchive/{editionID}")>
+        Public Function GetClearArchive(editionID As Integer) As JRisposta
+            log.Info("[GET]" & vbTab & "api/Actions/clearArchive/" & editionID)
+
+            Dim r As New JRisposta
+            Dim ed As Editions = (From e In db.Editions Where e.editionID = editionID).FirstOrDefault
+            If Not IsNothing(ed) Then
+                If ed.asZipFile Then    ' Si tratta di un file Zip
+                    If ed.fileStatus <> 0 Then
+
+                    Else
+                        r.stato = JRisposta.Stati.Errato
+                        r.messaggio = "Archivio non presente."
+                    End If
+
+                Else    ' Si tratta di un TechFile light
+
+                End If
+            Else
+                r.stato = JRisposta.Stati.Errato
+                r.messaggio = "Edizione selezionata non presente."
+            End If
+
+
+            Return r
+        End Function
+
+
+
+
+
+
+
     End Class
 
 

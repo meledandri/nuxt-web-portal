@@ -3,8 +3,11 @@ Imports System.IO
 Imports System.Reflection
 Imports System.Web.Http.ModelBinding
 Imports log4net
+Imports SevenZip
 
 Public Class ClassiJSON
+    'Private ReadOnly log As ILog = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType)
+
     Public Function toJDate(ByVal Data As Date) As String
         Dim DateTimeOrigin As DateTime = New DateTime(1970, 1, 1, 0, 0, 0, 0)
         Dim diff As Double = DateDiff(DateInterval.Second, DateTimeOrigin, Data) * 1000
@@ -376,7 +379,12 @@ Module GeneralFunctions
             Dim values = New Object(Props.Length - 1) {}
 
             For i As Integer = 0 To Props.Length - 1
-                values(i) = Props(i).GetValue(item, Nothing)
+                If Props(i).GetValue(item, Nothing).GetType.BaseType.Name = "Enum" Then
+                    dataTable.Columns(i).DataType = System.Type.GetType(Props(i).GetValue(item, Nothing).GetType.FullName)
+                    values(i) = CInt(Props(i).GetValue(item, Nothing))
+                Else
+                    values(i) = Props(i).GetValue(item, Nothing)
+                End If
             Next
 
             dataTable.Rows.Add(values)
@@ -428,8 +436,15 @@ Module GeneralFunctions
                     '    If Boolean.TryParse(v, flag) Then v = flag
                     'Catch ex As Exception
                     'End Try
+                    Dim exclude As List(Of String) = "List`1".Split(",").ToList
+                    If Not exclude.Contains(pro.PropertyType.Name) Then
+                        If pro.PropertyType.BaseType.Name = "Enum" Then
+                            pro.SetValue(obj, [Enum].Parse(pro.PropertyType, v), Nothing)
+                        Else
+                            pro.SetValue(obj, Convert.ChangeType(v, pro.PropertyType), Nothing)
 
-                    pro.SetValue(obj, Convert.ChangeType(v, pro.PropertyType), Nothing)
+                        End If
+                    End If
                     Exit For
                 Else
                     Continue For
@@ -538,64 +553,195 @@ Module GeneralFunctions
 
     End Function
 
+
+    Public Function createCustomStructureDT(source_path As String, editionID As Integer, idParent As Integer, ByRef progressiveID As Integer) As Boolean
+        Dim r As Boolean = True
+        Dim di As New DirectoryInfo(source_path)
+        If Directory.Exists(di.FullName) Then '   Se la directory esiste..
+
+            Dim db As New ApplicationDbContext
+            Dim ed As Editions = (From e In db.Editions Where e.editionID = editionID Select e).FirstOrDefault
+            If Not IsNothing(ed) Then
+                If idParent = 0 Then
+                    Try
+                        db.Database.ExecuteSqlCommand("DELETE FROM Details WHERE editionID = " & editionID)
+
+                    Catch ex As Exception
+                        Dim m = ex.Message
+                    End Try
+                End If
+
+                Dim list As List(Of FileSystemInfo) = di.GetFileSystemInfos("*.*", SearchOption.TopDirectoryOnly).Where(AddressOf exclusions).OrderBy(Function(fi) fi.FullName).ToList()  'Escludo il percorso di destinazione dal controllo
+                For Each fsi As FileSystemInfo In list
+                    progressiveID += 1
+                    Dim flagContainer As Integer = 1
+                    Try
+                        If (fsi.Attributes And FileAttributes.Directory) = FileAttributes.Directory Then
+                            flagContainer = 2
+                        Else
+                            flagContainer = 1
+                        End If
+
+                    Catch ex As Exception
+                        log.Error(ex.Message)
+                    End Try
+                    Dim d As New Details
+                    With d
+                        .editionID = editionID
+                        .documentID = progressiveID
+                        .addFile = 0
+                        .addFolder = 0
+                        .nLevels = 0
+                        .fileExtension = fsi.Extension.Replace(".", "")
+                        .fileName = fsi.Name
+                        .flagContainer = flagContainer
+                        .flagState = 2
+                        .fullPath = fsi.FullName
+                        .idParent = idParent
+                        .idVerDoc = 0
+                        .operatorID = 1
+                        .productID = ed.productID
+                        .structureID = 1
+                        .swTarget = 1
+                        .Title = fsi.Name
+                    End With
+                    db.Details.Add(d)
+                    Try
+                        db.SaveChanges()
+
+                    Catch ex As Exception
+                        log.Error("createCustomStructure : " & ex.Message)
+                    End Try
+
+                    If flagContainer = 2 Then
+                        createCustomStructureDT(fsi.FullName, editionID, d.documentID, progressiveID)
+                    End If
+
+                Next
+
+                If idParent = 0 Then
+
+
+                    'Dim listDetails As List(Of Details) = (From dx In db.Details Where dx.editionID = editionID Select dx).ToList()
+                    'Dim dtDetails As DataTable = ToDataTable(Of Details)(listDetails)
+                    'dtDetails.TableName = "Details"
+
+                    Dim DetailsTreeModel_list As List(Of DetailsTreeModel) = (From p In db.Products
+                                                                              Join d In db.Details On p.productID Equals d.productID
+                                                                              Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
+                                                                              Join e In db.Editions On d.editionID Equals e.editionID
+                                                                              Join str In db.Structures On str.structureID Equals e.structureID
+                                                                              Join c In db.Companies On c.companyID Equals p.companyID
+                                                                              Where e.editionID = editionID
+                                                                              Select New DetailsTreeModel With {
+                                                                          .detailID = d.detailID,
+                                                                          .structureID = str.structureID,
+                                                                          .structureName = str.structureName,
+                                                                           .asZipFile = e.asZipFile,
+                                                                          .editionID = e.editionID,
+                                                                          .editionName = e.editionName,
+                                                                          .certificationPlan = e.certificationPlan,
+                                                                          .productID = p.productID,
+                                                                          .productName = p.productName,
+                                                                          .companyID = c.companyID,
+                                                                          .BusinessName = c.BusinessName,
+                                                                          .mdClassID = cls.mdClassID,
+                                                                          .mdClassName = cls.mdClassName,
+                                                                          .mdCode = p.mdCode,
+                                                                          .Title = d.Title,
+                                                                          .idParent = d.idParent,
+                                                                          .documentID = d.documentID,
+                                                                          .fileName = d.fileName,
+                                                                          .addFile = d.addFile,
+                                                                          .addFolder = d.addFolder,
+                                                                          .nLevels = d.nLevels,
+                                                                          .idVerDoc = d.idVerDoc,
+                                                                          .flagState = d.flagState,
+                                                                          .fileExtension = d.fileExtension,
+                                                                          .operatorID = d.operatorID,
+                                                                          .MD5 = d.MD5,
+                                                                          .swTarget = d.swTarget,
+                                                                          .file_for_checklist = d.file_for_checklist,
+                                                                          .fullPath = d.fullPath,
+                                                                          .flagContainer = d.flagContainer,
+                                                                          .fileStatus = e.fileStatus,
+                                                                          .checkListStatus = e.checkListStatus,
+                                                                          .productInfoStatus = e.productInfoStatus
+                                                                          }).ToList
+
+
+                    Dim dtDetailsTreeModel As DataTable = ToDataTable(Of DetailsTreeModel)(DetailsTreeModel_list)
+                    dtDetailsTreeModel.TableName = "DetailsTreeModel"
+
+                    dtDetailsTreeModel.WriteXml(di.FullName & ".xml", XmlWriteMode.WriteSchema)
+
+                    If Not IsNothing(ed) Then
+
+                        Try
+                            db.Database.ExecuteSqlCommand("DELETE FROM Details WHERE editionID = " & editionID)
+
+                        Catch ex As Exception
+                            Dim m = ex.Message
+                        End Try
+
+                        createTemplateStructureDB(editionID, ed.ownerID)
+
+                    End If
+
+                End If
+
+            Else
+                r = False
+            End If
+
+
+
+        Else
+            r = False
+            log.Error("Archivio non presente, impossibile recuperare informazioni.")
+        End If
+
+        Return r
+
+    End Function
+
+    Public Function getCustomStructureDT(editionID As Integer) As DataTable
+        Dim StoragePath As String = Path.Combine(My.Application.Info.DirectoryPath, "www\files")
+        Dim fullpath As String = Path.Combine(StoragePath, editionID & ".xml")
+        Dim dt As New DataTable
+        If File.Exists(fullpath) Then
+            dt.ReadXml(fullpath)
+        End If
+        Return dt
+    End Function
+
+    ''' <summary>
+    ''' Alimenta la tabella Details con la struttura scelta e presente in StrucureDetails per l'edizione indicata
+    ''' </summary>
+    ''' <param name="editionID">Identificativo dell'Edizione</param>
+    ''' <param name="userID">Identificativo del proprietario dell'attività</param>
+    ''' <returns></returns>
     Public Function createTemplateStructureDB(editionID As Integer, userID As String) As Boolean
         Dim r As Boolean = True
 
         Using db As New ApplicationDbContext
             Dim ed As Editions = (From e In db.Editions Where e.editionID = editionID).FirstOrDefault
             If Not IsNothing(ed) Then
-                Dim n As Integer = (From d In db.Details Where d.editionID = editionID).Count
+                'Verifico che non ci siano file gestiti in precedenza per questa edizione..
+                Dim n As Integer = (From d In db.Details Where d.editionID = editionID And d.flagState > 0).Count
+
                 If n > 0 Then
                     r = False
-                    log.Error("Edizione non presente")
+                    log.Error("Edizione già presente")
                 Else
-                    'Dim sd = (From sdx In db.StructureDetails Where sdx.structureID = ed.structureID Select New With {
-                    '                                                                                                                  .addFile = sdx.addFile,
-                    '                                                                                                                 .addFolder = sdx.addFolder,
-                    '                                                                                                                 .documentID = sdx.documentID,
-                    '                                                                                                                 .editionID = editionID,
-                    '                                                                                                                 .fileExtension = sdx.fileExtension,
-                    '                                                                                                                 .fileName = sdx.fileName,
-                    '                                                                                                                 .file_for_checklist = sdx.file_for_checklist,
-                    '                                                                                                                 .flagContainer = sdx.flagContainer,
-                    '                                                                                                                 .flagState = sdx.flagState,
-                    '                                                                                                                 .fullPath = sdx.fullPath,
-                    '                                                                                                                 .idParent = sdx.idParent,
-                    '                                                                                                                 .idVerDoc = sdx.idVerDoc,
-                    '                                                                                                                 .MD5 = sdx.MD5,
-                    '                                                                                                                 .nLevels = sdx.nLevels,
-                    '                                                                                                                 .operatorID = userID,
-                    '                                                                                                                 .productID = ed.productID,
-                    '                                                                                                                 .structureID = sdx.structureID,
-                    '                                                                                                                 .swTarget = sdx.swTarget,
-                    '                                                                                                                 .Title = sdx.Title
-                    '                                                                                                                  }).ToList
 
+                    'Elimino l'eventuale pregresso per reimpostare la nuova struttura
+                    Try
+                        db.Database.ExecuteSqlCommand("DELETE FROM Details WHERE editionID = " & editionID)
 
-                    'Dim list As List(Of Details) = sd.Select(Function(sdx) New Details With {
-                    '                                                                                                                  .addFile = sdx.addFile,
-                    '                                                                                                                 .addFolder = sdx.addFolder,
-                    '                                                                                                                 .documentID = sdx.documentID,
-                    '                                                                                                                 .editionID = editionID,
-                    '                                                                                                                 .fileExtension = sdx.fileExtension,
-                    '                                                                                                                 .fileName = sdx.fileName,
-                    '                                                                                                                 .file_for_checklist = sdx.file_for_checklist,
-                    '                                                                                                                 .flagContainer = sdx.flagContainer,
-                    '                                                                                                                 .flagState = sdx.flagState,
-                    '                                                                                                                 .fullPath = sdx.fullPath,
-                    '                                                                                                                 .idParent = sdx.idParent,
-                    '                                                                                                                 .idVerDoc = sdx.idVerDoc,
-                    '                                                                                                                 .MD5 = sdx.MD5,
-                    '                                                                                                                 .nLevels = sdx.nLevels,
-                    '                                                                                                                 .operatorID = userID,
-                    '                                                                                                                 .productID = ed.productID,
-                    '                                                                                                                 .structureID = sdx.structureID,
-                    '                                                                                                                 .swTarget = sdx.swTarget,
-                    '                                                                                                                 .Title = sdx.Title
-                    '                                                                                                                  }).ToList
-
-
-
+                    Catch ex As Exception
+                        Dim m = ex.Message
+                    End Try
 
 
                     Dim list As List(Of Details) = (From sd In db.StructureDetails Where sd.structureID = ed.structureID Select sd).ToList.Select(Function(sdx) New Details With {
@@ -625,22 +771,9 @@ Module GeneralFunctions
 
 
                     db.Configuration.AutoDetectChangesEnabled = False
-                    'db.Configuration.ValidateOnSaveEnabled = False
-                    'For Each d As Details In list
-                    '    Try
-                    '        db.Details.Add(d)
-                    '        db.Entry(d).State = EntityState.Modified
-                    '        db.SaveChanges()
-
-                    '    Catch ex As Exception
-                    '        log.Error("createTemplateStructureDB : " & ex.Message)
-                    '    End Try
-                    'Next
                     db.Details.AddRange(list)
                     db.ChangeTracker.DetectChanges()
                     db.SaveChanges()
-                    'db.Details.AddRange(list)
-                    'db.SaveChanges()
 
                 End If
             Else
@@ -671,8 +804,78 @@ Module GeneralFunctions
         Return r
     End Function
 
+    Public Function getTreeList(editionID As Integer, Optional ByVal fromFileSystem As Boolean = False) As List(Of DetailsTreeModel)
+        Dim t As List(Of DetailsTreeModel) = New List(Of DetailsTreeModel)
+        Using db As New ApplicationDbContext
+            Dim ed As Editions = (From e In db.Editions Where e.editionID = editionID).FirstOrDefault
+            If Not IsNothing(ed) Then
+                If ed.asZipFile And fromFileSystem Then
+                    Dim dt As DataTable = getCustomStructureDT(editionID)
+                    Try
+                        t = toEntityFramework(Of DetailsTreeModel)(dt)
+                    Catch ex As Exception
+                        log.Error("init_StructureDetails: " & ex.Message)
+                    End Try
+                Else
+                    t = (From p In db.Products
+                         Join d In db.Details On p.productID Equals d.productID
+                         Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
+                         Join e In db.Editions On d.editionID Equals e.editionID
+                         Join str In db.Structures On str.structureID Equals e.structureID
+                         Join c In db.Companies On c.companyID Equals p.companyID
+                         Where e.editionID = editionID
+                         Select New DetailsTreeModel With {
+                                        .detailID = d.detailID,
+                                        .structureID = str.structureID,
+                                        .structureName = str.structureName,
+                                        .asZipFile = e.asZipFile,
+                                        .editionID = e.editionID,
+                                        .editionName = e.editionName,
+                                        .certificationPlan = e.certificationPlan,
+                                        .productID = p.productID,
+                                        .productName = p.productName,
+                                        .companyID = c.companyID,
+                                        .BusinessName = c.BusinessName,
+                                        .mdClassID = cls.mdClassID,
+                                        .mdClassName = cls.mdClassName,
+                                        .mdCode = p.mdCode,
+                                        .Title = d.Title,
+                                        .idParent = d.idParent,
+                                        .documentID = d.documentID,
+                                        .fileName = d.fileName,
+                                        .addFile = d.addFile,
+                                        .addFolder = d.addFolder,
+                                        .nLevels = d.nLevels,
+                                        .idVerDoc = d.idVerDoc,
+                                        .flagState = d.flagState,
+                                        .fileExtension = d.fileExtension,
+                                        .operatorID = d.operatorID,
+                                        .MD5 = d.MD5,
+                                        .swTarget = d.swTarget,
+                                        .file_for_checklist = d.file_for_checklist,
+                                        .fullPath = d.fullPath,
+                                        .flagContainer = d.flagContainer,
+                                        .fileStatus = e.fileStatus,
+                                        .checkListStatus = e.checkListStatus,
+                                        .productInfoStatus = e.productInfoStatus
+                                        }).ToList
+
+                End If
+
+            End If
 
 
+        End Using
+
+        Return makeTreeList(t)
+    End Function
+
+    ''' <summary>
+    ''' Genera le informazioni utili al frontend per visualizzare informazioni con gerarchia per rappresentare una truttura ad albero del filesystem
+    ''' </summary>
+    ''' <param name="data">Lista estratta dalla query che contiene tutti i dati da rappresentare</param>
+    ''' <param name="parentID">Indica gli elementi figlio da considerare riferiti ad un elemento pade</param>
+    ''' <returns></returns>
     Public Function makeTreeList(ByRef data As List(Of DetailsTreeModel), Optional parentID As Integer = 0) As List(Of DetailsTreeModel)
         Dim items As New List(Of DetailsTreeModel)
         Try
@@ -690,6 +893,68 @@ Module GeneralFunctions
         Return items
     End Function
 
+
+    ''' <summary>
+    ''' Funzione per decomprimere file Zip, Rar, 7zip, ed altri formati
+    ''' </summary>
+    ''' <param name="sourceFile">Percorso completo della posizione del file compresso.</param>
+    ''' <param name="outputFolder">Percorso di destinazione del contenuto da decomprimere.</param>
+    ''' <param name="overwrite">Flag di sovrascrittura del contenuto se già presente</param>
+    ''' <param name="checkFileIntegrity">Flag di verifica integrità dell'archivio.</param>
+    Public Sub UnpackArchive(ByVal sourceFile As String, ByVal outputFolder As String, ByVal overwrite As Boolean, ByVal checkFileIntegrity As Boolean)
+        Using extracter As New SevenZipExtractor(sourceFile, "sergio")
+            If (checkFileIntegrity _
+                    AndAlso Not extracter.Check) Then
+                Throw New Exception(String.Format("Appears to be an invalid archive: {0}", sourceFile))
+            End If
+
+            If Not Directory.Exists(outputFolder) Then Directory.CreateDirectory(outputFolder) ' outputFolder.MakeSurePathExists
+            'TODO: Warning!!!, inline IF is not supported ?
+            extracter.ExtractFiles(outputFolder.ToString(), If(overwrite, extracter.ArchiveFileNames.ToArray(), extracter.ArchiveFileNames.Where(Function(x) Not File.Exists(Path.Combine(outputFolder, x))).ToArray()))
+
+        End Using
+    End Sub
+
+    ''' <summary>
+    ''' Metodo per alimentare la Tabella ActivityLog con le operazioni richieste dagli utenti
+    ''' </summary>
+    ''' <param name="editionID">Identificativo dell'edizione del TechnicalFile</param>
+    ''' <param name="mdTasksStatesID">Operazione svolta secondo la tabella mdTasksStates</param>
+    ''' <param name="resultID">Stato finale dell'operazione</param>
+    ''' <param name="resultMessage">Messaggio finale dell'operazione</param>
+    ''' <param name="userID">Identificativo del proprietario dell'attività</param>
+    ''' <param name="startActiviyDate">Quando è iniziata l'attività</param>
+    ''' <param name="stopActiviyDate">Quando è terminata l'attività</param>
+    Public Sub AppLog(editionID As Integer, mdTasksStatesID As mdTaskStates_enum, resultID As JRisposta.Stati, resultMessage As String, userID As String, Optional ByVal startActiviyDate As Nullable(Of Date) = Nothing, Optional ByVal stopActiviyDate As Nullable(Of Date) = Nothing)
+        Dim al As New ActivityLog
+        With al
+            .editionID = editionID
+            .mdTasksStatesID = mdTasksStatesID
+            .resultID = resultID
+            .resultMessage = resultMessage
+            .startActiviyDate = IIf(IsNothing(startActiviyDate), Now, startActiviyDate)
+            .stopActiviyDate = IIf(IsNothing(stopActiviyDate), Now, stopActiviyDate)
+            .userID = userID
+        End With
+        Using db As New ApplicationDbContext
+            db.ActivityLog.Add(al)
+            Try
+                db.SaveChanges()
+                Select Case resultID
+                    Case JRisposta.Stati.Errato
+                        log.Error(resultMessage)
+                    Case JRisposta.Stati.Corretto
+                        log.Info(resultMessage)
+                    Case JRisposta.Stati.Attenzione
+                        log.Warn(resultMessage)
+                End Select
+            Catch ex As Exception
+                log.Error(ex.Message, ex)
+            End Try
+
+        End Using
+
+    End Sub
 
 #End Region
 

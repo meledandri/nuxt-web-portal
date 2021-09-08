@@ -35,6 +35,8 @@ Namespace Controllers
 
         <Route("fabList")>
         Public Function GetFabList() As JRisposta
+            log.Info("[GET]" & vbTab & "api/fabList")
+
             Dim r As New JRisposta
             Dim hidden As Boolean = False
             Dim list As List(Of FabListDataBinding) = (From c In db.Companies
@@ -86,6 +88,8 @@ Namespace Controllers
         <HttpGet>
         <Route("fabEditData/{id}")>
         Public Function GetfabEditData(id As Integer) As JRisposta
+            log.Info("[GET]" & vbTab & "api/fabEditData/" & id)
+
             Dim r As New JRisposta
             Dim cp As FabListDataBinding = (From c In db.Companies
                                             Join cd In db.CompanyDetail On c.companyID Equals cd.companyID
@@ -184,6 +188,8 @@ Namespace Controllers
         ''' <returns></returns>
         <Route("saveUser")>
         Public Function PostSaveUser(model As UserInfo) As JRisposta
+            log.Info("[POST]" & vbTab & "api/saveUser")
+
             Dim ut As New Users
             Dim r As New JRisposta
             If Not ModelState.IsValid Then
@@ -198,7 +204,7 @@ Namespace Controllers
                 With ut
                     .userID = System.Guid.NewGuid.ToString()
                     .userName = model.userName
-                    .DisplayName = model.displayName
+                    .displayName = model.displayName
                     .email = model.email
                     .password = cripta(model.password)
                     .companyID = model.companyID
@@ -224,11 +230,11 @@ Namespace Controllers
             Dim ui As New UserInfo
             With ui
                 .companyID = ut.companyID
-                .displayName = ut.DisplayName
+                .displayName = ut.displayName
                 .email = ut.email
                 .password = ""
                 .userID = ut.userID
-                .UserName = ut.userName
+                .userName = ut.userName
             End With
 
             r.add("userInfo", ui)
@@ -238,6 +244,8 @@ Namespace Controllers
 
         <Route("saveCompany")>
         Public Function PostSaveCompany(model As FabListDataBinding) As JRisposta
+            log.Info("[POST]" & vbTab & "api/saveCompany")
+
             Dim r As New JRisposta
             If Not ModelState.IsValid Then
                 r.stato = JRisposta.Stati.Errato
@@ -314,6 +322,8 @@ Namespace Controllers
 
         <Route("tree/{editionID}")>
         Public Function GetTreeEdition(editionID As Integer) As JRisposta
+            log.Info("[GET]" & vbTab & "api/tree/" & editionID)
+
             Dim r As New JRisposta
             '            Select Case Details.detailID, Structures.structureID, Structures.structureName, Editions.editionID, Editions.editionName, Editions.certificationPlan, Products.productID, Products.productName, Companies.companyID, 
             '                         Companies.BusinessName, mdClass.mdClassID, mdClass.mdClassName, Products.mdCode, Details.Title, Details.idParent, Details.documentID, Details.fileName, Details.addFolder, Details.addFile, Details.nLevels,
@@ -327,56 +337,80 @@ Namespace Controllers
 
             'where Details.editionID = 2
 
-            Dim t As List(Of DetailsTreeModel) = (From p In db.Products
-                                                  Join d In db.Details On p.productID Equals d.productID
-                                                  Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
-                                                  Join e In db.Editions On d.editionID Equals e.editionID
-                                                  Join str In db.Structures On str.structureID Equals e.structureID
-                                                  Join c In db.Companies On c.companyID Equals p.companyID
-                                                  Where e.editionID = editionID
-                                                  Select New DetailsTreeModel With {
-                                                                          .detailID = d.detailID,
-                                                                          .structureID = str.structureID,
-                                                                          .structureName = str.structureName,
-                                                                           .asZipFile = e.asZipFile,
-                                                                          .editionID = e.editionID,
-                                                                          .editionName = e.editionName,
-                                                                          .certificationPlan = e.certificationPlan,
-                                                                          .productID = p.productID,
-                                                                          .productName = p.productName,
-                                                                          .companyID = c.companyID,
-                                                                          .BusinessName = c.BusinessName,
-                                                                          .mdClassID = cls.mdClassID,
-                                                                          .mdClassName = cls.mdClassName,
-                                                                          .mdCode = p.mdCode,
-                                                                          .Title = d.Title,
-                                                                          .idParent = d.idParent,
-                                                                          .documentID = d.documentID,
-                                                                          .fileName = d.fileName,
-                                                                          .addFile = d.addFile,
-                                                                          .addFolder = d.addFolder,
-                                                                          .nLevels = d.nLevels,
-                                                                          .idVerDoc = d.idVerDoc,
-                                                                          .flagState = d.flagState,
-                                                                          .fileExtension = d.fileExtension,
-                                                                          .operatorID = d.operatorID,
-                                                                          .MD5 = d.MD5,
-                                                                          .swTarget = d.swTarget,
-                                                                          .file_for_checklist = d.file_for_checklist,
-                                                                          .fullPath = d.fullPath,
-                                                                          .flagContainer = d.flagContainer,
-                                                                          .fileStatus = e.fileStatus,
-                                                                          .checkListStatus = e.checkListStatus,
-                                                                          .productInfoStatus = e.productInfoStatus
-                                                                          }).ToList
+            'Dim t As List(Of DetailsTreeModel) = New List(Of DetailsTreeModel)
+            'Dim ed As Editions = (From e In db.Editions Where e.editionID = editionID).FirstOrDefault
+            'If Not IsNothing(ed) Then
+            '    If ed.asZipFile Then
+            '        Dim dt As DataTable = getCustomStructureDT(editionID)
 
-            r.add("tree", makeTreeList(t))
+            '        Try
+            '            t = toEntityFramework(Of DetailsTreeModel)(dt)
+            '        Catch ex As Exception
+            '            log.Error("init_StructureDetails: " & ex.Message)
+            '        End Try
+            '    Else
+            '        t = (From p In db.Products
+            '             Join d In db.Details On p.productID Equals d.productID
+            '             Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
+            '             Join e In db.Editions On d.editionID Equals e.editionID
+            '             Join str In db.Structures On str.structureID Equals e.structureID
+            '             Join c In db.Companies On c.companyID Equals p.companyID
+            '             Where e.editionID = editionID
+            '             Select New DetailsTreeModel With {
+            '                            .detailID = d.detailID,
+            '                            .structureID = str.structureID,
+            '                            .structureName = str.structureName,
+            '                            .asZipFile = e.asZipFile,
+            '                            .editionID = e.editionID,
+            '                            .editionName = e.editionName,
+            '                            .certificationPlan = e.certificationPlan,
+            '                            .productID = p.productID,
+            '                            .productName = p.productName,
+            '                            .companyID = c.companyID,
+            '                            .BusinessName = c.BusinessName,
+            '                            .mdClassID = cls.mdClassID,
+            '                            .mdClassName = cls.mdClassName,
+            '                            .mdCode = p.mdCode,
+            '                            .Title = d.Title,
+            '                            .idParent = d.idParent,
+            '                            .documentID = d.documentID,
+            '                            .fileName = d.fileName,
+            '                            .addFile = d.addFile,
+            '                            .addFolder = d.addFolder,
+            '                            .nLevels = d.nLevels,
+            '                            .idVerDoc = d.idVerDoc,
+            '                            .flagState = d.flagState,
+            '                            .fileExtension = d.fileExtension,
+            '                            .operatorID = d.operatorID,
+            '                            .MD5 = d.MD5,
+            '                            .swTarget = d.swTarget,
+            '                            .file_for_checklist = d.file_for_checklist,
+            '                            .fullPath = d.fullPath,
+            '                            .flagContainer = d.flagContainer,
+            '                            .fileStatus = e.fileStatus,
+            '                            .checkListStatus = e.checkListStatus,
+            '                            .productInfoStatus = e.productInfoStatus
+            '                            }).ToList
+
+            '    End If
+
+            'End If
+
+            Dim ed As Editions = (From e In db.Editions Where e.editionID = editionID Select e).FirstOrDefault
+            Dim asFileZip As Boolean = False
+            If Not IsNothing(ed) Then
+                asFileZip = ed.asZipFile
+            End If
+
+            r.add("tree", getTreeList(editionID, asFileZip))
 
             Return r
         End Function
 
         <Route("task/save")>
         Public Function PostTaskSave(model As TaskInfoDataBindig) As JRisposta
+            log.Info("[POST]" & vbTab & "api/task/save")
+
             Dim r As New JRisposta
             Dim ed As New Editions
             If Not ModelState.IsValid Then
@@ -431,6 +465,13 @@ Namespace Controllers
             Try
                 db.Editions.AddOrUpdate(ed)
                 db.SaveChanges()
+                Try
+                    db.Database.ExecuteSqlCommand("DELETE FROM Details WHERE editionID = " & ed.editionID)
+
+                Catch ex As Exception
+                    Dim m = ex.Message
+                End Try
+
 
                 createTemplateStructureDB(ed.editionID, model.ownerID)
 

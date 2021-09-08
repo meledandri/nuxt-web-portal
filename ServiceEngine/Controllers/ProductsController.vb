@@ -35,6 +35,8 @@ Namespace Controllers
 
         <Route("productsList")>
         Public Function GetProductsList() As JRisposta
+            log.Info("[GET]" & vbTab & "api/productsList")
+
             Dim r As New JRisposta
             Dim hidden As Boolean = False
             Dim list As List(Of ProductInfoDataBinding) = (From p In db.Products
@@ -89,6 +91,8 @@ Namespace Controllers
 
         <Route("tasksList")>
         Public Function GetTasksList() As JRisposta
+            log.Info("[GET]" & vbTab & "api/tasksList")
+
             Dim r As New JRisposta
             Dim hidden As Boolean = False
             Dim list As List(Of TaskInfoDataBindig) = (From p In db.Products

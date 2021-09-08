@@ -46,6 +46,8 @@ Namespace Controllers
 
         <Route("addConfig")>
         Public Function PostAddConfig(model As AppConfig) As JRisposta
+            log.Info("[POST]" & vbTab & "api/addConfig")
+
             Dim r As New JRisposta
             If Not ModelState.IsValid Then
                 r.stato = JRisposta.Stati.Errato
@@ -66,6 +68,8 @@ Namespace Controllers
 
         <Route("activeCompanies")>
         Public Function GetActiveCompanies() As List(Of Companies)
+            log.Info("[GET]" & vbTab & "api/activeCompanies")
+
             'Dim li As Integer = (From ci In db.Companies).Count
             'If li = 0 Then
             '    Dim cn As New Companies
