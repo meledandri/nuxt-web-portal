@@ -86,9 +86,9 @@ Namespace My
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("../../../nuxt-frontend/dist")>  _
-        Public ReadOnly Property www_dir() As String
+        Public ReadOnly Property path_www() As String
             Get
-                Return CType(Me("www_dir"),String)
+                Return CType(Me("path_www"),String)
             End Get
         End Property
         
@@ -98,6 +98,24 @@ Namespace My
         Public ReadOnly Property MigrateDatabaseToLatestVersion() As Boolean
             Get
                 Return CType(Me("MigrateDatabaseToLatestVersion"),Boolean)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("www\files")>  _
+        Public ReadOnly Property path_storage() As String
+            Get
+                Return CType(Me("path_storage"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("www\temp")>  _
+        Public ReadOnly Property path_temp() As String
+            Get
+                Return CType(Me("path_temp"),String)
             End Get
         End Property
     End Class

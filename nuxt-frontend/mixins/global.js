@@ -3,7 +3,7 @@ export default {
   components: {}, //Elenco di componenti utilizzati
   data: () => ({
     uploadAcceptType:
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".7z,.rar,.gzip,application/x-rar-compressed, application/zip",
     files: {
       html: "fa fa-file-code",
       doc: "fas fa-file-word",

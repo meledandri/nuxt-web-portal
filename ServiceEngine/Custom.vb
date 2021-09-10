@@ -360,6 +360,152 @@ Module GeneralFunctions
     End Function
 
 
+
+
+
+
+    ''' <summary>
+    ''' Elenco delle attività per singola Azienda con data molde TaskInfoDataBindig
+    ''' </summary>
+    ''' <param name="companyID">Identificativo dell'Azienda</param>
+    ''' <returns>Lista [TaskInfoDataBindig] di tutte le attività di un'Azienda</returns>
+    Public Function getTasksInfoList(companyID As Integer) As List(Of TaskInfoDataBindig)
+        Dim lst As New List(Of TaskInfoDataBindig)
+        Using db As New ApplicationDbContext
+            lst = (From p In db.Products
+                   Join cp In db.Companies On p.companyID Equals cp.companyID
+                   Join ed In db.Editions On ed.productID Equals p.productID
+                   Join act In db.mdActivity On ed.mdActivityID Equals act.mdActivityID
+                   Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
+                   Join tsks In db.mdTasksStates On ed.mdTasksStatesID Equals tsks.mdTasksStatesID
+                   Join str In db.Structures On ed.structureID Equals str.structureID
+                   Join u In db.Users On u.userID Equals ed.ownerID
+                   Where cp.companyID = companyID
+                   Select New TaskInfoDataBindig _
+                                                               With {.companyID = cp.companyID,
+                                                               .BusinessName = cp.BusinessName,
+                                                               .productID = p.productID,
+                                                               .productName = p.productName,
+                                                               .mdClassID = cls.mdClassID,
+                                                               .mdClassName = cls.mdClassName,
+                                                               .mdCode = p.mdCode,
+                                                               .editionID = ed.editionID,
+                                                               .editionName = ed.editionName,
+                                                               .certificationPlan = ed.certificationPlan,
+                                                               .mdActivityID = act.mdActivityID,
+                                                               .mdActivityName = act.mdActivityName,
+                                                               .editionNotes = ed.editionNotes,
+                                                                .deadline = ed.deadline,
+                                                               .structureID = str.structureID,
+                                                               .structureName = str.structureName,
+                                                               .asZipFile = ed.asZipFile,
+                                                               .mdTaskStatesID = ed.mdTasksStatesID,
+                                                               .mdTaskStatesName = tsks.mdTasksStatesName,
+                                                               .insertDate = ed.insertDate,
+                                                               .modifiedDate = ed.modifiedDate,
+                                                               .ownerID = ed.ownerID,
+                                                               .userName = u.userName,
+                                                               .displayName = u.displayName,
+                                                               .email = u.email,
+                                                               .fileStatus = ed.fileStatus,
+                                                               .productInfoStatus = ed.productInfoStatus,
+                                                               .checkListStatus = ed.checkListStatus
+                                                               }).ToList
+            For Each t As TaskInfoDataBindig In lst
+                Try
+                    t.appLogs = getLastAppLog(t.editionID, 3)
+
+                Catch ex As Exception
+                    log.Error(ex.Message, ex)
+                End Try
+            Next
+        End Using
+        Return lst
+    End Function
+
+
+    ''' <summary>
+    ''' Dettaglio dell'attività di un'edizione specifica in datas model TaskInfoDataBindig
+    ''' </summary>
+    ''' <param name="editionID">Identificativo dell'Edizione</param>
+    ''' <returns>Dettaglio dell'attività in formato TaskInfoDataBindig</returns>
+    Public Function getTasksInfo(editionID As Integer) As TaskInfoDataBindig
+        Dim t As New TaskInfoDataBindig
+        Using db As New ApplicationDbContext
+            t = (From p In db.Products
+                 Join cp In db.Companies On p.companyID Equals cp.companyID
+                 Join ed In db.Editions On ed.productID Equals p.productID
+                 Join act In db.mdActivity On ed.mdActivityID Equals act.mdActivityID
+                 Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
+                 Join tsks In db.mdTasksStates On ed.mdTasksStatesID Equals tsks.mdTasksStatesID
+                 Join str In db.Structures On ed.structureID Equals str.structureID
+                 Join u In db.Users On u.userID Equals ed.ownerID
+                 Where ed.editionID = editionID
+                 Select New TaskInfoDataBindig _
+                                                               With {.companyID = cp.companyID,
+                                                               .BusinessName = cp.BusinessName,
+                                                               .productID = p.productID,
+                                                               .productName = p.productName,
+                                                               .mdClassID = cls.mdClassID,
+                                                               .mdClassName = cls.mdClassName,
+                                                               .mdCode = p.mdCode,
+                                                               .editionID = ed.editionID,
+                                                               .editionName = ed.editionName,
+                                                               .certificationPlan = ed.certificationPlan,
+                                                               .mdActivityID = act.mdActivityID,
+                                                               .mdActivityName = act.mdActivityName,
+                                                               .editionNotes = ed.editionNotes,
+                                                                .deadline = ed.deadline,
+                                                               .structureID = str.structureID,
+                                                               .structureName = str.structureName,
+                                                               .asZipFile = ed.asZipFile,
+                                                               .mdTaskStatesID = ed.mdTasksStatesID,
+                                                               .mdTaskStatesName = tsks.mdTasksStatesName,
+                                                               .insertDate = ed.insertDate,
+                                                               .modifiedDate = ed.modifiedDate,
+                                                               .ownerID = ed.ownerID,
+                                                               .userName = u.userName,
+                                                               .displayName = u.displayName,
+                                                               .email = u.email,
+                                                               .fileStatus = ed.fileStatus,
+                                                               .productInfoStatus = ed.productInfoStatus,
+                                                               .checkListStatus = ed.checkListStatus
+                                                               }).FirstOrDefault
+
+        End Using
+        Return t
+    End Function
+
+
+    Public Function deleteTaskFiles(editionID As Integer) As Boolean
+        Dim r As Boolean = True
+        Using db As New ApplicationDbContext
+            Dim ed As Editions = (From e In db.Editions Where e.editionID = editionID Select e).FirstOrDefault
+            If Not IsNothing(ed) Then
+                Try
+                    Dim temp_dir As String = Path.Combine(My.Application.Info.DirectoryPath, My.Settings.path_temp)
+                    Dim StoragePath As String = Path.Combine(My.Application.Info.DirectoryPath, My.Settings.path_storage)
+                    Dim tempEdition As String = Path.Combine(temp_dir, editionID)
+                    Dim storageEdition As String = Path.Combine(StoragePath, editionID)
+                    If Directory.Exists(tempEdition) Then Directory.Delete(tempEdition, True)
+                    If Directory.Exists(storageEdition) Then Directory.Delete(storageEdition, True)
+                    If File.Exists(tempEdition & ".xml") Then File.Delete(tempEdition & ".xml")
+                    If File.Exists(tempEdition & ".archive") Then File.Delete(tempEdition & ".archive")
+                    db.Database.ExecuteSqlCommand("Update Details set flagState = 0, fileExtension = '' Where editionID = " & editionID)
+                Catch ex As Exception
+                    log.Error("[deleteTaskFiles/" & editionID & "] : " & ex.Message, ex)
+                    r = False
+                End Try
+            Else
+                r = False
+            End If
+
+        End Using
+
+        Return r
+    End Function
+
+
 #Region "Datatable ed Entity framework .."
     ''' <summary>
     ''' Converte un risultato Entity Framework in Datatable
@@ -557,6 +703,7 @@ Module GeneralFunctions
     Public Function createCustomStructureDT(source_path As String, editionID As Integer, idParent As Integer, ByRef progressiveID As Integer) As Boolean
         Dim r As Boolean = True
         Dim di As New DirectoryInfo(source_path)
+        If idParent = 0 Then log.Info(String.Format("Creazione della struttura dati dell'Edizione -{0}- tipo 'Details' dal percorso: {1}", editionID, source_path))
         If Directory.Exists(di.FullName) Then '   Se la directory esiste..
 
             Dim db As New ApplicationDbContext
@@ -626,6 +773,8 @@ Module GeneralFunctions
                     'Dim dtDetails As DataTable = ToDataTable(Of Details)(listDetails)
                     'dtDetails.TableName = "Details"
 
+                    log.Info(String.Format("Generazione del file indice '{0}' del percorso '{1}'", di.FullName & ".xml", source_path))
+
                     Dim DetailsTreeModel_list As List(Of DetailsTreeModel) = (From p In db.Products
                                                                               Join d In db.Details On p.productID Equals d.productID
                                                                               Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
@@ -666,7 +815,8 @@ Module GeneralFunctions
                                                                           .flagContainer = d.flagContainer,
                                                                           .fileStatus = e.fileStatus,
                                                                           .checkListStatus = e.checkListStatus,
-                                                                          .productInfoStatus = e.productInfoStatus
+                                                                          .productInfoStatus = e.productInfoStatus,
+                                                                            .dataOrder = d.dataOrder
                                                                           }).ToList
 
 
@@ -674,6 +824,7 @@ Module GeneralFunctions
                     dtDetailsTreeModel.TableName = "DetailsTreeModel"
 
                     dtDetailsTreeModel.WriteXml(di.FullName & ".xml", XmlWriteMode.WriteSchema)
+                    log.Info(String.Format("Generazione del file indice '{0}' conclusa", di.FullName & ".xml"))
 
                     If Not IsNothing(ed) Then
 
@@ -706,7 +857,7 @@ Module GeneralFunctions
     End Function
 
     Public Function getCustomStructureDT(editionID As Integer) As DataTable
-        Dim StoragePath As String = Path.Combine(My.Application.Info.DirectoryPath, "www\files")
+        Dim StoragePath As String = Path.Combine(My.Application.Info.DirectoryPath, My.Settings.path_temp)
         Dim fullpath As String = Path.Combine(StoragePath, editionID & ".xml")
         Dim dt As New DataTable
         If File.Exists(fullpath) Then
@@ -723,6 +874,7 @@ Module GeneralFunctions
     ''' <returns></returns>
     Public Function createTemplateStructureDB(editionID As Integer, userID As String) As Boolean
         Dim r As Boolean = True
+        log.Info(String.Format("Generazione dati della tabella 'Details' per l'Edizione {0}-.", editionID))
 
         Using db As New ApplicationDbContext
             Dim ed As Editions = (From e In db.Editions Where e.editionID = editionID).FirstOrDefault
@@ -763,7 +915,8 @@ Module GeneralFunctions
                                                                                                                                      .productID = ed.productID,
                                                                                                                                      .structureID = sdx.structureID,
                                                                                                                                      .swTarget = sdx.swTarget,
-                                                                                                                                     .Title = sdx.Title
+                                                                                                                                     .Title = sdx.Title,
+                                                                                                                                     .dataOrder = sdx.dataOrder
                                                                                                                                       }).ToList
 
 
@@ -775,13 +928,13 @@ Module GeneralFunctions
                     db.ChangeTracker.DetectChanges()
                     db.SaveChanges()
 
+                    log.Info(String.Format("Generazione dati della tabella 'Details' per l'Edizione -{0}- completata.", editionID))
                 End If
             Else
                 log.Error("Edizione non presente")
+                r = False
             End If
         End Using
-
-
 
 
         Return r
@@ -824,6 +977,7 @@ Module GeneralFunctions
                          Join str In db.Structures On str.structureID Equals e.structureID
                          Join c In db.Companies On c.companyID Equals p.companyID
                          Where e.editionID = editionID
+                         Order By d.dataOrder
                          Select New DetailsTreeModel With {
                                         .detailID = d.detailID,
                                         .structureID = str.structureID,
@@ -857,7 +1011,8 @@ Module GeneralFunctions
                                         .flagContainer = d.flagContainer,
                                         .fileStatus = e.fileStatus,
                                         .checkListStatus = e.checkListStatus,
-                                        .productInfoStatus = e.productInfoStatus
+                                        .productInfoStatus = e.productInfoStatus,
+                                         .dataOrder = d.dataOrder
                                         }).ToList
 
                 End If
@@ -870,6 +1025,57 @@ Module GeneralFunctions
         Return makeTreeList(t)
     End Function
 
+    Public Function getDetailData(detailID As Long) As DetailsTreeModel
+        Dim t As New DetailsTreeModel
+        Using db As New ApplicationDbContext
+            t = (From p In db.Products
+                 Join d In db.Details On p.productID Equals d.productID
+                 Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
+                 Join e In db.Editions On d.editionID Equals e.editionID
+                 Join str In db.Structures On str.structureID Equals e.structureID
+                 Join c In db.Companies On c.companyID Equals p.companyID
+                 Where d.detailID = detailID
+                 Select New DetailsTreeModel With {
+                                        .detailID = d.detailID,
+                                        .structureID = str.structureID,
+                                        .structureName = str.structureName,
+                                        .asZipFile = e.asZipFile,
+                                        .editionID = e.editionID,
+                                        .editionName = e.editionName,
+                                        .certificationPlan = e.certificationPlan,
+                                        .productID = p.productID,
+                                        .productName = p.productName,
+                                        .companyID = c.companyID,
+                                        .BusinessName = c.BusinessName,
+                                        .mdClassID = cls.mdClassID,
+                                        .mdClassName = cls.mdClassName,
+                                        .mdCode = p.mdCode,
+                                        .Title = d.Title,
+                                        .idParent = d.idParent,
+                                        .documentID = d.documentID,
+                                        .fileName = d.fileName,
+                                        .addFile = d.addFile,
+                                        .addFolder = d.addFolder,
+                                        .nLevels = d.nLevels,
+                                        .idVerDoc = d.idVerDoc,
+                                        .flagState = d.flagState,
+                                        .fileExtension = d.fileExtension,
+                                        .operatorID = d.operatorID,
+                                        .MD5 = d.MD5,
+                                        .swTarget = d.swTarget,
+                                        .file_for_checklist = d.file_for_checklist,
+                                        .fullPath = d.fullPath,
+                                        .flagContainer = d.flagContainer,
+                                        .fileStatus = e.fileStatus,
+                                        .checkListStatus = e.checkListStatus,
+                                        .productInfoStatus = e.productInfoStatus,
+                                        .dataOrder = d.dataOrder
+                                        }).FirstOrDefault
+        End Using
+
+        Return t
+    End Function
+
     ''' <summary>
     ''' Genera le informazioni utili al frontend per visualizzare informazioni con gerarchia per rappresentare una truttura ad albero del filesystem
     ''' </summary>
@@ -879,7 +1085,7 @@ Module GeneralFunctions
     Public Function makeTreeList(ByRef data As List(Of DetailsTreeModel), Optional parentID As Integer = 0) As List(Of DetailsTreeModel)
         Dim items As New List(Of DetailsTreeModel)
         Try
-            For Each r In data.Where(Function(x) (x.idParent = parentID)).OrderBy(Function(y) y.flagContainer).ThenBy(Function(y) y.Title).ToList()
+            For Each r In (From row In data Select row Where row.idParent = parentID Order By row.dataOrder).ToList()
                 Dim n As New DetailsTreeModel
                 'n = CType(Convert.ChangeType(r, r.GetType), DetailsTreeModel)
                 n = r
@@ -902,7 +1108,8 @@ Module GeneralFunctions
     ''' <param name="overwrite">Flag di sovrascrittura del contenuto se già presente</param>
     ''' <param name="checkFileIntegrity">Flag di verifica integrità dell'archivio.</param>
     Public Sub UnpackArchive(ByVal sourceFile As String, ByVal outputFolder As String, ByVal overwrite As Boolean, ByVal checkFileIntegrity As Boolean)
-        Using extracter As New SevenZipExtractor(sourceFile, "sergio")
+        log.Info(String.Format("Estrazione del file '{0}' in '{1}' in corso..", sourceFile, outputFolder))
+        Using extracter As New SevenZipExtractor(sourceFile)
             If (checkFileIntegrity _
                     AndAlso Not extracter.Check) Then
                 Throw New Exception(String.Format("Appears to be an invalid archive: {0}", sourceFile))
@@ -913,6 +1120,7 @@ Module GeneralFunctions
             extracter.ExtractFiles(outputFolder.ToString(), If(overwrite, extracter.ArchiveFileNames.ToArray(), extracter.ArchiveFileNames.Where(Function(x) Not File.Exists(Path.Combine(outputFolder, x))).ToArray()))
 
         End Using
+        log.Info(String.Format("Fine estrazione del file '{0}'.", sourceFile))
     End Sub
 
     ''' <summary>
@@ -955,6 +1163,31 @@ Module GeneralFunctions
         End Using
 
     End Sub
+
+    Public Function getLastAppLog(editionID As Integer, Optional ByVal n As Integer = 1) As List(Of ActivityLogModel)
+        Dim l As New List(Of ActivityLogModel)
+        Using db As New ApplicationDbContext
+            l = (From la In db.ActivityLog
+                 Join ts In db.mdTasksStates On la.mdTasksStatesID Equals ts.mdTasksStatesID
+                 Join u In db.Users On la.userID Equals u.userID
+                 Where la.editionID = editionID Order By la.insertDate Select New ActivityLogModel With {
+                                                                           .activityID = la.activityID,
+                                                                           .displayName = u.displayName,
+                                                                           .editionID = la.editionID,
+                                                                           .email = u.email,
+                                                                           .insertDate = la.insertDate,
+                                                                           .mdTasksStatesID = la.mdTasksStatesID,
+                                                                           .mdTasksStatesName = ts.mdTasksStatesName,
+                                                                           .resultID = la.resultID,
+                                                                           .resultMessage = la.resultMessage,
+                                                                           .startActiviyDate = la.startActiviyDate,
+                                                                           .stopActiviyDate = la.stopActiviyDate,
+                                                                           .userID = la.userID,
+                                                                           .userName = u.userName
+                                                                           }).Take(n).ToList()
+        End Using
+        Return l
+    End Function
 
 #End Region
 

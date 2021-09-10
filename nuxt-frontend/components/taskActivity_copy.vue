@@ -8,73 +8,37 @@
         <v-row>
           <v-col cols="12" class="my-2">
             <v-list two-line dense v-if="selectedCompany > 0">
-              <template
-                v-for="(task, index) in company.companyInfo.details.tasks"
+              <v-list-item
+                v-for="task in company.companyInfo.details.tasks"
+                :key="task.taskID"
+                dense
               >
-                <v-list-item :key="task.taskID" dense>
-                  <v-list-item-avatar>
-                    <v-icon small>fas fa-thumbtack</v-icon>
-                  </v-list-item-avatar>
-
-                  <v-list-item-content>
-                    <v-list-item-title
-                      v-text="task.productName"
-                    ></v-list-item-title>
-
-                    <v-list-item-subtitle class="text--primary"
-                      ><b style="color: #4183a9;">{{ task.mdActivityName }}</b>
-                      ({{ task.mdTaskStatesName }})</v-list-item-subtitle
-                    >
-
-<v-list-item-subtitle>
-<v-list-group
-        :value="false"
-      >
-        <template v-slot:activator>
-          <v-list-item-title><v-icon class="mr-2">fas fa-road</v-icon>Activities</v-list-item-title>
-        </template>
-<v-list-item v-for="log in task.appLogs"
-                      :key="log.activityID" dense>
-                  <v-list-item-avatar>
-                    <v-icon small :color="log.resultID == -1 ? 'error': 'success'">fas fa-tasks</v-icon>
-                  </v-list-item-avatar>
-                  <v-list-item-content>
-                    <v-list-item-title
-                      v-text="log.stopActiviyDate"
-                    ></v-list-item-title>
-
-                    <v-list-item-subtitle class="text--primary"
-                      ><b style="color: #4183a9;">{{ log.displayName }}</b>
-                      {{ log.resultMessage }}</v-list-item-subtitle
-                    >
-                  </v-list-item-content>
-
-</v-list-item>
-</v-list-group>
-</v-list-item-subtitle>
-                    
-                  </v-list-item-content>
-
-                  <v-list-item-action>
-                    <v-list-item-action-text
-                      v-text="task.certificationPlan"
-                    ></v-list-item-action-text>
-<div style="min-width:100px">
-                      <v-btn icon class="mr-2" @click="editTask(task)">
-                      <v-icon small class="mx-2 d-inline-block">
-                        far fa-edit
-                      </v-icon>
-                    </v-btn>
-                    <v-btn icon class="mr-2">
-                      <v-icon small color="red" class="mx-2 d-inline-block">
-                        far fa-trash-alt
-                      </v-icon>
-                    </v-btn>
-
-</div>
-                  </v-list-item-action>
-                </v-list-item>
-              </template>
+                <v-list-item-avatar>
+                  <v-icon small>fas fa-thumbtack</v-icon>
+                </v-list-item-avatar>
+                <v-list-item-content>
+                  <v-list-item-title>
+                    {{ task.productName }} [{{ task.mdClassName }}]
+                  </v-list-item-title>
+                  <v-list-item-subtitle>
+                    <b style="color: #4183a9;">{{ task.mdActivityName }}</b>
+                    ({{ task.mdTaskStatesName }})
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+                <v-btn icon class="mr-2" @click="editTask(task)">
+                  <v-icon small class="mx-2 d-inline-block">
+                    far fa-edit
+                  </v-icon>
+                </v-btn>
+                <v-btn icon class="mr-2">
+                  <v-icon small color="red" class="mx-2 d-inline-block">
+                    far fa-trash-alt
+                  </v-icon>
+                </v-btn>
+                <div class="applog" v-for="(log)  in task.appLogs" :key="log.activityID">
+<b>{{log.displayName}}</b> {{log.resultMessage}}
+                </div>
+              </v-list-item>
             </v-list>
           </v-col>
         </v-row>

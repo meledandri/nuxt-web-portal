@@ -18,7 +18,7 @@ Module Module1
     Public DefaultUrl As String = My.Settings.DefaultUrl
     Public AlternariveUrl As String = My.Settings.AlternariveUrl
     Public browser As Process
-    Private db As New ApplicationDbContext
+    'Private db As New ApplicationDbContext
 
     Sub Main()
         If Environment.UserInteractive Then runningMode = runningModes.console
@@ -128,42 +128,42 @@ Module Module1
 
 
 
-    Public Function getTasksInfoList(companyID As Integer) As List(Of TaskInfoDataBindig)
-        Dim list As List(Of TaskInfoDataBindig) = (From p In db.Products
-                                                   Join cp In db.Companies On p.companyID Equals cp.companyID
-                                                   Join ed In db.Editions On ed.productID Equals p.productID
-                                                   Join act In db.mdActivity On ed.mdActivityID Equals act.mdActivityID
-                                                   Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
-                                                   Join tsks In db.mdTasksStates On ed.mdTasksStatesID Equals tsks.mdTasksStatesID
-                                                   Join str In db.Structures On ed.structureID Equals str.structureID
-                                                   Join u In db.Users On u.userID Equals ed.ownerID
-                                                   Where cp.companyID = companyID
-                                                   Select New TaskInfoDataBindig _
-                                                           With {.companyID = cp.companyID,
-                                                           .BusinessName = cp.BusinessName,
-                                                           .productID = p.productID,
-                                                           .productName = p.productName,
-                                                           .mdClassID = cls.mdClassID,
-                                                           .mdClassName = cls.mdClassName,
-                                                           .editionID = ed.editionID,
-                                                           .editionName = ed.editionName,
-                                                           .certificationPlan = ed.certificationPlan,
-                                                           .mdActivityID = act.mdActivityID,
-                                                           .mdActivityName = act.mdActivityName,
-                                                           .editionNotes = ed.editionNotes,
-                                                            .deadline = ed.deadline,
-                                                           .structureID = str.structureID,
-                                                           .structureName = str.structureName,
-                                                       .asZipFile = ed.asZipFile,
-                                                       .mdTaskStatesID = ed.mdTasksStatesID,
-                                                       .mdTaskStatesName = tsks.mdTasksStatesName,
-                                                           .insertDate = ed.insertDate,
-                                                       .modifiedDate = ed.modifiedDate,
-                                                       .ownerID = ed.ownerID,
-                                                       .userName = u.userName,
-                                                       .displayName = u.displayName,
-                                                       .email = u.email
-                                                           }).ToList
-        Return list
-    End Function
+    'Public Function getTasksInfoList(companyID As Integer) As List(Of TaskInfoDataBindig)
+    '    Dim list As List(Of TaskInfoDataBindig) = (From p In db.Products
+    '                                               Join cp In db.Companies On p.companyID Equals cp.companyID
+    '                                               Join ed In db.Editions On ed.productID Equals p.productID
+    '                                               Join act In db.mdActivity On ed.mdActivityID Equals act.mdActivityID
+    '                                               Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
+    '                                               Join tsks In db.mdTasksStates On ed.mdTasksStatesID Equals tsks.mdTasksStatesID
+    '                                               Join str In db.Structures On ed.structureID Equals str.structureID
+    '                                               Join u In db.Users On u.userID Equals ed.ownerID
+    '                                               Where cp.companyID = companyID
+    '                                               Select New TaskInfoDataBindig _
+    '                                                       With {.companyID = cp.companyID,
+    '                                                       .BusinessName = cp.BusinessName,
+    '                                                       .productID = p.productID,
+    '                                                       .productName = p.productName,
+    '                                                       .mdClassID = cls.mdClassID,
+    '                                                       .mdClassName = cls.mdClassName,
+    '                                                       .editionID = ed.editionID,
+    '                                                       .editionName = ed.editionName,
+    '                                                       .certificationPlan = ed.certificationPlan,
+    '                                                       .mdActivityID = act.mdActivityID,
+    '                                                       .mdActivityName = act.mdActivityName,
+    '                                                       .editionNotes = ed.editionNotes,
+    '                                                        .deadline = ed.deadline,
+    '                                                       .structureID = str.structureID,
+    '                                                       .structureName = str.structureName,
+    '                                                   .asZipFile = ed.asZipFile,
+    '                                                   .mdTaskStatesID = ed.mdTasksStatesID,
+    '                                                   .mdTaskStatesName = tsks.mdTasksStatesName,
+    '                                                       .insertDate = ed.insertDate,
+    '                                                   .modifiedDate = ed.modifiedDate,
+    '                                                   .ownerID = ed.ownerID,
+    '                                                   .userName = u.userName,
+    '                                                   .displayName = u.displayName,
+    '                                                   .email = u.email
+    '                                                       }).ToList
+    '    Return list
+    'End Function
 End Module

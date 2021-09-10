@@ -29,7 +29,7 @@ Namespace SelfHostedServiceSignalR
             app.MapSignalR()
             Dim www As String = "./www"
             Try
-                www = My.Settings.www_dir
+                www = My.Settings.path_www
             Catch ex As Exception
                 If runningMode = runningModes.console Then
                     Console.WriteLine("Parametro -www_dir- non trovato")

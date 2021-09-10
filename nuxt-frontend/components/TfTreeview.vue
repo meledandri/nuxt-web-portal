@@ -1,11 +1,13 @@
 <template>
   <div class="treeview-content">
-    <h1 :color="primary">{{product.productName}} ({{product.structureName}})</h1>
+    <h1 color="primary">
+      {{ product.productName }} ({{ product.structureName }})
+    </h1>
 
     <!-- Visualizzazioe ad albero dei documenti -->
     <v-treeview
       :open.sync="open"
-      :items="items"
+      :items="Items"
       :search="search"
       item-key="detailID"
       open-on-click
@@ -15,7 +17,7 @@
       id="detail-list"
       ref="detailList"
       activatable
-      v-if="product && items.length && !loadData"
+      v-if="product && Items.length && !loadData"
     >
       <template v-slot:prepend="{ item, open }">
         <v-icon
@@ -44,7 +46,11 @@
               : '#BDBDBD'
           "
         >
-          {{ files[item.fileExtension.trim()] == undefined ? 'far fa-file-alt' : files[item.fileExtension.trim()]}}
+          {{
+            files[item.fileExtension.trim()] == undefined
+              ? "far fa-file-alt"
+              : files[item.fileExtension.trim()]
+          }}
         </v-icon>
         <v-icon
           v-else-if="item.flagContainer == 1 && item.flagState == 0"
@@ -137,22 +143,17 @@
               :ref="'xupload' + item.id"
               :accept="uploadAcceptType"
               @change="onFilePicked"
-              :disabled="product.flagState != 1"
+              :disabled="product.flagState != 0"
               style="display:none;"
               v-if="permitted('tf_edit_document')"
             />
             <v-file-input
-              v-model="uploadFiles"
+              v-model="uploadFile"
               :rules="uploadRules"
               :accept="uploadAcceptType"
               hide-input
               color="primary"
-              v-if="
-                permitted('tf_edit_document') &&
-                  (item.flagState == 0 || item.flagState == 8) &&
-                  product.flagState == 1 &&
-                  product.Documentazione !== 99
-              "
+              v-if="permitted('tf_edit_document') && item.flagState == 0"
               :class="'py-0 my-0' + (item.flagState == 8 ? ' hidden' : '')"
               style="width:36px"
               prepend-inner-icon="fas fa-upload"
@@ -164,11 +165,7 @@
             >
             </v-file-input>
             <v-icon
-              v-if="
-                permitted('tf_edit_document') &&
-                  (item.flagState == 0 || item.flagState == 8) &&
-                  product.flagState != 1
-              "
+              v-if="permitted('tf_edit_document') && item.flagState == 2"
               class="mx-2"
               color="#cecece"
               >fas fa-paperclip</v-icon
@@ -289,20 +286,29 @@ export default {
   //   components: {},        //Elenco di componenti utilizzati
   data: () => ({
     loadData: false,
-    items: [],
+    Items: [],
     product: {},
     open: [],
     search: "",
-    inProgress: []
+    inProgress: [],
+    uploadFiles: [],
+    uploadFile: null,
+    uploadRules: [
+      value =>
+        !value || value.size < 2000000 || "Il file dev'essere inferiore a 2 MB!"
+    ],
+    selectedDocument: null,
+    uploadAcceptType: "application/pdf",
+    uploadPercentage: 0
   }), // i dati definiscono un oggetto che rappresenta i dati interni del componente Vue. Può anche essere una funzione che restituisce l'oggetto dati.
   methods: {
     async loadDataList() {
       console.log("loadDataList..");
       this.loadData = true;
       var data = (await this.$axios.get("tree/" + this.editionID)).data;
-      this.items = data.tree;
-      if (this.items.length) {
-        this.product = this.items[0];
+      this.Items = data.tree;
+      if (this.Items.length) {
+        this.product = this.Items[0];
       }
       this.loadData = false;
     },
@@ -386,6 +392,123 @@ export default {
     },
     onFilePicked(event) {
       this.uploadFiles = event.target.files[0];
+    },
+    attachFile(id, values) {
+      this.uploading = true;
+      console.log("dashboard\\methods\\attachFile:");
+      console.log(id);
+      // console.log(this.$("#" + id).val());
+      //console.log(this.$("#upload11402").files[0]);
+      console.log(values);
+      this.selectedDocument = values;
+    },
+    resetAttachFile(id) {
+      console.log("dashboard\\method\\resetAttachFile:");
+      console.log(id);
+      try {
+        // this.$("#" + id).val("");
+      } catch (error) {}
+    },
+    async uploadDocument() {
+      //Carica il file sul server
+      console.log("methods\\uploadDocument");
+      this.uploading = true;
+
+      var formData = new FormData();
+      formData.append("editionID", this.selectedDocument.editionID);
+      formData.append("userID", this.userInfo.userID);
+      formData.append("file", this.uploadFile);
+      this.$axios
+        .post(
+          "actions/upload/file/" + this.selectedDocument.detailID,
+          formData,
+          {
+            // headers: {
+            //   "Content-Type": "multipart/form-data;"
+            // },
+            onUploadProgress: function(progressEvent) {
+              this.uploadPercentage = parseInt(
+                Math.round((progressEvent.loaded / progressEvent.total) * 100)
+              );
+              if (this.uploadPercentage == 100) {
+                setTimeout(() => (this.uploadPercentage = 0), 3000);
+              }
+            }.bind(this)
+          }
+        )
+        .then(response => {
+          console.log(response.data);
+          var data = response.data;
+          if (data.stato == -1) {
+            this.viewMessage("error", data.messaggio, "Upload");
+          } else {
+            if (data.detail) {
+              this.updateItemData(data.detail);
+            } else {
+              this.loadDataList();
+            }
+          }
+          this.endProcess(this.selectedDocument.editionID);
+          this.uploading = false;
+          //this.getDetailID(this.selectedDocument.mdTaskID);
+        })
+        .catch(e => {
+          this.endProcess(this.selectedDocument.editionID);
+          this.uploading = false;
+          this.viewMessageError(e, "Upload");
+        });
+    },
+    findItem(id, list) {
+      console.log("fab\\dashboard\\methods\\findItems");
+      list = list == undefined ? this.Items : list;
+      for (var key in list) {
+        if (list[key].detailID === id) {
+          return list[key]; // return the object and stop further searching
+        } else if (list[key].children && list[key].children.length) {
+          // if the property is another object
+          var res = this.findItem(id, list[key].children); // get the result of the search in that sub object
+          if (res) return res; // return the result if the search was successful, otherwise don't return and move on to the next property
+        }
+      }
+      return null; // return null or any default value you want if the search is unsuccessful (must be falsy to work)
+    },
+    updateItemData(d) {
+      // this.findItem(d.id).name = d.name;
+      // this.findItem(d.id).file = d.file;
+      // this.findItem(d.id).owner = d.owner;
+      // this.findItem(d.id).flag_contenitore = d.flag_contenitore;
+      // this.findItem(d.id).flag_stato = d.flag_stato;
+      // this.findItem(d.id).detail_id = d.detail_id;
+      // this.findItem(d.id).id = d.id;
+      // this.findItem(d.id).AddFolder = d.AddFolder;
+      // this.findItem(d.id).AddFile = d.AddFile;
+      // this.findItem(d.id).NLivelli = d.NLivelli;
+      // this.findItem(d.id).IDparent = d.IDparent;
+      // this.findItem(d.id).href = d.href;
+      // this.findItem(d.id).IDutente = d.IDutente;
+      this.$nextTick(() => {
+        console.warn("Aggiornamento [nextTick] elemento: " + d.Title);
+        this.$set(this.findItem(d.detailID), "flagState", d.flagState);
+        this.$set(this.findItem(d.detailID), "fileExtension", d.fileExtension);
+        this.$set(this.findItem(d.detailID), "operatorID", d.operatorID);
+        this.$set(this.findItem(d.detailID), "modifiedDate", d.modifiedDate);
+        this.$set(          this.findItem(d.detailID),          "fileName",          d.fileName        );
+        this.$set(this.findItem(d.detailID), "Title", d.Title);
+        this.$set(this.findItem(d.detailID), "displayName", d.displayName);
+        // this.$set(this.findItem(d.editionID), "AddFolder", d.AddFolder);
+        // this.$set(this.findItem(d.editionID), "AddFile", d.AddFile);
+        // this.$set(this.findItem(d.editionID), "NLivelli", d.NLivelli);
+        // this.$set(this.findItem(d.editionID), "IDparent", d.IDparent);
+        // this.$set(this.findItem(d.editionID), "href", d.href);
+        // this.$set(this.findItem(d.editionID), "IDutente", d.IDutente);
+        // this.$set(this.findItem(d.editionID), "ver", d.ver);
+        // this.$set(this.findItem(d.editionID), "link", d.link);
+        // this.$set(this.findItem(d.editionID), "Ext_id", d.Ext_id);
+      });
+
+      if (this.searchAdv) {
+        this.filter(this.searchAdv);
+      }
     }
   }, //l'oggetto metodi contiene una coppia chiave-valore di nomi di metodo e la relativa definizione di funzione. Questi fanno parte del comportamento del componente Vue che l'altro componente può attivare.
   computed: {
@@ -422,7 +545,9 @@ export default {
         20: this.$t("Collegamento")
       };
     },
-
+    area() {
+      return this.userInfo.area;
+    },
     detail_options() {
       return [
         {
@@ -814,6 +939,28 @@ export default {
   watch: {
     editionID(v) {
       this.loadDataList();
+    },
+    uploadFile(val) {
+      if (!val) return;
+      console.log("atch\\uploadFile..");
+      console.log("selectedDocument:");
+      console.log(this.selectedDocument);
+      var ext = val.name.split(".").pop();
+      console.log("ext: " + ext);
+      if (["pdf"].indexOf(ext) > -1) {
+        this.startProcess(this.selectedDocument.editionID);
+        this.uploading = true;
+        this.uploadDocument();
+        // } else if (["doc", "docx", "pdf", "xls", "xlsx"].indexOf(ext) > -1) {
+        //   // this.setTemplate = true;
+        //   // this.startProcess(this.selectedDocument.mdTaskID);
+        //   // this.uploading = false;
+      } else {
+        this.viewMessage("error", "Formato non supportato", "Upload");
+        this.uploading = false;
+      }
+
+      console.log(val);
     }
   }, // questo oggetto tiene traccia dei cambiamenti nel valore di una qualsiasi delle proprietà definite come parte dei "dati" impostando le funzioni per controllarli.
   //Eventi------------------------

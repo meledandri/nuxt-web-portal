@@ -207,6 +207,9 @@ Public Class StructureDetails
     <Column(Order:=17)>
     Public Property flagContainer As Integer = 0
 
+    <Column(Order:=18)>
+    Public Property dataOrder As Integer = 0
+
 End Class
 
 
@@ -301,6 +304,9 @@ Public Class Details
     <Required>
     <Column(Order:=19)>
     Public Property flagContainer As Integer = 0
+
+    <Column(Order:=20)>
+    Public Property dataOrder As Integer = 0
 
 End Class
 
@@ -438,6 +444,7 @@ Public Class DetailsModel
     <Required>
     Public Property checkListStatus As Integer
 
+    Public Property dataOrder As Integer = 0
 
 End Class
 
@@ -489,7 +496,38 @@ Public Class ActivityLog
 
 End Class
 
+Public Class ActivityLogModel
+    Public Property activityID As Long
 
+    Public Property editionID As Integer
+
+    Public Property insertDate As Date = Now
+
+    Public Property mdTasksStatesID As mdTaskStates_enum = mdTaskStates_enum.created
+
+    Public Property mdTasksStatesName As String = ""
+
+    Public Property userID As String = ""
+
+    <StringLength(50)>
+    Public Property userName As String = ""
+
+    <StringLength(20)>
+    Public Property displayName As String = ""
+
+    <StringLength(50)>
+    Public Property email As String = ""
+
+    Public Property resultID As Integer = 0
+
+    <MaxLength>
+    Public Property resultMessage As String = ""
+
+    Public Property startActiviyDate As Nullable(Of Date)
+    Public Property stopActiviyDate As Nullable(Of Date)
+
+
+End Class
 
 ''' <summary>
 ''' Tabella contenente i dettagli sull'Azienda Cliente
@@ -674,6 +712,8 @@ Public Class FabListDetailDataBinding
     Public Property users As List(Of UserInfo) = New List(Of UserInfo)
     Public Property tasks As List(Of TaskInfoDataBindig) = New List(Of TaskInfoDataBindig)
 
+    Public Property appLogs As List(Of ActivityLogModel) = New List(Of ActivityLogModel)
+
     Public number_of_users As Integer = 0
     Public number_of_tasks As Integer = 0
 
@@ -838,6 +878,8 @@ Public Class TaskInfoDataBindig
     Public Property productInfoStatus As Integer
     <Required>
     Public Property checkListStatus As Integer
+
+    Public Property appLogs As List(Of ActivityLogModel) = New List(Of ActivityLogModel)
 
 
 End Class

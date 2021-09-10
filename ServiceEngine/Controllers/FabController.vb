@@ -105,6 +105,7 @@ Namespace Controllers
                 d.users = u
                 'Recupero le attività dell'azienda
                 d.tasks = getTasksInfoList(cp.companyID)
+
                 d.number_of_users = u.Count
                 d.number_of_tasks = d.tasks.Count
                 cp.details = d
@@ -137,48 +138,6 @@ Namespace Controllers
 
 
 
-        Private Function getTasksInfoList(companyID As Integer) As List(Of TaskInfoDataBindig)
-            Dim list As List(Of TaskInfoDataBindig) = (From p In db.Products
-                                                       Join cp In db.Companies On p.companyID Equals cp.companyID
-                                                       Join ed In db.Editions On ed.productID Equals p.productID
-                                                       Join act In db.mdActivity On ed.mdActivityID Equals act.mdActivityID
-                                                       Join cls In db.mdClass On p.mdClassID Equals cls.mdClassID
-                                                       Join tsks In db.mdTasksStates On ed.mdTasksStatesID Equals tsks.mdTasksStatesID
-                                                       Join str In db.Structures On ed.structureID Equals str.structureID
-                                                       Join u In db.Users On u.userID Equals ed.ownerID
-                                                       Where cp.companyID = companyID
-                                                       Select New TaskInfoDataBindig _
-                                                               With {.companyID = cp.companyID,
-                                                               .BusinessName = cp.BusinessName,
-                                                               .productID = p.productID,
-                                                               .productName = p.productName,
-                                                               .mdClassID = cls.mdClassID,
-                                                               .mdClassName = cls.mdClassName,
-                                                               .mdCode = p.mdCode,
-                                                               .editionID = ed.editionID,
-                                                               .editionName = ed.editionName,
-                                                               .certificationPlan = ed.certificationPlan,
-                                                               .mdActivityID = act.mdActivityID,
-                                                               .mdActivityName = act.mdActivityName,
-                                                               .editionNotes = ed.editionNotes,
-                                                                .deadline = ed.deadline,
-                                                               .structureID = str.structureID,
-                                                               .structureName = str.structureName,
-                                                               .asZipFile = ed.asZipFile,
-                                                               .mdTaskStatesID = ed.mdTasksStatesID,
-                                                               .mdTaskStatesName = tsks.mdTasksStatesName,
-                                                               .insertDate = ed.insertDate,
-                                                               .modifiedDate = ed.modifiedDate,
-                                                               .ownerID = ed.ownerID,
-                                                               .userName = u.userName,
-                                                               .displayName = u.displayName,
-                                                               .email = u.email,
-                                                               .fileStatus = ed.fileStatus,
-                                                               .productInfoStatus = ed.productInfoStatus,
-                                                               .checkListStatus = ed.checkListStatus
-                                                               }).ToList
-            Return list
-        End Function
 
 
         ''' <summary>
@@ -483,7 +442,7 @@ Namespace Controllers
 
 
 
-
+            log.Info(String.Format("Upload file Archivio per l'edizione -{0}- conclusa.", ed.editionID))
             Return r
         End Function
     End Class

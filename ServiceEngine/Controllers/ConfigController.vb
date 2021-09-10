@@ -392,7 +392,7 @@ Namespace Controllers
             Dim m11 As New AppMenu
             With m11
                 .Name = "TechFile Light"
-                .Link = "tf_light"
+                .Link = "."
                 .parentID = 0
                 .icon = "fas fa-sitemap"
                 .Permissions = "on_fab"
