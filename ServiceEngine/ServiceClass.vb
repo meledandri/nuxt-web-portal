@@ -27,7 +27,13 @@ Namespace SelfHostedServiceSignalR
             Try
                 WebApp.Start(options)
                 'browser = Process.Start(AlternariveUrl)
-                browser = Process.Start("http://localhost:3000/")
+                If System.Diagnostics.Debugger.IsAttached Then
+                    Log.Info("Avvio in modalità DEBUG")
+                    browser = Process.Start("http://localhost:3000/")
+                Else
+                    Log.Info("Avvio in modalità RELEASE")
+                    browser = Process.Start(My.Settings.AlternariveUrl)
+                End If
 
 
             Catch ex As Exception

@@ -22,7 +22,7 @@
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title
-            ><v-icon color="primary" class="mr-2">far fa-building</v-icon>
+            ><v-icon color="primary" class="mr-2" @click="loadDataList()">far fa-building</v-icon>
             Fabbricanti</v-toolbar-title
           >
           <v-divider class="mx-4" inset vertical></v-divider>
@@ -30,9 +30,15 @@
           <!-- Dialog per i dati dell'Azienda -->
           <v-dialog v-model="company.dialog" max-width="800px">
             <template v-slot:activator="{ on, attrs }">
-              <v-btn color="primary" class="mb-2" v-bind="attrs" v-on="on" small
+              <v-btn
+                color="primary"
+                class="mb-2"
+                v-bind="attrs"
+                v-on="on"
+                small
+                @click="newItem()"
                 ><v-icon color="success" class="mr-2" small>fa-plus</v-icon>
-                Nuovo</v-btn
+                New</v-btn
               >
             </template>
             <v-card>
@@ -137,7 +143,8 @@
                 <v-app-bar-nav-icon></v-app-bar-nav-icon>
 
                 <v-toolbar-title>
-                  {{ company.companyInfo.BusinessName }} \ Users</v-toolbar-title
+                  {{ company.companyInfo.BusinessName }} \
+                  Users</v-toolbar-title
                 >
 
                 <v-spacer></v-spacer>
@@ -156,7 +163,7 @@
                       <v-tab-item>
                         <v-row>
                           <v-col cols="12" class="my-2">
-                            <v-list two-line dense v-if="editedIndex > -1">
+                            <v-list two-line dense v-if="editedIndex > -1 && company.companyInfo.details.users.length > 0">
                               <v-list-item
                                 v-for="user in company.companyInfo.details
                                   .users"
@@ -194,6 +201,7 @@
                                 </v-icon>
                               </v-list-item>
                             </v-list>
+                            <div v-else class="text-center">No user present</div>
                           </v-col>
                         </v-row>
                       </v-tab-item>
@@ -293,10 +301,20 @@
       </template>
 
       <template v-slot:item.actions="{ item }">
-        <v-icon small class="mr-2" :color="item.details.number_of_users == 0 ? 'grey': 'primary'" @click="usersItem(item)">
+        <v-icon
+          small
+          class="mr-2"
+          :color="item.details.number_of_users == 0 ? 'grey' : 'primary'"
+          @click="usersItem(item)"
+        >
           fas fa-users-cog
         </v-icon>
-        <v-icon small class="mr-2" :color="item.details.number_of_tasks == 0 ? 'grey': 'primary'" @click="openTasks(item)">
+        <v-icon
+          small
+          class="mr-2"
+          :color="item.details.number_of_tasks == 0 ? 'grey' : 'primary'"
+          @click="openTasks(item)"
+        >
           fas fa-tasks
         </v-icon>
         <v-icon small class="mr-2" @click="editItem(item)">
@@ -308,7 +326,7 @@
       </template>
       <template v-slot:no-data>
         <v-btn color="primary" @click="loadDataList()">
-          Reset
+          Refresh
         </v-btn>
       </template>
     </v-data-table>
@@ -357,7 +375,14 @@ export default {
         companyRoleID: 0,
         companyRoleName: "",
         SRN: "",
-        country: ""
+        country: "",
+        details: {
+          number_of_users: 0,
+          number_of_tasks: 0,
+          users: [],
+          tasks: [],
+          appLogs: []
+        }
       },
       user: {
         progress: false,
@@ -572,7 +597,12 @@ export default {
       this.company.companyInfo = Object.assign({}, item);
       this.company.dialog = true;
     },
-
+    newItem() {
+      console.log("newItem");
+      this.editedIndex = 1;
+      this.company.companyInfo = Object.assign({}, this.defaultItem);
+      this.company.dialog = true;
+    },
     usersItem(item) {
       this.user.tab = 0;
       this.editedIndex = this.Items.indexOf(item);
@@ -632,11 +662,11 @@ export default {
       this.task.taskInfo = Object.assign({}, this.task.taskDefault);
       if (this.$refs.Activities) {
         this.$refs.Activities.newTask();
-      //    this.$refs.Activities.task.tab = 1;
-      //  this.$refs.Activities.task.taskInfo = this.task.taskInfo;
-      //   this.$refs.Activities.task.taskInfo.ownerID = this.userInfo.userID;
-      //   this.$refs.Activities.task.taskInfo.companyID = this.company.companyInfo.companyID;
-      //   this.$refs.Activities.task.taskInfo.BusinessName = this.company.companyInfo.BusinessName;
+        //    this.$refs.Activities.task.tab = 1;
+        //  this.$refs.Activities.task.taskInfo = this.task.taskInfo;
+        //   this.$refs.Activities.task.taskInfo.ownerID = this.userInfo.userID;
+        //   this.$refs.Activities.task.taskInfo.companyID = this.company.companyInfo.companyID;
+        //   this.$refs.Activities.task.taskInfo.BusinessName = this.company.companyInfo.BusinessName;
       }
       this.task.dialog = true;
     },

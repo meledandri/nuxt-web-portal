@@ -1,12 +1,7 @@
 <template>
   <v-row>
     <v-col class="text-center" cols="12">
-      <img
-        src="/tfo-logo.png"
-        alt="Vuetify.js"
-        class="mb-5"
-        width="200px"
-      >
+
       <blockquote class="blockquote">
         &#8220;ACCESSO ORGANISMO NOTIFICATO&#8221;
         <footer>
@@ -15,6 +10,9 @@
           </small>
         </footer>
       </blockquote>
+            <blockquote class="blockquote">
+             <div class="text-h3" >La dashboard comprenderà tutti i numeri utili a capire il carico di lavoro</div> 
+            </blockquote>
     </v-col>
     <v-col cols="4">
 <v-card

@@ -201,13 +201,17 @@ Public Class StructureDetails
 
     <MaxLength>
     <Column(Order:=16)>
+    Public Property relPath As String = ""
+
+    <MaxLength>
+    <Column(Order:=17)>
     Public Property fullPath As String = ""
 
     <Required>
-    <Column(Order:=17)>
+    <Column(Order:=18)>
     Public Property flagContainer As Integer = 0
 
-    <Column(Order:=18)>
+    <Column(Order:=19)>
     Public Property dataOrder As Integer = 0
 
 End Class
@@ -299,13 +303,16 @@ Public Class Details
 
     <MaxLength>
     <Column(Order:=18)>
+    Public Property relPath As String = ""
+    <MaxLength>
+    <Column(Order:=19)>
     Public Property fullPath As String = ""
 
     <Required>
-    <Column(Order:=19)>
+    <Column(Order:=20)>
     Public Property flagContainer As Integer = 0
 
-    <Column(Order:=20)>
+    <Column(Order:=21)>
     Public Property dataOrder As Integer = 0
 
 End Class
@@ -430,6 +437,9 @@ Public Class DetailsModel
 
     <MaxLength>
     Public Property file_for_checklist As String = ""
+
+    <MaxLength>
+    Public Property relPath As String = ""
 
     <MaxLength>
     Public Property fullPath As String = ""

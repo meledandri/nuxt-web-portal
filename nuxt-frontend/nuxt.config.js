@@ -6,7 +6,7 @@ export default {
 
   // Target: https://go.nuxtjs.dev/config-target
   target: 'static',
-
+  buildDir: 'dist',
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     titleTemplate: '%s - frontend',
@@ -83,7 +83,7 @@ export default {
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
-    baseURL: process.env.NODE_ENV === 'production' ? './api' : 'http://localhost:8095/api'
+    baseURL: process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8095/api'
   },
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
@@ -117,6 +117,6 @@ export default {
   build: {
   },
   publicRuntimeConfig: {
-    baseURL: process.env.NODE_ENV === 'production' ? './api' : 'http://localhost:8095/api'
+    baseURL: process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8095/api'
   }
 }

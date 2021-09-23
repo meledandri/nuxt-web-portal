@@ -7,7 +7,14 @@
       <v-tab-item>
         <v-row>
           <v-col cols="12" class="my-2">
-            <v-list two-line dense v-if="selectedCompany > 0">
+            <v-list
+              two-line
+              dense
+              v-if="
+                selectedCompany > 0 &&
+                  company.companyInfo.details.tasks.length > 0
+              "
+            >
               <template
                 v-for="(task, index) in company.companyInfo.details.tasks"
               >
@@ -26,56 +33,69 @@
                       ({{ task.mdTaskStatesName }})</v-list-item-subtitle
                     >
 
-<v-list-item-subtitle>
-<v-list-group
-        :value="false"
-      >
-        <template v-slot:activator>
-          <v-list-item-title><v-icon class="mr-2">fas fa-road</v-icon>Activities</v-list-item-title>
-        </template>
-<v-list-item v-for="log in task.appLogs"
-                      :key="log.activityID" dense>
-                  <v-list-item-avatar>
-                    <v-icon small :color="log.resultID == -1 ? 'error': 'success'">fas fa-tasks</v-icon>
-                  </v-list-item-avatar>
-                  <v-list-item-content>
-                    <v-list-item-title
-                      v-text="log.stopActiviyDate"
-                    ></v-list-item-title>
+                    <v-list-item-subtitle>
+                      <v-list-group
+                        :value="false"
+                        :disabled="task.appLogs.length == 0"
+                      >
+                        <template v-slot:activator>
+                          <v-list-item-title
+                            ><v-icon class="mr-2">fas fa-road</v-icon>Last
+                            Activities ({{
+                              task.appLogs.length
+                            }})</v-list-item-title
+                          >
+                        </template>
+                        <v-list-item
+                          v-for="log in task.appLogs"
+                          :key="log.activityID"
+                          dense
+                        >
+                          <v-list-item-avatar>
+                            <v-icon
+                              small
+                              :color="log.resultID == -1 ? 'error' : 'success'"
+                              >fas fa-tasks</v-icon
+                            >
+                          </v-list-item-avatar>
+                          <v-list-item-content>
+                            <v-list-item-title
+                              v-text="log.stopActiviyDate"
+                            ></v-list-item-title>
 
-                    <v-list-item-subtitle class="text--primary"
-                      ><b style="color: #4183a9;">{{ log.displayName }}</b>
-                      {{ log.resultMessage }}</v-list-item-subtitle
-                    >
-                  </v-list-item-content>
-
-</v-list-item>
-</v-list-group>
-</v-list-item-subtitle>
-                    
+                            <v-list-item-subtitle class="text--primary"
+                              ><b style="color: #4183a9;">{{
+                                log.displayName
+                              }}</b>
+                              {{ log.resultMessage }}</v-list-item-subtitle
+                            >
+                          </v-list-item-content>
+                        </v-list-item>
+                      </v-list-group>
+                    </v-list-item-subtitle>
                   </v-list-item-content>
 
                   <v-list-item-action>
                     <v-list-item-action-text
                       v-text="task.certificationPlan"
                     ></v-list-item-action-text>
-<div style="min-width:100px">
+                    <div style="min-width:100px">
                       <v-btn icon class="mr-2" @click="editTask(task)">
-                      <v-icon small class="mx-2 d-inline-block">
-                        far fa-edit
-                      </v-icon>
-                    </v-btn>
-                    <v-btn icon class="mr-2">
-                      <v-icon small color="red" class="mx-2 d-inline-block">
-                        far fa-trash-alt
-                      </v-icon>
-                    </v-btn>
-
-</div>
+                        <v-icon small class="mx-2 d-inline-block">
+                          far fa-edit
+                        </v-icon>
+                      </v-btn>
+                      <v-btn icon class="mr-2">
+                        <v-icon small color="red" class="mx-2 d-inline-block">
+                          far fa-trash-alt
+                        </v-icon>
+                      </v-btn>
+                    </div>
                   </v-list-item-action>
                 </v-list-item>
               </template>
             </v-list>
+            <div v-else class="text-center">No Task present</div>
           </v-col>
         </v-row>
       </v-tab-item>
@@ -163,6 +183,7 @@
               label="Product code"
               outlined
               v-model="task.taskInfo.mdCode"
+              :readonly="task.taskInfo.productID != 0"
             ></v-text-field>
           </v-col>
           <!-- Edizione Prodotto -->
@@ -392,6 +413,14 @@ export default {
       this.task.taskInfo = Object.assign({}, item);
       this.date = item.deadline;
       this.changeTab(1);
+    },
+    findClassById(mdClassID) {
+      for (var key in this.mdClass) {
+        if (this.mdClass[key].mdClassID === mdClassID) {
+          return this.mdClass[key];
+        }
+        return null;
+      }
     }
   }, //l'oggetto metodi contiene una coppia chiave-valore di nomi di metodo e la relativa definizione di funzione. Questi fanno parte del comportamento del componente Vue che l'altro componente può attivare.
   computed: {
@@ -515,6 +544,10 @@ export default {
         if (typeof v === "object" && v !== null) {
           this.task.taskInfo.productID = v.productID;
           this.task.taskInfo.productName = v.productName;
+          this.task.taskInfo.mdCode = v.mdCode;
+          this.task.taskInfo.mdClassID = v.mdClassID;
+          this.task.taskInfo.mdClassName = this.findClassById(v.mdClassID).mdClassName
+          //this.task.taskInfo.mdClassID = v.mdClassID;
         } else {
           this.task.taskInfo.productID = 0;
           this.task.taskInfo.productName = v;

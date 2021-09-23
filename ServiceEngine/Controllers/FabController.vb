@@ -369,7 +369,7 @@ Namespace Controllers
         <Route("task/save")>
         Public Function PostTaskSave(model As TaskInfoDataBindig) As JRisposta
             log.Info("[POST]" & vbTab & "api/task/save")
-
+            Dim startActivity As Date = Now
             Dim r As New JRisposta
             Dim ed As New Editions
             If Not ModelState.IsValid Then
@@ -439,8 +439,12 @@ Namespace Controllers
                 r.stato = JRisposta.Stati.Errato
 
             End Try
+            If model.editionID = 0 Then
+                AppLog(ed.editionID, mdTaskStates_enum.created, r.stato, String.Format("Nuova attività per il prodotto '{0}'", model.productName), model.ownerID, startActivity)
+            Else
+                AppLog(ed.editionID, mdTaskStates_enum.created, r.stato, String.Format("Modifica all' attività per il prodotto '{0}'", model.productName), model.ownerID, startActivity)
 
-
+            End If
 
             log.Info(String.Format("Upload file Archivio per l'edizione -{0}- conclusa.", ed.editionID))
             Return r

@@ -1,5 +1,6 @@
 <template>
-<div class="bg_wrapper">
+<div>
+  <div class="bg_wrapper" v-if="!configLoading">
   <div class="wrapper">
     <div class="container">
       <h1>{{ $t("welcome") }}</h1>
@@ -62,6 +63,14 @@
       <li></li>
     </ul>
   </div>
+    <v-overlay opacity="0.75" color="primary" v-else>
+      <v-progress-circular
+        :size="100"
+        color="white"
+        indeterminate
+      ></v-progress-circular>
+    </v-overlay>
+</div>
 </template>
 
 <script>

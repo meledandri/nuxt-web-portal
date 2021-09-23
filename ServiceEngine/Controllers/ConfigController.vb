@@ -178,12 +178,12 @@ Namespace Controllers
 
 
 
-                Dim cp As New Companies
-                cp.BusinessName = "MD Pharma Demo"
-                cp.isHidden = False
-                cp.insertDate = Now
-                db.Companies.Add(cp)
-                db.SaveChanges()
+                'Dim cp As New Companies
+                'cp.BusinessName = "MD Pharma Demo"
+                'cp.isHidden = False
+                'cp.insertDate = Now
+                'db.Companies.Add(cp)
+                'db.SaveChanges()
 
 
 
@@ -192,29 +192,29 @@ Namespace Controllers
                 db.CompanyRoles.Add(cr)
                 db.SaveChanges()
 
-                Dim cd As New CompanyDetail
-                With cd
-                    .companyID = cp.companyID
-                    .companyRoleID = cr.companyRoleID
-                    .country = "Italy"
-                    .SRN = "IT-MF-000001234"
-                End With
-                db.CompanyDetail.Add(cd)
-                db.SaveChanges()
+                'Dim cd As New CompanyDetail
+                'With cd
+                '    .companyID = cp.companyID
+                '    .companyRoleID = cr.companyRoleID
+                '    .country = "Italy"
+                '    .SRN = "IT-MF-000001234"
+                'End With
+                'db.CompanyDetail.Add(cd)
+                'db.SaveChanges()
 
-                Dim uc As New Users
-                With uc
-                    .displayName = "MD User 1"
-                    .email = "user1.md-pharma.srl"
-                    .insertDate = Now
-                    .password = cripta("Password123!")
-                    .PasswordMustChange = True
-                    .LockoutEnabled = True
-                    .UserName = "user1"
-                    .companyID = cp.companyID
-                End With
-                db.Users.Add(uc)
-                db.SaveChanges()
+                'Dim uc As New Users
+                'With uc
+                '    .displayName = "MD User 1"
+                '    .email = "user1.md-pharma.srl"
+                '    .insertDate = Now
+                '    .password = cripta("Password123!")
+                '    .PasswordMustChange = True
+                '    .LockoutEnabled = True
+                '    .UserName = "user1"
+                '    .companyID = cp.companyID
+                'End With
+                'db.Users.Add(uc)
+                'db.SaveChanges()
 
 
                 'Dim uc2 As New Users
@@ -233,15 +233,15 @@ Namespace Controllers
 
 
                 'Prodotto
-                Dim p As New Products
-                With p
-                    .productName = "Prodotto demo Cerotto"
-                    .mdClassID = mdClass_enum.Class_I
-                    .companyID = cp.companyID
-                    .mdCode = "MD0123"
-                End With
-                db.Products.Add(p)
-                db.SaveChanges()
+                'Dim p As New Products
+                'With p
+                '    .productName = "Prodotto demo Cerotto"
+                '    .mdClassID = mdClass_enum.Class_I
+                '    .companyID = cp.companyID
+                '    .mdCode = "MD0123"
+                'End With
+                'db.Products.Add(p)
+                'db.SaveChanges()
 
                 'Dim ts As New mdTasksStates
                 'ts.mdTasksStatesName = "Creato"
@@ -249,36 +249,36 @@ Namespace Controllers
                 'db.SaveChanges()
 
 
-                Dim ed As New Editions
-                With ed
-                    .editionName = "Prima Edizione"
-                    .productID = p.productID
-                    .certificationPlan = "IT-MD-000001234"
-                    .mdActivityID = mdActivity_enum.product_registration
-                    .editionNotes = "Note automatiche prima edizione."
-                    .deadline = Now.AddDays(20)
-                    .structureID = 1
-                    .mdTasksStatesID = mdTaskStates_enum.created
-                    .ownerID = un.userID
-                End With
-                db.Editions.Add(ed)
-                db.SaveChanges()
+                'Dim ed As New Editions
+                'With ed
+                '    .editionName = "Prima Edizione"
+                '    .productID = p.productID
+                '    .certificationPlan = "IT-MD-000001234"
+                '    .mdActivityID = mdActivity_enum.product_registration
+                '    .editionNotes = "Note automatiche prima edizione."
+                '    .deadline = Now.AddDays(20)
+                '    .structureID = 1
+                '    .mdTasksStatesID = mdTaskStates_enum.created
+                '    .ownerID = un.userID
+                'End With
+                'db.Editions.Add(ed)
+                'db.SaveChanges()
 
-                Dim ed2 As New Editions
-                With ed2
-                    .editionName = "Altra Edizione"
-                    .productID = p.productID
-                    .certificationPlan = "IT-MD-00000999"
-                    .mdActivityID = mdActivity_enum.product_registration
-                    .editionNotes = "Note automatiche prima edizione."
-                    .deadline = Now.AddDays(20)
-                    .structureID = 1
-                    .asZipFile = False
-                    .mdTasksStatesID = mdTaskStates_enum.created
-                    .ownerID = un.userID
-                End With
-                db.Editions.Add(ed2)
-                db.SaveChanges()
+                'Dim ed2 As New Editions
+                'With ed2
+                '    .editionName = "Altra Edizione"
+                '    .productID = p.productID
+                '    .certificationPlan = "IT-MD-00000999"
+                '    .mdActivityID = mdActivity_enum.product_registration
+                '    .editionNotes = "Note automatiche prima edizione."
+                '    .deadline = Now.AddDays(20)
+                '    .structureID = 1
+                '    .asZipFile = False
+                '    .mdTasksStatesID = mdTaskStates_enum.created
+                '    .ownerID = un.userID
+                'End With
+                'db.Editions.Add(ed2)
+                'db.SaveChanges()
 
 
 
@@ -309,18 +309,18 @@ Namespace Controllers
             init_mdActivity()
             init_mdClass()
             init_StructureDetails()
-            Dim ncd As Integer = (From nd In db.Details).Count
-            If ncd = 0 Then
-                Dim progr As Integer = 1000
-                'createCustomStructureDB("D:\TechFile\Dossier\Garza\v_1_0", 1, 1, 0, progr)
-                Try
-                    createTemplateStructureDB(1, "6ce5d4d1-8f9a-407b-9f56-f68b9c8cc8b8")
-                    createTemplateStructureDB(2, "6ce5d4d1-8f9a-407b-9f56-f68b9c8cc8b8")
+            'Dim ncd As Integer = (From nd In db.Details).Count
+            'If ncd = 0 Then
+            '    Dim progr As Integer = 1000
+            '    'createCustomStructureDB("D:\TechFile\Dossier\Garza\v_1_0", 1, 1, 0, progr)
+            '    Try
+            '        createTemplateStructureDB(1, "6ce5d4d1-8f9a-407b-9f56-f68b9c8cc8b8")
+            '        createTemplateStructureDB(2, "6ce5d4d1-8f9a-407b-9f56-f68b9c8cc8b8")
 
-                Catch ex As Exception
-                    log.Error(ex.Message)
-                End Try
-            End If
+            '    Catch ex As Exception
+            '        log.Error(ex.Message)
+            '    End Try
+            'End If
         End Sub
 
         Private Sub insMenu()
@@ -392,7 +392,7 @@ Namespace Controllers
             Dim m11 As New AppMenu
             With m11
                 .Name = "TechFile Light"
-                .Link = "."
+                .Link = "/fab/dashboard"
                 .parentID = 0
                 .icon = "fas fa-sitemap"
                 .Permissions = "on_fab"

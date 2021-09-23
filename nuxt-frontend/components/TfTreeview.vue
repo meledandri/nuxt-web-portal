@@ -276,6 +276,61 @@
         </div>
       </template>
     </v-treeview>
+    <v-dialog
+      v-model="viewDocumentDialog"
+      fullscreen
+      hide-overlay
+      transition="dialog-bottom-transition"
+    >
+      <v-card>
+        <v-toolbar dense dark color="primary" v-if="selectedDocument">
+          <v-btn icon dark @click="viewDocumentDialog = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+          <v-toolbar-title v-if="selectedDocument">{{
+            selectedDocument.Title
+          }}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn dark text @click="viewDocumentDialog = false">
+              Close
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-container grow fluid d-flex flex-column flex-nowrap style="height:100vh;" >
+        <v-row class="fill-height">
+          <v-col>
+            <embed
+              v-if="viewDocument"
+              :src="viewDocument"
+              width="100%"
+              height="100%"
+            />
+          </v-col>
+          <v-col cols="2" id="evalue">
+            <v-card elevation="2" class="pa-0 fill-height">
+              <h1>Strumenti</h1>
+      <v-text-field
+        append-icon="fas fa-search"
+        label="Search"
+        single-line
+        hide-details
+      ></v-text-field>
+
+            <v-text-field
+        append-icon="fas fa-search"
+        label="Search"
+        single-line
+        hide-details
+      ></v-text-field>
+
+
+            </v-card>
+          </v-col>
+        </v-row>
+        </v-container>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -298,10 +353,41 @@ export default {
         !value || value.size < 2000000 || "Il file dev'essere inferiore a 2 MB!"
     ],
     selectedDocument: null,
+    viewDocument: null,
+    viewDocumentDialog: false,
     uploadAcceptType: "application/pdf",
     uploadPercentage: 0
   }), // i dati definiscono un oggetto che rappresenta i dati interni del componente Vue. Può anche essere una funzione che restituisce l'oggetto dati.
   methods: {
+    setAction(actionName, values) {
+      //Esegue l'operazione richiesta tramite un ActionName
+      console.log(actionName);
+      console.log(values);
+      switch (actionName) {
+        case "editDocument":
+          this.viewDocument =
+            process.env.NODE_ENV === "production"
+              ? "/api/actions/open/file/" + values.detailID
+              : "http://techfileonline.local/api/actions/open/file/" +
+                values.detailID;
+          this.selectedDocument = values;
+          this.viewAction("editDocument");
+          // code block
+          break;
+        default:
+          console.log("Comando non trovato: " + actionName);
+        // code block
+      }
+    },
+    viewAction(action) {
+      switch (action) {
+        case "editDocument":
+          this.viewDocumentDialog = true;
+          break;
+        default:
+        // code block
+      }
+    },
     async loadDataList() {
       console.log("loadDataList..");
       this.loadData = true;
@@ -491,8 +577,7 @@ export default {
         this.$set(this.findItem(d.detailID), "flagState", d.flagState);
         this.$set(this.findItem(d.detailID), "fileExtension", d.fileExtension);
         this.$set(this.findItem(d.detailID), "operatorID", d.operatorID);
-        this.$set(this.findItem(d.detailID), "modifiedDate", d.modifiedDate);
-        this.$set(          this.findItem(d.detailID),          "fileName",          d.fileName        );
+        this.$set(this.findItem(d.detailID), "fileName", d.fileName);
         this.$set(this.findItem(d.detailID), "Title", d.Title);
         this.$set(this.findItem(d.detailID), "displayName", d.displayName);
         // this.$set(this.findItem(d.editionID), "AddFolder", d.AddFolder);
@@ -980,5 +1065,8 @@ export default {
 <style scoped>
 .v-input:not(.v-textarea) {
   max-height: 50px;
+}
+#evalue{
+  border-left: 1px solid rgb(70, 144, 255);
 }
 </style>

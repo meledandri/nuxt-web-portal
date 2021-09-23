@@ -667,6 +667,7 @@ Module GeneralFunctions
                     .fileName = fsi.Name
                     .flagContainer = flagContainer
                     .flagState = 2
+                    .relPath = Right(fsi.FullName, (fsi.FullName.Length - (di.FullName.Length + 1)))
                     .fullPath = fsi.FullName
                     .idParent = idParent
                     .idVerDoc = 0
@@ -743,6 +744,7 @@ Module GeneralFunctions
                         .fileName = fsi.Name
                         .flagContainer = flagContainer
                         .flagState = 2
+                        .relPath = Right(fsi.FullName, (fsi.FullName.Length - (di.FullName.Length + 1)))
                         .fullPath = fsi.FullName
                         .idParent = idParent
                         .idVerDoc = 0
@@ -906,6 +908,7 @@ Module GeneralFunctions
                                                                                                                                      .file_for_checklist = sdx.file_for_checklist,
                                                                                                                                      .flagContainer = sdx.flagContainer,
                                                                                                                                      .flagState = sdx.flagState,
+                                                                                                                                     .relPath = sdx.relPath,
                                                                                                                                      .fullPath = sdx.fullPath,
                                                                                                                                      .idParent = sdx.idParent,
                                                                                                                                      .idVerDoc = sdx.idVerDoc,
@@ -1099,6 +1102,53 @@ Module GeneralFunctions
         Return items
     End Function
 
+    'Public Sub Download(ByVal rel_path As String, idRichiestaAbilitazione As Integer)
+    '    'Dim strFileName As String = String.Format("{0}.zip", id)
+    '    'Dim strRootRelativePathName As String = String.Format("~/App_Data/Files/{0}", strFileName)
+    '    Dim strPathName As String = Server.MapPath(rel_path)
+    '    Dim fi As New FileInfo(strPathName)
+    '    If System.IO.File.Exists(strPathName) = False Then
+    '        Return
+    '    End If
+
+    '    Dim oStream As System.IO.Stream = Nothing
+
+    '    Try
+    '        oStream = New System.IO.FileStream(path:=strPathName, mode:=System.IO.FileMode.Open, share:=System.IO.FileShare.Read, access:=System.IO.FileAccess.Read)
+    '        Response.Buffer = False
+    '        'Response.ContentType = "application/octet-stream"
+    '        Response.ContentType = "application/x-zip-compressed"
+    '        Response.AddHeader("Content-Disposition", "attachment; filename=" & fi.Name)
+    '        Dim lngFileLength As Long = oStream.Length
+    '        Response.AddHeader("Content-Length", lngFileLength.ToString())
+    '        Dim lngDataToRead As Long = lngFileLength
+
+    '        While lngDataToRead > 0
+
+    '            If Response.IsClientConnected Then
+    '                Dim intBufferSize As Integer = 8 * 1024
+    '                Dim bytBuffers As Byte() = New System.Byte(intBufferSize - 1) {}
+    '                Dim intTheBytesThatReallyHasBeenReadFromTheStream As Integer = oStream.Read(buffer:=bytBuffers, offset:=0, count:=intBufferSize)
+    '                Response.OutputStream.Write(buffer:=bytBuffers, offset:=0, count:=intTheBytesThatReallyHasBeenReadFromTheStream)
+    '                Response.Flush()
+    '                lngDataToRead = lngDataToRead - intTheBytesThatReallyHasBeenReadFromTheStream
+    '            Else
+    '                lngDataToRead = -1
+    '            End If
+    '        End While
+    '        If idRichiestaAbilitazione <> 0 Then db.AggiornaRecord("tbl_Receivers", "StatoInstallazione", "1", "Where idRichiestaAbilitazione = " & idRichiestaAbilitazione)
+
+    '    Catch
+    '    Finally
+
+    '        If oStream IsNot Nothing Then
+    '            oStream.Close()
+    '            oStream.Dispose()
+    '            oStream = Nothing
+    '        End If
+    '        Response.Close()
+    '    End Try
+    'End Sub
 
     ''' <summary>
     ''' Funzione per decomprimere file Zip, Rar, 7zip, ed altri formati
@@ -1170,7 +1220,7 @@ Module GeneralFunctions
             l = (From la In db.ActivityLog
                  Join ts In db.mdTasksStates On la.mdTasksStatesID Equals ts.mdTasksStatesID
                  Join u In db.Users On la.userID Equals u.userID
-                 Where la.editionID = editionID Order By la.insertDate Select New ActivityLogModel With {
+                 Where la.editionID = editionID Order By la.insertDate Descending Select New ActivityLogModel With {
                                                                            .activityID = la.activityID,
                                                                            .displayName = u.displayName,
                                                                            .editionID = la.editionID,

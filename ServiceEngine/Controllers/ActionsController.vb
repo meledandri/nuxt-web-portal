@@ -3,6 +3,7 @@ Imports System.Data.Entity.Migrations
 Imports System.IO
 Imports System.Net
 Imports System.Net.Http
+Imports System.Net.Http.Headers
 Imports System.Web
 Imports System.Web.Hosting
 Imports System.Web.Http
@@ -272,7 +273,7 @@ Fine:
                         File.Move(fileData.LocalFileName, fullname)
 
                         If checkFileRules(fullname).Count = 0 Then  'Verifico se il file è idoneo (es. dimenzioni, formato, ecc)
-                            Dim fn As String = Path.Combine(storeEdition, d.fullPath.Replace("/", "\"))
+                            Dim fn As String = Path.Combine(storeEdition, d.relPath.Replace("/", "\"))
                             fi = New FileInfo(fn)
                             If Not Directory.Exists(fi.Directory.FullName) Then Directory.CreateDirectory(fi.Directory.FullName)
                             If File.Exists(fn) Then File.Delete(fn)
@@ -281,6 +282,7 @@ Fine:
                             d.flagState = 2
                             d.fileExtension = fi.Extension.Replace(".", "")
                             d.operatorID = userID
+                            d.fullPath = fi.FullName
 
                             db.Details.AddOrUpdate(d)
                             db.SaveChanges()
@@ -338,7 +340,113 @@ Fine:
         End Function
 
 
+        <Route("download/file/{detailID}")>
+        Public Function GetFileByDetailID(detailID As Integer) As HttpResponseMessage
+            log.Info("[GET]" & vbTab & "api/Actions/download/file/" & detailID)
 
+            Dim d As Details = (From dt In db.Details Where dt.detailID = detailID).FirstOrDefault
+            If IsNothing(d) Then    ' Verifico se ho trovato il record
+                Dim r As New HttpResponseMessage(HttpStatusCode.NotFound)
+                Return r
+            End If
+
+            Dim editionID As Integer = d.editionID
+            Dim ed As Editions = (From e In db.Editions Where e.editionID = editionID).FirstOrDefault
+            If IsNothing(ed) Then    ' Verifico se ho trovato il record
+                Dim r As New HttpResponseMessage(HttpStatusCode.NotFound)
+                Return r
+            End If
+
+            Dim temp_dir As String = Path.Combine(My.Application.Info.DirectoryPath, My.Settings.path_temp)
+            Dim StoragePath As String = Path.Combine(My.Application.Info.DirectoryPath, My.Settings.path_storage)
+            Dim tempEdition As String = ""
+            Dim storeEdition As String = ""
+            tempEdition = Path.Combine(temp_dir, editionID)
+            storeEdition = Path.Combine(StoragePath, editionID)
+            Dim full_path As String = ""
+            Dim fullname As String = ""
+            Dim fi As FileInfo
+            'Se il file in FullPath esiste utilizzo quello altrimenti lo recupero dal percorso relativo
+            If File.Exists(d.fullPath) Then
+                fullname = d.fullPath
+                fi = New FileInfo(fullname)
+            Else
+                If ed.asZipFile Then
+                    'Se si tratta di un file Zip il percorso dipende dallo stato generale cel caricamento 
+                    If ed.fileStatus = 1 Then   ' Se è ancora in fase di modifica..
+
+                    Else    ' Se il caricamento è stato completato..
+
+                    End If
+
+                Else
+                    full_path = storeEdition
+                End If
+
+            End If
+
+            Dim response = New HttpResponseMessage(HttpStatusCode.OK)
+            Dim stream = New FileStream(fullname, FileMode.Open)
+            response.Content = New StreamContent(stream)
+            response.Content.Headers.ContentType = New MediaTypeHeaderValue("application/octet-stream")
+            response.Content.Headers.ContentDisposition = New ContentDispositionHeaderValue("attachment")
+            response.Content.Headers.ContentDisposition.FileName = fi.Name
+            Return response
+        End Function
+
+        <Route("open/file/{detailID}")>
+        Public Function GetOpenFileByDetailID(detailID As Integer) As HttpResponseMessage
+            log.Info("[GET]" & vbTab & "api/Actions/download/file/" & detailID)
+
+            Dim d As Details = (From dt In db.Details Where dt.detailID = detailID).FirstOrDefault
+            If IsNothing(d) Then    ' Verifico se ho trovato il record
+                Dim r As New HttpResponseMessage(HttpStatusCode.NotFound)
+                Return r
+            End If
+
+            Dim editionID As Integer = d.editionID
+            Dim ed As Editions = (From e In db.Editions Where e.editionID = editionID).FirstOrDefault
+            If IsNothing(ed) Then    ' Verifico se ho trovato il record
+                Dim r As New HttpResponseMessage(HttpStatusCode.NotFound)
+                Return r
+            End If
+
+            Dim temp_dir As String = Path.Combine(My.Application.Info.DirectoryPath, My.Settings.path_temp)
+            Dim StoragePath As String = Path.Combine(My.Application.Info.DirectoryPath, My.Settings.path_storage)
+            Dim tempEdition As String = ""
+            Dim storeEdition As String = ""
+            tempEdition = Path.Combine(temp_dir, editionID)
+            storeEdition = Path.Combine(StoragePath, editionID)
+            Dim full_path As String = ""
+            Dim fullname As String = ""
+            Dim fi As FileInfo
+            'Se il file in FullPath esiste utilizzo quello altrimenti lo recupero dal percorso relativo
+            If File.Exists(d.fullPath) Then
+                fullname = d.fullPath
+                fi = New FileInfo(fullname)
+            Else
+                If ed.asZipFile Then
+                    'Se si tratta di un file Zip il percorso dipende dallo stato generale cel caricamento 
+                    If ed.fileStatus = 1 Then   ' Se è ancora in fase di modifica..
+
+                    Else    ' Se il caricamento è stato completato..
+
+                    End If
+
+                Else
+                    full_path = storeEdition
+                End If
+
+            End If
+
+            Dim response = New HttpResponseMessage(HttpStatusCode.OK)
+            Dim stream = New FileStream(fullname, FileMode.Open)
+            response.Content = New StreamContent(stream)
+            response.Content.Headers.ContentType = New MediaTypeHeaderValue(MimeMapping.GetMimeMapping(fullname))
+            response.Content.Headers.ContentDisposition = New ContentDispositionHeaderValue("inline")
+            response.Content.Headers.ContentDisposition.FileName = fi.Name
+            Return response
+        End Function
 
 
 
@@ -440,6 +548,8 @@ Fine:
 
             Return r
         End Function
+
+
 
 
 
