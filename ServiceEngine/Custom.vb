@@ -1157,13 +1157,16 @@ Module GeneralFunctions
     ''' <param name="outputFolder">Percorso di destinazione del contenuto da decomprimere.</param>
     ''' <param name="overwrite">Flag di sovrascrittura del contenuto se già presente</param>
     ''' <param name="checkFileIntegrity">Flag di verifica integrità dell'archivio.</param>
-    Public Sub UnpackArchive(ByVal sourceFile As String, ByVal outputFolder As String, ByVal overwrite As Boolean, ByVal checkFileIntegrity As Boolean)
+    Public Function UnpackArchive(ByVal sourceFile As String, ByVal outputFolder As String, ByVal overwrite As Boolean, ByVal checkFileIntegrity As Boolean) As archiveInfo
+        Dim ai As New archiveInfo
         log.Info(String.Format("Estrazione del file '{0}' in '{1}' in corso..", sourceFile, outputFolder))
         Using extracter As New SevenZipExtractor(sourceFile)
             If (checkFileIntegrity _
                     AndAlso Not extracter.Check) Then
                 Throw New Exception(String.Format("Appears to be an invalid archive: {0}", sourceFile))
             End If
+            ai.Format = extracter.Format.ToString
+            ai.ArchiveFileNames = extracter.ArchiveFileNames.ToList
 
             If Not Directory.Exists(outputFolder) Then Directory.CreateDirectory(outputFolder) ' outputFolder.MakeSurePathExists
             'TODO: Warning!!!, inline IF is not supported ?
@@ -1171,7 +1174,13 @@ Module GeneralFunctions
 
         End Using
         log.Info(String.Format("Fine estrazione del file '{0}'.", sourceFile))
-    End Sub
+        Return ai
+    End Function
+
+    Public Class archiveInfo
+        Public Property Format As String = ""
+        Public Property ArchiveFileNames As List(Of String) = New List(Of String)
+    End Class
 
     ''' <summary>
     ''' Metodo per alimentare la Tabella ActivityLog con le operazioni richieste dagli utenti

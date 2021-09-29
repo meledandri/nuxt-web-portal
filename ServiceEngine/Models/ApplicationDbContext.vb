@@ -32,7 +32,9 @@ Partial Public Class ApplicationDbContext
     Public Property mdTasksStates As System.Data.Entity.DbSet(Of mdTasksStates)
     ' Public Property mdTasks As System.Data.Entity.DbSet(Of mdTasks)
 
-
+    Public Property checklist As System.Data.Entity.DbSet(Of checklist)
+    Public Property checklistDetails As System.Data.Entity.DbSet(Of checklistDetails)
+    Public Property helps As System.Data.Entity.DbSet(Of helps)
 
 
 

@@ -65,15 +65,6 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("http://tf.local")>  _
-        Public ReadOnly Property AlternariveUrl() As String
-            Get
-                Return CType(Me("AlternariveUrl"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.ConnectionString),  _
          Global.System.Configuration.DefaultSettingValueAttribute("Data Source=.\SQL2012;Initial Catalog=TFOnlineDB;Persist Security Info=True;User "& _ 
             "ID=sa;Password=Master.1")>  _
@@ -116,6 +107,15 @@ Namespace My
         Public ReadOnly Property path_temp() As String
             Get
                 Return CType(Me("path_temp"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("http://techfileonline.local")>  _
+        Public ReadOnly Property AlternariveUrl() As String
+            Get
+                Return CType(Me("AlternariveUrl"),String)
             End Get
         End Property
     End Class

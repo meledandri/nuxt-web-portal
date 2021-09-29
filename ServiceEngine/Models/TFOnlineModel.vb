@@ -214,6 +214,11 @@ Public Class StructureDetails
     <Column(Order:=19)>
     Public Property dataOrder As Integer = 0
 
+    <Column(Order:=20)>
+    Public Property mandatory As Boolean = False
+
+
+
 End Class
 
 
@@ -315,7 +320,66 @@ Public Class Details
     <Column(Order:=21)>
     Public Property dataOrder As Integer = 0
 
+    <Column(Order:=22)>
+    Public Property mandatory As Boolean = False
+
+
 End Class
+
+Public Class checklist
+    <Key>
+    Public Property checklistID As Integer
+
+    Public Property structureID As Integer
+
+    Public Property documentID As Integer
+
+    Public Property localCode As String = ""
+
+    Public Property description As String = ""
+
+    Public Property selectPages As Boolean = False
+
+
+End Class
+
+Public Class checklistDetails
+    <Key>
+    Public Property checklistDetailsID As Integer
+
+    Public Property originalRelPath As String = ""
+    Public Property destinationRelPath As String = ""
+
+    Public Property pageFrom As Integer = 0
+
+    Public Property pageTo As Integer = 0
+
+    Public Property checked As Boolean = False
+
+
+End Class
+
+
+Public Class helps
+    <Key>
+    Public Property checklistID As Integer
+
+    Public Property structureID As Integer
+
+    Public Property documentID As Integer
+
+    Public Property localCode As String = ""
+
+    Public Property description As String = ""
+
+    Public Property area As String = ""
+
+
+End Class
+
+
+
+
 
 
 Public Class DetailsModel
@@ -455,6 +519,9 @@ Public Class DetailsModel
     Public Property checkListStatus As Integer
 
     Public Property dataOrder As Integer = 0
+
+    Public Property mandatory As Boolean = False
+
 
 End Class
 
@@ -654,6 +721,8 @@ Public Enum mdTaskStates_enum
     evaluation_process = 40
     evaluation_rejected = 41
 End Enum
+
+
 
 
 

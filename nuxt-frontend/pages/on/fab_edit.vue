@@ -191,6 +191,7 @@
                                 >
                                   fas fa-user-check
                                 </v-icon>
+
                                 <v-icon
                                   small
                                   color="red"
@@ -199,6 +200,24 @@
                                 >
                                   fas fa-user-slash
                                 </v-icon>
+
+                                <v-icon
+                                  small
+                                  class="mx-2 d-inline-block"
+                                  @click="userDisable(item)"
+                                >
+                                  far fa-paper-plane
+                                </v-icon>
+
+                                <v-icon
+                                  small
+                                  class="mx-2 d-inline-block"
+                                  @click="userDisable(item)"
+                                >
+                                  fas fa-edit
+                                </v-icon>
+
+                                
                               </v-list-item>
                             </v-list>
                             <div v-else class="text-center">No user present</div>

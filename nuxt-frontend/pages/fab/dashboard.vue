@@ -79,8 +79,8 @@
               v-if="processingDocument(item.editionID)"
             ></v-progress-linear>
 
-            <v-icon small class="mr-2" color="primary">
-              fas fa-users-cog
+            <v-icon  class="mr-2" color="primary">
+              fas fa-info-circle
             </v-icon>
 
             <v-file-input
@@ -123,6 +123,13 @@
                 fas fa-sitemap
               </v-icon>
             </v-btn>
+
+
+            <v-icon class="mr-2" color="primary">
+              fas fa-tasks
+            </v-icon>
+
+            
           </template>
           <template v-slot:no-data>
             <v-btn color="primary" @click="loadDataList()">

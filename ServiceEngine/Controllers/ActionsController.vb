@@ -130,8 +130,13 @@ Namespace Controllers
 
                 Try
 
-                    UnpackArchive(fullname, tempEdition, True, True)
-
+                    Dim ai As archiveInfo = UnpackArchive(fullname, tempEdition, True, True)
+                    Dim fileTypes As List(Of String) = New List(Of String)({"zip", "rar"})
+                    If Not fileTypes.Contains(ai.Format) Then
+                        r.stato = JRisposta.Stati.Errato
+                        r.messaggio = String.Format("Formato non accettato ({0})", ai.Format)
+                        log.Error(r.messaggio)
+                    End If
 
                 Catch ex As Exception
                     r.stato = JRisposta.Stati.Errato
