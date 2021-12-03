@@ -454,9 +454,128 @@ Fine:
         End Function
 
 
+        <Route("reset/file/{detailID}")>
+        Public Function GetResetFileByDetailID(detailID As Integer) As HttpResponseMessage
+            log.Info("[GET]" & vbTab & "api/Actions/reset/file/" & detailID)
+
+            Dim d As Details = (From dt In db.Details Where dt.detailID = detailID).FirstOrDefault
+            If IsNothing(d) Then    ' Verifico se ho trovato il record
+                Dim r As New HttpResponseMessage(HttpStatusCode.NotFound)
+                Return r
+            End If
+
+            Dim editionID As Integer = d.editionID
+            Dim ed As Editions = (From e In db.Editions Where e.editionID = editionID).FirstOrDefault
+            If IsNothing(ed) Then    ' Verifico se ho trovato il record
+                Dim r As New HttpResponseMessage(HttpStatusCode.NotFound)
+                Return r
+            End If
+
+            Dim temp_dir As String = Path.Combine(My.Application.Info.DirectoryPath, My.Settings.path_temp)
+            Dim StoragePath As String = Path.Combine(My.Application.Info.DirectoryPath, My.Settings.path_storage)
+            Dim tempEdition As String = ""
+            Dim storeEdition As String = ""
+            tempEdition = Path.Combine(temp_dir, editionID)
+            storeEdition = Path.Combine(StoragePath, editionID)
+            Dim full_path As String = ""
+            Dim fullname As String = ""
+            Dim fi As FileInfo
+            Dim response As HttpResponseMessage
 
 
+            'Se il file in FullPath esiste utilizzo quello altrimenti lo recupero dal percorso relativo
 
+            If File.Exists(d.fullPath) Then
+                fullname = d.fullPath
+                fi = New FileInfo(fullname)
+                Try
+                    fi.Delete()
+                Catch ex As Exception
+                    log.Error(ex.Message, ex)
+                End Try
+            Else
+                If ed.asZipFile Then
+                    'Se si tratta di un file Zip il percorso dipende dallo stato generale cel caricamento 
+                    If ed.fileStatus = 1 Then   ' Se è ancora in fase di modifica..
+
+                    Else    ' Se il caricamento è stato completato..
+
+                    End If
+
+                Else
+                    full_path = storeEdition
+                End If
+
+            End If
+            If Not File.Exists(fullname) Then
+                d.flagState = 0
+                d.fileExtension = ""
+                db.Details.AddOrUpdate(d)
+                db.SaveChanges()
+                response = New HttpResponseMessage(HttpStatusCode.OK)
+
+            Else
+                response = New HttpResponseMessage(HttpStatusCode.BadRequest)
+            End If
+            Return response
+        End Function
+
+
+        <Route("addDetailAttach")>
+        Public Function PostAddDetailAttach(model As DetailsDataBindingModels_newAttach) As IHttpActionResult
+            log.Info("[POST]" & vbTab & "api/Actions/addDetailAttach")
+            If Not ModelState.IsValid Then
+                Return BadRequest(ModelState)
+            End If
+
+            Dim d As Details = (From dt In db.Details Where dt.detailID = model.id).FirstOrDefault
+
+            If Not IsNothing(d) Then
+                'Calcolo l'id allegato..
+                Dim newId As Integer = 0
+                For i As Integer = 1 To 100
+                    newId = d.documentID + i
+                    Dim p As Integer = (From dt In db.Details Where dt.editionID = d.editionID And dt.documentID = newId).Count
+                    If p = 0 Then Exit For
+                Next
+
+                'Sistemo il nome file
+                Dim nf As String = d.fileName.Replace("/", "\")
+                If nf.LastIndexOf("\") < 1 Then
+                    nf = model.title.ToLower.Replace(" ", "-") & ".pdf"
+                Else
+                    nf = Path.Combine(Left(nf, nf.LastIndexOf("\")), model.title.ToLower.Replace(" ", "-") & ".pdf")
+                End If
+
+                Dim n As New Details
+                n = CType(d.Clone(), Details)
+                Dim relPath As String = Left(d.relPath, d.relPath.LastIndexOf("/") + 1) & nf
+                Dim fullPath As String = Left(d.fullPath, d.fullPath.LastIndexOf("\") + 1) & nf
+
+                If File.Exists(fullPath) Then
+                    Return BadRequest("File già presente.")
+                End If
+
+
+                With n
+                    '.detailID = Nothing
+                    .documentID = newId
+                    .fileExtension = ""
+                    .flagState = 0
+                    .Title = model.title
+                    .fileName = nf
+                    .userOwner = True
+                    .fullPath = fullPath
+                    .relPath = relPath
+                End With
+
+                db.Details.Add(n)
+                db.SaveChanges()
+                Return Ok()
+            Else
+                Return BadRequest("Paragrafo iniziale non trovato")
+            End If
+        End Function
 
 
 

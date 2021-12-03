@@ -3,6 +3,7 @@ export const state = () => ({
   appLoading : true,
   userInfo: null,
   appMenu : null,
+  workingCompany: {companyName: ''},
   //Items: localStorage.getItem("Items")? JSON.parse(localStorage.getItem("Items")) : [] || [],
   })
   
@@ -47,3 +48,6 @@ export const state = () => ({
    
   }  
 
+  export const getters = {
+    workingCompany: (state) => state.workingCompany,
+  }

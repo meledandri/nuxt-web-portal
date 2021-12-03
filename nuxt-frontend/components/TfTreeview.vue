@@ -1,5 +1,36 @@
 <template>
   <div class="treeview-content">
+    <v-navigation-drawer
+      temporary
+      v-model="drawer_dx"
+      right
+      width="400"
+      :overlay-color="convertHexToRGBA(overlayColor)"
+      stateless
+      app
+    >
+      <!-- -->
+      <all-actions
+        :visibility="tabVisibility"
+        :selected-detail.sync="selectedDocument"
+        :users.sync="users"
+        :idUtente.sync="idUtente"
+        :errors.sync="errors"
+        :selected-product.sync="product"
+        @chiudi="drawerClose"
+        @aggiorna="refreshDetails"
+        @multipleUploadRefreshList="multipleUploadRefreshList"
+        @products="gotoProducts"
+        @goto="goToDetails"
+        @ndoc="setNewDocument"
+        @viewMsg="viewMessage"
+        v-on:changeTabView="changeTabView"
+        v-on:changeNotesCount="changeNotesCount"
+        :upload-file-list.sync="multipleUploadFiles"
+        ref="Actions"
+      />
+    </v-navigation-drawer>
+
     <h1 color="primary">
       {{ product.productName }} ({{ product.structureName }})
     </h1>
@@ -20,6 +51,13 @@
       v-if="product && Items.length && !loadData"
     >
       <template v-slot:prepend="{ item, open }">
+        <v-badge
+          bordered
+  bottom
+  color="error"
+        content="Annex"
+        :value="item.userOwner"
+        >
         <v-icon
           v-if="
             (item.children && item.children.length) || item.flagContainer == 2
@@ -57,17 +95,18 @@
           :color="'#BDBDBD'"
           >far fa-file</v-icon
         >
+        </v-badge>
       </template>
       <template v-slot:label="{ item }">
         <!-- Label titolo paragrafo -->
         <!-- Label paragrafo -->
         <a
+        :style="item.userOwner ? 'margin-left: 10px;': ''"
           @click="
             item.flagContainer == 1
               ? setAction('editDocument', item)
               : setAction('editFolder', item)
           "
-          style=""
           :class="
             item.flagState == 1 && userCanChange(item)
               ? 'red--text'
@@ -99,44 +138,16 @@
           <v-list-item v-if="item.flagContainer == 1" class="px-2">
             <!-- Gestione STATO -->
 
-            <v-menu
-              close-on-click
-              close-on-content-click
-              offset-x
-              offset-y
-              :ref="'cm' + item.id"
-            >
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  x-small
-                  :dark="item.flagState != 0"
-                  :outlined="item.flagState == 0"
-                  v-bind="attrs"
-                  v-on="on"
-                  class="btn-tab"
-                >
-                  {{ getStateName(item.flagState) }}
-                  <v-icon right x-small>fas fa-chevron-down</v-icon>
-                </v-btn>
-              </template>
+            <file-owner :item="item" />
 
-              <v-list dense>
-                <v-list-item
-                  v-for="(citem, index) in limitOptions(item)"
-                  :key="index"
-                  @click="setAction(citem.action, item)"
-                  :class="citem.id == 0 ? 'my-0' : ''"
-                >
-                  <!-- Altri tasti -->
-                  <v-list-item-icon
-                    ><v-icon small :color="citem.iconColor">{{
-                      citem.icon
-                    }}</v-icon></v-list-item-icon
-                  >
-                  <v-list-item-title>{{ citem.text }}</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
+            <v-divider class="mx-2" vertical>--</v-divider>
+
+            <file-options
+              :item="item"
+              @setAction="setAction"
+              :links_states="links_states"
+            />
+
             <v-divider class="mx-2" vertical>--</v-divider>
             <input
               type="file"
@@ -164,12 +175,7 @@
               @test="$emit('click')"
             >
             </v-file-input>
-            <v-icon
-              v-if="permitted('tf_edit_document') && item.flagState == 2"
-              class="mx-2"
-              color="#cecece"
-              >fas fa-paperclip</v-icon
-            >
+
             <!-- Pulsante Note -->
             <v-btn
               icon
@@ -207,6 +213,7 @@
           </v-list-item>
 
           <!-- Azioni per le cartelle -->
+
           <v-list-item
             v-if="
               permitted('tf_edit_document') &&
@@ -215,58 +222,16 @@
             "
             class="px-2"
           >
-            <v-menu
-              close-on-click
-              close-on-content-click
-              offset-x
-              offset-y
-              allow-overflow
+            <v-divider class="mx-2" vertical v-if="item.flagContainer == 2"
+              >--</v-divider
             >
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  x-small
-                  :dark="item.flagState != 0"
-                  :outlined="item.flagState == 0"
-                  v-bind="attrs"
-                  v-on="on"
-                  v-if="item.flagContainer == 2"
-                  class="btn-tab"
-                >
-                  {{ $t("Aggiungi") }}
-                  <v-icon right x-small v-if="product.flagState == 1"
-                    >fas fa-chevron-down</v-icon
-                  >
-                </v-btn>
-                <v-btn
-                  x-small
-                  :dark="item.flagState != 0"
-                  :outlined="item.flagState == 0"
-                  v-bind="attrs"
-                  v-on="on"
-                  v-if="item.flagContainer == 2"
-                  class="btn-tab"
-                >
-                  {{ $t("Opzioni") }}
-                  <v-icon right x-small v-if="product.flagState == 1"
-                    >fas fa-chevron-down</v-icon
-                  >
-                </v-btn>
-              </template>
-              <v-list dense v-if="item.flagState == 0">
-                <v-list-item
-                  v-for="(citem, index) in limitOptions(item)"
-                  :key="index"
-                  @click="setAction(citem.action, item)"
-                >
-                  <v-list-item-icon
-                    ><v-icon small :color="citem.iconColor">{{
-                      citem.icon
-                    }}</v-icon></v-list-item-icon
-                  >
-                  <v-list-item-title>{{ citem.text }}</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
+
+            <folder-options
+              :item="item"
+              @setAction="setAction"
+              :links_states="links_states"
+              :product="product"
+            />
             <v-divider class="mx-2" vertical>--</v-divider>
             <v-btn icon color="secondary">
               <v-icon v-if="item.flagContainer == 2">fas fa-folder-plus</v-icon>
@@ -297,37 +262,46 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-container grow fluid d-flex flex-column flex-nowrap style="height:100vh;" >
-        <v-row class="fill-height">
-          <v-col>
-            <embed
-              v-if="viewDocument"
-              :src="viewDocument"
-              width="100%"
-              height="100%"
-            />
-          </v-col>
-          <v-col cols="2" id="evalue">
-            <v-card elevation="2" class="pa-0 fill-height">
-              <h1>Strumenti</h1>
-      <v-text-field
-        append-icon="fas fa-search"
-        label="Search"
-        single-line
-        hide-details
-      ></v-text-field>
+        <v-container
+          grow
+          fluid
+          d-flex
+          flex-column
+          flex-nowrap
+          style="height:100vh;"
+        >
+          <v-row class="fill-height">
+            <v-col>
+              <vue-pdf-app
+                style="height: 100vh;"
+                v-if="viewDocument"
+                :pdf="viewDocument"
+                @open="openHandler"
+                file-name="file name"
+                page-scale="page-fit"
+                page-number="1"
+                @pages-rendered="pagesRendered"
+              ></vue-pdf-app>
+            </v-col>
+            <v-col cols="2" id="evalue">
+              <v-card elevation="2" class="pa-0 fill-height">
+                <h1>Strumenti</h1>
+                <v-text-field
+                  append-icon="fas fa-search"
+                  label="Search"
+                  single-line
+                  hide-details
+                ></v-text-field>
 
-            <v-text-field
-        append-icon="fas fa-search"
-        label="Search"
-        single-line
-        hide-details
-      ></v-text-field>
-
-
-            </v-card>
-          </v-col>
-        </v-row>
+                <v-text-field
+                  append-icon="fas fa-search"
+                  label="Search"
+                  single-line
+                  hide-details
+                ></v-text-field>
+              </v-card>
+            </v-col>
+          </v-row>
         </v-container>
       </v-card>
     </v-dialog>
@@ -335,11 +309,18 @@
 </template>
 
 <script>
+import "vue-pdf-app/dist/icons/main.css";
+import VuePdfApp from "vue-pdf-app";
+
 export default {
   //Definizione-----------------
   name: "component-TF-treeview",
+  components: {
+    VuePdfApp
+  },
   //   components: {},        //Elenco di componenti utilizzati
   data: () => ({
+    info: [],
     loadData: false,
     Items: [],
     product: {},
@@ -356,7 +337,20 @@ export default {
     viewDocument: null,
     viewDocumentDialog: false,
     uploadAcceptType: "application/pdf",
-    uploadPercentage: 0
+    uploadPercentage: 0,
+    links_states: {
+      "-1": "error",
+      0: "grey",
+      1: "warning",
+      2: "success"
+    },
+    drawer_dx: false,
+    overlayColor: "",
+    tabVisibility: 0,
+    users: [],
+    idUtente: 0,
+    errors: [],
+    multipleUploadFiles: []
   }), // i dati definiscono un oggetto che rappresenta i dati interni del componente Vue. Può anche essere una funzione che restituisce l'oggetto dati.
   methods: {
     setAction(actionName, values) {
@@ -364,6 +358,25 @@ export default {
       console.log(actionName);
       console.log(values);
       switch (actionName) {
+        case "d_setDocumentToBeCreated":
+          this.selectedDocument = values;
+          this.setDocumentToBeCreated();
+          break;
+        case "d_setNewDocumentAttach":
+          this.selectedDocument = values;
+          this.viewAction("d_setNewDocumentAttach");
+          // code block
+          break;
+        case "d_setDocumentToCancel":
+          this.selectedDocument = values;
+          this.viewAction("d_setDocumentToCancel");
+          // code block
+          break;
+        case "d_setDocumentToRename":
+          this.selectedDocument = values;
+          this.viewAction("d_setDocumentToRename");
+          // code block
+          break;
         case "editDocument":
           this.viewDocument =
             process.env.NODE_ENV === "production"
@@ -381,6 +394,26 @@ export default {
     },
     viewAction(action) {
       switch (action) {
+        case "d_setNewDocumentAttach":
+          console.log("detailsList\\methods\\viewAction\\newDocumentAttach");
+          this.tabVisibility = 10;
+          this.$refs.Actions.clearForm();
+          this.drawer_dx = true;
+          break;
+        case "d_setDocumentToCancel":
+          console.log(
+            "detailsList\\methods\\viewAction\\d_setDocumentToCancel"
+          );
+          this.tabVisibility = 13;
+          this.$refs.Actions.setEditDocument(this.selectedDocument);
+          this.drawer_dx = true;
+          break;
+        case "d_setDocumentToRename":
+          console.log("detailsList\\methods\\viewAction\\renameDocument");
+          this.tabVisibility = 12;
+          this.$refs.Actions.setEditDocument(this.selectedDocument);
+          this.drawer_dx = true;
+          break;
         case "editDocument":
           this.viewDocumentDialog = true;
           break;
@@ -436,7 +469,7 @@ export default {
           var state = item.flagState;
           if (options[opt].detail_states.indexOf(state) !== -1) {
             var check = false;
-            var fc = item.flag_contenitore;
+            var fc = item.flagContainer;
             var idd = item.detail_id;
             var AddFolder = item.AddFolder;
             var AddFile = item.AddFile;
@@ -562,7 +595,7 @@ export default {
       // this.findItem(d.id).name = d.name;
       // this.findItem(d.id).file = d.file;
       // this.findItem(d.id).owner = d.owner;
-      // this.findItem(d.id).flag_contenitore = d.flag_contenitore;
+      // this.findItem(d.id).flag_contenitore = d.flagContainer;
       // this.findItem(d.id).flag_stato = d.flag_stato;
       // this.findItem(d.id).detail_id = d.detail_id;
       // this.findItem(d.id).id = d.id;
@@ -594,6 +627,95 @@ export default {
       if (this.searchAdv) {
         this.filter(this.searchAdv);
       }
+    },
+    async openHandler(pdfApp) {
+      this.info = [];
+      const info = await pdfApp.pdfDocument
+        .getMetadata()
+        .catch(console.error.bind(console));
+
+      if (!info) return;
+      const props = Object.keys(info.info);
+      props.forEach(prop => {
+        const obj = {
+          name: prop,
+          value: info.info[prop]
+        };
+        this.info.push(obj);
+      });
+    },
+    pagesRendered(pdfApp) {
+      setTimeout(() => (pdfApp.pdfViewer.currentScaleValue = "page-fit"));
+    },
+    drawerClose() {
+      this.drawer_dx = false;
+    },
+    refreshDetails() {
+      this.loadDataList();
+    },
+    multipleUploadRefreshList() {
+      var t = this.tabVisibility;
+      this.tabVisibility = 0;
+      this.$nextTick(() => {
+        // add my-component component in DOM
+        this.tabVisibility = t;
+      });
+    },
+    gotoProducts() {
+      this.changeRoute("productsList", 1, {
+        Archive: this.archive,
+        label: this.archiveListTypes[this.archive]
+      });
+    },
+    goToDetails(value) {
+      //Passa alla visualizzazione di dettaglio
+      console.log("goToDetails..");
+      //var rnd = Math.random() * (9999 - 1000) + 1000;
+      this.loadDataList(value.IDdossier);
+      /*       this.changeRoute("detailsList", 1, {
+        id: value.IDdossier,
+        description: value.descrizione,
+        breadcrumb: value.descrizione,
+        random: rnd,
+      }); */
+    },
+    setNewDocument(idParent, d) {
+      if (!this.findItem(idParent).children) {
+        this.findItem(idParent).children = [];
+      }
+      this.findItem(idParent).children.push(d);
+      this.open.push(idParent);
+      this.itemsAll.push(d);
+      this.createList();
+    },
+    changeTabView(n) {
+      console.log("changeTabView");
+      this.tabVisibility = n;
+    },
+    changeNotesCount(n) {
+      console.log("changeNotesCount");
+      var id = this.selectedDocument.id;
+      this.selectedDocument.Notes = n;
+      this.$set(this.findItem(id), "Notes", n);
+    },
+    async setDocumentToBeCreated() {
+      console.log("setDocumentToBeCreated..");
+      var detailID = this.selectedDocument.detailID;
+      this.startProcess(this.selectedDocument.detailID);
+      this.loadData = true;
+      this.changeTabView(0);
+      this.$axios
+        .get("Actions/reset/file/" + detailID)
+        .then(response => {
+          this.loadData = false;
+          this.findItem(detailID, this.Items).flagState = 0;
+        })
+        .catch(error => {
+          this.loadData = false;
+        });
+
+      // var data = (await this.$axios.get("Actions/reset/file/" + detailID)).data;
+      // this.loadData = false;
     }
   }, //l'oggetto metodi contiene una coppia chiave-valore di nomi di metodo e la relativa definizione di funzione. Questi fanno parte del comportamento del componente Vue che l'altro componente può attivare.
   computed: {
@@ -1054,6 +1176,7 @@ export default {
   beforeMount() {}, //il componente è compilato in questa fase, ma deve ancora essere visualizzato sullo schermo.
   mounted() {
     this.loadDataList();
+    this.overlayColor = this.getColors["primary"];
   }, //questo avviene dopo che il componente è stato montato. Ora puoi accedere al metodo $ el e giocare con il contenuto all'interno degli elementi HTML. In questa fase il componente diventa completamente interattivo.
   beforeUpdate() {}, //ogni volta che vengono apportate modifiche ai dati o al DOM, subito prima, viene chiamato questo hook del ciclo di vita. Ciò è utile quando è necessario registrare le modifiche.
   updated() {}, //subito dopo che sono state apportate le modifiche al DOM o ai dati. Qui puoi eseguire operazioni dipendenti dalla modifica nel DOM.
@@ -1066,7 +1189,7 @@ export default {
 .v-input:not(.v-textarea) {
   max-height: 50px;
 }
-#evalue{
+#evalue {
   border-left: 1px solid rgb(70, 144, 255);
 }
 </style>

@@ -4,6 +4,7 @@ Imports System.Reflection
 Imports System.Web.Http.ModelBinding
 Imports log4net
 Imports SevenZip
+Imports System.Runtime.CompilerServices
 
 Public Class ClassiJSON
     'Private ReadOnly log As ILog = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType)
@@ -304,6 +305,12 @@ End Module
 
 Module GeneralFunctions
     Private ReadOnly log As ILog = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType)
+
+    <Extension()>
+    Function ContainsSpecialChars(s As String) As Boolean
+        Return s.Any(Function(c) Not (Char.IsLetterOrDigit(c) OrElse Char.IsWhiteSpace(c)))
+    End Function
+
 
     Function getModelStateMessages(msd As ModelStateDictionary) As List(Of String)
         Dim le As List(Of String) = New List(Of String)
@@ -979,6 +986,7 @@ Module GeneralFunctions
                          Join e In db.Editions On d.editionID Equals e.editionID
                          Join str In db.Structures On str.structureID Equals e.structureID
                          Join c In db.Companies On c.companyID Equals p.companyID
+                         Join u In db.Users On d.operatorID Equals u.userID
                          Where e.editionID = editionID
                          Order By d.dataOrder
                          Select New DetailsTreeModel With {
@@ -1015,7 +1023,9 @@ Module GeneralFunctions
                                         .fileStatus = e.fileStatus,
                                         .checkListStatus = e.checkListStatus,
                                         .productInfoStatus = e.productInfoStatus,
-                                         .dataOrder = d.dataOrder
+                                         .dataOrder = d.dataOrder,
+                                        .displayName = u.displayName,
+                                        .userOwner = d.userOwner
                                         }).ToList
 
                 End If
@@ -1037,6 +1047,7 @@ Module GeneralFunctions
                  Join e In db.Editions On d.editionID Equals e.editionID
                  Join str In db.Structures On str.structureID Equals e.structureID
                  Join c In db.Companies On c.companyID Equals p.companyID
+                 Join u In db.Users On d.operatorID Equals u.displayName
                  Where d.detailID = detailID
                  Select New DetailsTreeModel With {
                                         .detailID = d.detailID,
@@ -1072,7 +1083,8 @@ Module GeneralFunctions
                                         .fileStatus = e.fileStatus,
                                         .checkListStatus = e.checkListStatus,
                                         .productInfoStatus = e.productInfoStatus,
-                                        .dataOrder = d.dataOrder
+                                        .dataOrder = d.dataOrder,
+                                        .displayName = u.displayName
                                         }).FirstOrDefault
         End Using
 

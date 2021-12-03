@@ -245,7 +245,25 @@ const [dt, hh] = date.split("T")
 
       const [month, day, year] = date.split("/");
       return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-    }
+    },
+    convertHexToRGBA: function(color) {
+      color = color.replace("#", "");
+      let r = parseInt(color.substring(0, 2), 16);
+      let g = parseInt(color.substring(2, 4), 16);
+      let b = parseInt(color.substring(4, 6), 16);
+      let result =
+        "rgba(" + r + "," + g + "," + b + "," + this.xopacity / 100 + ")";
+      return result;
+    },
+    convertHexToRGB: function(color) {
+      color = color.replace("#", "");
+      let r = parseInt(color.substring(0, 2), 16);
+      let g = parseInt(color.substring(2, 4), 16);
+      let b = parseInt(color.substring(4, 6), 16);
+      let result = "rgba(" + r + "," + g + "," + b + ")";
+      return result;
+    },
+  
   }, //l'oggetto metodi contiene una coppia chiave-valore di nomi di metodo e la relativa definizione di funzione. Questi fanno parte del comportamento del componente Vue che l'altro componente può attivare.
   computed: {
     lng: {
@@ -315,7 +333,25 @@ const [dt, hh] = date.split("T")
     },
     computedDateFormatted() {
       return this.formatDate(this.date);
-    }
+    },
+    getColors: {
+      get() {
+        var isDark = this.$vuetify.theme.isDark;
+        if (isDark) {
+          return this.$vuetify.theme.themes.dark;
+        } else {
+          return this.$vuetify.theme.themes.light;
+        }
+      },
+    },
+    workingCompany: {
+      get() {
+        return this.$store.getters['config/workingCompany'];
+      },
+      set(v) {
+        return (this.$store.getters['config/workingCompany'] = v);
+      },
+    },
   }, // contiene un oggetto che definisce le funzioni getter e setter per le proprietà calcolate del componente Vue. Le proprietà calcolate influenzano un aggiornamento reattivo sul DOM ogni volta che il loro valore cambia.
   props: {}, //contiene un array o un oggetto di proprietà specifiche del componente Vue.js, impostato al momento dell'invocazione.
   watch: {}, // questo oggetto tiene traccia dei cambiamenti nel valore di una qualsiasi delle proprietà definite come parte dei "dati" impostando le funzioni per controllarli.
@@ -328,4 +364,4 @@ const [dt, hh] = date.split("T")
   updated() {}, //subito dopo che sono state apportate le modifiche al DOM o ai dati. Qui puoi eseguire operazioni dipendenti dalla modifica nel DOM.
   beforeDestroy() {}, //questo è subito prima che il componente venga distrutto ed è l'ultima istanza del DOM completamente funzionante. Puoi eseguire le operazioni di chiusura necessarie.
   destroyed() {} //questo è un po 'simile all'hook beforeCreate in cui il componente non è funzionale e non è possibile accedere a proprietà dei dati, watcher, proprietà calcolate ed eventi.
-};
+}

@@ -123,16 +123,7 @@ Namespace Controllers
             If li = 0 Then
                 log.Info("[INIT]" & vbTab & "ConfigController\Init")
 
-                Dim ac As New AppConfig
-                With ac
-                    .App = "common"
-                    .Parameter = "primary-color"
-                    .Value = "#3333FF"
-                End With
-                db.AppConfig.Add(ac)
-                db.SaveChanges()
-
-
+                insAppConfig()
 
 
 
@@ -321,6 +312,76 @@ Namespace Controllers
             '        log.Error(ex.Message)
             '    End Try
             'End If
+        End Sub
+
+        Private Sub insAppConfig()
+            Dim ac As New AppConfig
+            With ac
+                .App = "common"
+                .Parameter = "primary-color"
+                .Value = "#3333FF"
+            End With
+            db.AppConfig.Add(ac)
+            db.SaveChanges()
+
+            Dim maxLengthParagraph As New AppConfig
+            With maxLengthParagraph
+                .App = "common"
+                .Parameter = "maxLengthParagraph"
+                .Value = "#3333FF"
+            End With
+            db.AppConfig.Add(maxLengthParagraph)
+            db.SaveChanges()
+
+            Dim specialCharacters As New AppConfig
+            With specialCharacters
+                .App = "common"
+                .Parameter = "specialCharacters"    ' Verificare la funzione "stringa".ContainsSpecialChars presente in custom.vb
+                .Value = "#3333FF"
+            End With
+            db.AppConfig.Add(specialCharacters)
+            db.SaveChanges()
+
+            Dim maxFileSize As New AppConfig
+            With maxFileSize
+                .App = "common"
+                .Parameter = "maxFileSize"
+                .Value = "10000"
+            End With
+            db.AppConfig.Add(maxFileSize)
+            db.SaveChanges()
+
+            Dim maxArchiveSize As New AppConfig
+            With maxArchiveSize
+                .App = "common"
+                .Parameter = "maxArchiveSize"
+                .Value = "100000"
+            End With
+            db.AppConfig.Add(maxArchiveSize)
+            db.SaveChanges()
+
+            Dim archiveFileType As New AppConfig
+            With archiveFileType
+                .App = "common"
+                .Parameter = "archiveFileType"
+                .Value = "zip,rar,7z"
+            End With
+            db.AppConfig.Add(archiveFileType)
+            db.SaveChanges()
+
+
+            Dim fileTypes As New AppConfig
+            With fileTypes
+                .App = "common"
+                .Parameter = "fileTypes"
+                .Value = "pdf"
+            End With
+            db.AppConfig.Add(fileTypes)
+            db.SaveChanges()
+
+
+
+
         End Sub
 
         Private Sub insMenu()

@@ -226,6 +226,7 @@ End Class
 ''' Tabella con i dettagli della struttura e dei file che compongono l'edizione
 ''' </summary>
 Public Class Details
+    Implements ICloneable
     <Key>
     <Column(Order:=0)>
     Public Property detailID As Integer
@@ -323,7 +324,13 @@ Public Class Details
     <Column(Order:=22)>
     Public Property mandatory As Boolean = False
 
+    <Column(Order:=23)>
+    Public Property userOwner As Boolean = False
 
+
+    Public Function Clone() As Object Implements ICloneable.Clone
+        Return Me.MemberwiseClone()
+    End Function
 End Class
 
 Public Class checklist
@@ -522,6 +529,7 @@ Public Class DetailsModel
 
     Public Property mandatory As Boolean = False
 
+    Public Property userOwner As Boolean = False
 
 End Class
 
@@ -529,6 +537,16 @@ End Class
 Public Class DetailsTreeModel
     Inherits DetailsModel
     Public Property children As New List(Of DetailsTreeModel)
+    Public Property displayName As String = ""
+End Class
+
+
+Public Class DetailsDataBindingModels_newAttach
+    <Required>
+    Public Property id As Double
+    <Required>
+    Public Property title As String
+
 End Class
 
 

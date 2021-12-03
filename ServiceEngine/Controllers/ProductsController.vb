@@ -154,6 +154,117 @@ Namespace Controllers
         End Function
 
 
+        <Route("detail/delete")>
+        Public Async Function PostDeleteDetail(model As DetailsDataBindingModels_newAttach) As Task(Of IHttpActionResult)
+            If Not ModelState.IsValid Then
+                Return BadRequest(ModelState)
+            End If
+
+            Dim d As Details = (From dt In db.Details Where dt.detailID = model.id Select dt).FirstOrDefault
+
+            Dim editionID As Integer = d.editionID
+
+            Dim temp_dir As String = Path.Combine(My.Application.Info.DirectoryPath, My.Settings.path_temp)
+            Dim StoragePath As String = Path.Combine(My.Application.Info.DirectoryPath, My.Settings.path_storage)
+            Dim tempEdition As String = ""
+            Dim storeEdition As String = ""
+            tempEdition = Path.Combine(temp_dir, editionID)
+            storeEdition = Path.Combine(StoragePath, editionID)
+            Dim full_path As String = ""
+            Dim fullname As String = ""
+            Dim fi As FileInfo
+
+
+            'Se il file in FullPath esiste utilizzo quello altrimenti lo recupero dal percorso relativo
+
+            If File.Exists(d.fullPath) Then
+                fullname = d.fullPath
+                fi = New FileInfo(fullname)
+                Try
+                    fi.Delete()
+                Catch ex As Exception
+                    log.Error(ex.Message, ex)
+                End Try
+            End If
+
+
+            If Not IsNothing(d) Then
+                db.Details.Remove(d)
+                Await db.SaveChangesAsync()
+                Return Ok()
+            Else
+                Return NotFound()
+            End If
+
+
+        End Function
+
+
+
+
+
+        <Route("detail/rename")>
+        Public Async Function PostRenameDetail(model As DetailsDataBindingModels_newAttach) As Task(Of IHttpActionResult)
+            If Not ModelState.IsValid Then
+                Return BadRequest(ModelState)
+            End If
+
+            Dim d As Details = (From dt In db.Details Where dt.detailID = model.id Select dt).FirstOrDefault
+
+            Dim editionID As Integer = d.editionID
+
+            Dim temp_dir As String = Path.Combine(My.Application.Info.DirectoryPath, My.Settings.path_temp)
+            Dim StoragePath As String = Path.Combine(My.Application.Info.DirectoryPath, My.Settings.path_storage)
+            Dim tempEdition As String = ""
+            Dim storeEdition As String = ""
+            tempEdition = Path.Combine(temp_dir, editionID)
+            storeEdition = Path.Combine(StoragePath, editionID)
+            Dim full_path As String = ""
+            Dim fullname As String = ""
+            Dim fi As FileInfo
+
+
+            'Se il file in FullPath esiste utilizzo quello altrimenti lo recupero dal percorso relativo
+
+            If File.Exists(d.fullPath) Then
+
+                fi = New FileInfo(d.fullPath)
+
+                fullname = Path.Combine(fi.Directory.FullName, model.title + fi.Extension)
+
+                If File.Exists(fullname) Then
+                    Return BadRequest("Il nome del file è già presente.")
+                End If
+
+                Try
+                    File.Move(fi.FullName, fullname)
+                Catch ex As Exception
+                    log.Error(ex.Message, ex)
+                    Return BadRequest(ex.ToString)
+                End Try
+            End If
+
+            Dim relPath As String = Left(d.relPath, d.relPath.LastIndexOf("/") + 1) & model.title & fi.Extension
+
+            If Not IsNothing(d) Then
+                With d
+                    .Title = model.title
+                    .fileName = model.title & fi.Extension
+                    .fullPath = fullname
+                    .relPath = relPath
+                End With
+
+                db.Details.AddOrUpdate(d)
+                Await db.SaveChangesAsync()
+                Return Ok()
+            Else
+                Return NotFound()
+            End If
+
+
+        End Function
+
+
 
 
         '''' <summary>
